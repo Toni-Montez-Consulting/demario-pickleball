@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import AdminDashboard from "./AdminDashboard";
+import AdminDashboard from "../AdminDashboard";
 
 export default async function AdminPage() {
   const supabase = await createServerSupabaseClient();

@@ -16,6 +16,10 @@ export async function PATCH(
   }
 
   const { id } = await params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
+
   const { data, error } = await supabase
     .from("bookings")
     .update({ status })
@@ -23,6 +27,9 @@ export async function PATCH(
     .select()
     .single();
 
+  if (error?.code === "PGRST116") {
+    return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+  }
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }

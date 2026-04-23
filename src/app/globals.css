@@ -626,6 +626,7 @@ footer .fwrap { display: flex; justify-content: space-between; align-items: cent
 }
 .modal-backdrop.open { display: flex; }
 .modal {
+  position: relative;
   width: 100%;
   max-width: 430px;
   background: var(--bg-2);
@@ -641,6 +642,9 @@ footer .fwrap { display: flex; justify-content: space-between; align-items: cent
   to   { transform: translateY(0);    opacity: 1; }
 }
 .modal-grip { width: 40px; height: 4px; background: var(--line); border-radius: 2px; margin: 0 auto 16px; }
+.modal-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-2); color: var(--fg-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; }
+.modal-close:hover { background: var(--line); color: var(--fg); }
+.modal-close svg { width: 14px; height: 14px; }
 .modal h3 { font-size: 22px; margin: 0 0 8px; font-family: var(--font-space-grotesk); font-weight: 600; }
 .modal p.m-sub { font-size: 13px; color: var(--fg-muted); margin: 0 0 18px; }
 
@@ -801,3 +805,52 @@ footer .fwrap { display: flex; justify-content: space-between; align-items: cent
 .admin-login-card { width: 100%; max-width: 360px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 20px; padding: 32px 28px; }
 .admin-login-card h1 { font-size: 24px; margin: 0 0 6px; }
 .admin-login-card p { color: var(--fg-muted); font-size: 13px; margin: 0 0 28px; }
+
+/* ====== DESKTOP RESPONSIVE ====== */
+@media (min-width: 768px) {
+  .device {
+    max-width: 900px;
+    box-shadow: 0 0 0 1px var(--line), 0 40px 120px -20px rgba(0,0,0,0.4);
+  }
+
+  section.block { padding: 80px 48px; }
+  .final-cta { padding: 80px 48px 140px; }
+  footer { padding: 36px 48px 80px; }
+  .trust { padding: 20px 32px; }
+
+  .hero { min-height: 640px; padding: 80px 48px 48px; }
+  .hero-content { margin-top: 260px; max-width: 560px; }
+
+  .improve-list { grid-template-columns: repeat(4, 1fr); }
+
+  .topnav { padding: 14px 28px; }
+
+  .small-reviews {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .gallery { grid-auto-rows: 180px; }
+
+  .about-stats { grid-template-columns: repeat(4, 1fr); }
+
+  .pillars { grid-template-columns: 1fr; }
+
+  h1.hero-title { font-size: clamp(52px, 8vw, 80px); }
+  .section-title { font-size: clamp(40px, 5vw, 56px); }
+  .final-title { font-size: clamp(48px, 6vw, 72px); }
+}
+
+@media (min-width: 1100px) {
+  .device { max-width: 1100px; }
+
+  .hero-content { max-width: 640px; margin-top: 280px; }
+
+  section.block { padding: 96px 64px; }
+  .final-cta { padding: 96px 64px 160px; }
+  footer { padding: 40px 64px 80px; }
+  .trust { padding: 20px 48px; }
+  .topnav { padding: 14px 40px; }
+
+  .improve-list { gap: 14px; }
+  .improve-card { min-height: 160px; }
+}
