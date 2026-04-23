@@ -18,15 +18,15 @@ interface BookingModalProps {
 }
 
 const LESSON_LABELS: Record<string, string> = {
-  beginner: "Foundations ($90)",
-  advanced: "Strategy Lab ($125)",
-  clinic: "Group Clinic ($55)",
+  beginner: "Foundations ($70)",
+  advanced: "Strategy Lab ($80)",
+  clinic: "Group Clinic ($50)",
 };
 
 const LESSON_PRICES: Record<string, string> = {
-  beginner: "$90.00",
-  advanced: "$125.00",
-  clinic: "$55.00",
+  beginner: "$70.00",
+  advanced: "$80.00",
+  clinic: "$50.00",
 };
 
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
@@ -192,9 +192,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   setForm({ ...form, lessonType: e.target.value as FormData["lessonType"] })
                 }
               >
-                <option value="beginner">Foundations ($90)</option>
-                <option value="advanced">Strategy Lab ($125)</option>
-                <option value="clinic">Group Clinic ($55)</option>
+                <option value="beginner">Foundations ($70)</option>
+                <option value="advanced">Strategy Lab ($80)</option>
+                <option value="clinic">Group Clinic ($50)</option>
               </select>
             </div>
             <label className="waiver-check">

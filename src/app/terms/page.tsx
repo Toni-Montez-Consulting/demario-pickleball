@@ -16,9 +16,9 @@ export default function TermsPage() {
 
         <h2>Pricing</h2>
         <ul>
-          <li>Foundations (1-on-1) — $90 per session</li>
-          <li>Strategy Lab (1-on-1) — $125 per session</li>
-          <li>Group Clinic — $55 per player per session</li>
+          <li>Foundations (1-on-1) — $70 per session</li>
+          <li>Strategy Lab (1-on-1) — $80 per session</li>
+          <li>Group Clinic — $50 per player per session</li>
         </ul>
         <p>Prices are subject to change with reasonable notice.</p>
 

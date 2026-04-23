@@ -37,7 +37,7 @@ export default function FinalCta({ onOpenBooking }: FinalCtaProps) {
           </span>
           <span>
             <span className="mdot" />
-            From $90
+            From $70
           </span>
           <span>
             <span className="mdot" />

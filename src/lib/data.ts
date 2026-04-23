@@ -53,7 +53,7 @@ export const LESSONS: Record<LessonKey, Lesson> = {
   beginner: {
     name: "Foundations",
     desc: "For new players and anyone under 3.5 DUPR.",
-    price: "$90",
+    price: "$70",
     per: "per hour",
     steps: [
       { t: "0:00", h: "Warm-up + assessment", p: "Quick rally to calibrate where you're at today." },
@@ -66,7 +66,7 @@ export const LESSONS: Record<LessonKey, Lesson> = {
   advanced: {
     name: "Strategy Lab",
     desc: "For 3.5+ players ready to level up their thinking.",
-    price: "$125",
+    price: "$80",
     per: "per session",
     steps: [
       { t: "0:00", h: "Film review", p: "We watch 5 minutes of your last match. Patterns, leaks, tells." },
@@ -79,7 +79,7 @@ export const LESSONS: Record<LessonKey, Lesson> = {
   clinic: {
     name: "Group Clinic",
     desc: "Small-group. 3–4 players, 90 minutes, sharp focus.",
-    price: "$55",
+    price: "$50",
     per: "per player",
     steps: [
       { t: "0:00", h: "Rotation warm-up", p: "Everyone moves, everyone hits. No standing around." },
