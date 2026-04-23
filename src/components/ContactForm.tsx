@@ -101,7 +101,7 @@ export default function ContactForm() {
             )}
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-primary btn-full"
               disabled={status === "loading"}
             >
               {status === "loading" ? "Sending…" : "Send message"}

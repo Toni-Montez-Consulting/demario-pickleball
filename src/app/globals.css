@@ -1126,9 +1126,10 @@ footer .contact-line a:hover { color: var(--fg); }
 }
 .legal-back:hover { color: var(--fg); }
 
+textarea.modal-input { resize: vertical; min-height: 100px; }
+
 @media (min-width: 768px) {
   .contact-section { padding: 80px 48px; }
-  .slot-grid-scroll { grid-template-columns: repeat(7, 1fr); gap: 8px; }
 }
 
 @media (min-width: 1100px) {
