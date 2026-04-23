@@ -18,18 +18,18 @@ export default function AdminShell({
   }
 
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+    <div className="admin-shell">
       <nav className="topnav">
         <div className="brand">
           <div className="brand-mark">D</div>
           <span>
-            Admin<span style={{ color: "var(--fg-muted)" }}> / Dashboard</span>
+            Admin<span className="brand-muted"> / Dashboard</span>
           </span>
         </div>
         <button
-          className="btn btn-ghost"
+          type="button"
+          className="btn btn-ghost admin-signout"
           onClick={signOut}
-          style={{ padding: "8px 14px", fontSize: 13 }}
         >
           Sign out
         </button>

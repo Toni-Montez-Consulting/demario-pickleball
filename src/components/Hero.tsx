@@ -44,8 +44,7 @@ export default function Hero({ onOpenBooking }: HeroProps) {
               <svg
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                style={{ width: 14, height: 14 }}
-              >
+                >
                 <path d="M8 5v14l11-7z" />
               </svg>
               Watch

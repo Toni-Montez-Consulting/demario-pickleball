@@ -68,19 +68,21 @@ export default function AdminDashboard({
     <div className="admin-wrap">
       <div className="admin-header">
         <h1>Dashboard</h1>
-        <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>
+        <span className="admin-count">
           {bookings.length} booking{bookings.length !== 1 ? "s" : ""}
         </span>
       </div>
 
       <div className="admin-tabs">
         <button
+          type="button"
           className={`admin-tab${tab === "bookings" ? " active" : ""}`}
           onClick={() => setTab("bookings")}
         >
           Bookings
         </button>
         <button
+          type="button"
           className={`admin-tab${tab === "inquiries" ? " active" : ""}`}
           onClick={() => setTab("inquiries")}
         >
@@ -90,11 +92,9 @@ export default function AdminDashboard({
       </div>
 
       {tab === "bookings" && (
-        <div style={{ overflowX: "auto" }}>
+        <div className="admin-table-scroll">
           {bookings.length === 0 ? (
-            <p style={{ color: "var(--fg-muted)", fontSize: 14, padding: "20px 0" }}>
-              No bookings yet.
-            </p>
+            <p className="admin-empty">No bookings yet.</p>
           ) : (
             <table className="admin-table">
               <thead>
@@ -113,12 +113,8 @@ export default function AdminDashboard({
                     <td>{b.lesson_date}</td>
                     <td>{b.lesson_time}</td>
                     <td>
-                      <div style={{ fontWeight: 600, color: "var(--fg)" }}>
-                        {b.name}
-                      </div>
-                      <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
-                        {b.email}
-                      </div>
+                      <div className="td-name">{b.name}</div>
+                      <div className="td-email-sub">{b.email}</div>
                     </td>
                     <td>{LESSON_NAMES[b.lesson_type] ?? b.lesson_type}</td>
                     <td>
@@ -127,8 +123,9 @@ export default function AdminDashboard({
                       </span>
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: 6 }}>
+                      <div className="td-actions">
                         <button
+                          type="button"
                           className="admin-btn confirm"
                           disabled={
                             b.status === "confirmed" || updating === b.id
@@ -138,6 +135,7 @@ export default function AdminDashboard({
                           Confirm
                         </button>
                         <button
+                          type="button"
                           className="admin-btn cancel"
                           disabled={
                             b.status === "cancelled" || updating === b.id
@@ -159,9 +157,7 @@ export default function AdminDashboard({
       {tab === "inquiries" && (
         <div>
           {initialInquiries.length === 0 ? (
-            <p style={{ color: "var(--fg-muted)", fontSize: 14, padding: "20px 0" }}>
-              No inquiries yet.
-            </p>
+            <p className="admin-empty">No inquiries yet.</p>
           ) : (
             initialInquiries.map((inq) => (
               <div key={inq.id} className="inquiry-card">
@@ -171,13 +167,7 @@ export default function AdminDashboard({
                 </div>
                 <div className="inq-email">{inq.email}</div>
                 <div className="inq-msg">{inq.message}</div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "var(--fg-muted)",
-                    marginTop: 8,
-                  }}
-                >
+                <div className="inq-date">
                   {new Date(inq.created_at).toLocaleDateString()}
                 </div>
               </div>

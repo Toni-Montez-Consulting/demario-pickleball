@@ -4,10 +4,10 @@ export default function Nav() {
       <div className="brand">
         <div className="brand-mark">D</div>
         <span>
-          DeMario<span style={{ color: "var(--fg-muted)" }}> / Coach</span>
+          DeMario<span className="brand-muted"> / Coach</span>
         </span>
       </div>
-      <button className="menu-btn" aria-label="Menu">
+      <button type="button" className="menu-btn" aria-label="Menu">
         <svg
           viewBox="0 0 24 24"
           fill="none"

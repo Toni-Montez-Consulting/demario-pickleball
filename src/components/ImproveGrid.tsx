@@ -2,7 +2,7 @@ import RevealWrapper from "./RevealWrapper";
 
 export default function ImproveGrid() {
   return (
-    <section className="block" style={{ background: "var(--bg-2)" }}>
+    <section className="block block-alt">
       <RevealWrapper>
         <div className="kicker">What You&apos;ll Improve</div>
         <h2 className="section-title">

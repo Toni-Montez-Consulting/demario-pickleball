@@ -30,6 +30,7 @@ export default function Lessons() {
           {TABS.map(({ key, label }) => (
             <button
               key={key}
+              type="button"
               className={`lesson-tab${active === key ? " active" : ""}`}
               onClick={() => setActive(key)}
             >

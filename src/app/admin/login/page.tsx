@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
   return (
     <div className="admin-login-wrap">
       <div className="admin-login-card">
-        <div className="brand-mark" style={{ marginBottom: 20 }}>
+        <div className="brand-mark">
           D
         </div>
         <h1>Coach Login</h1>
@@ -62,10 +62,9 @@ export default function AdminLoginPage() {
           </div>
           {error && <div className="modal-error">{error}</div>}
           <button
-            className="btn btn-primary"
             type="submit"
+            className="btn btn-primary btn-full"
             disabled={loading}
-            style={{ width: "100%", justifyContent: "center", marginTop: 8 }}
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>

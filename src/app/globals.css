@@ -499,6 +499,10 @@ section.block { padding: 64px 22px; position: relative; }
 .about-stat { background: var(--bg-2); padding: 16px; }
 .about-stat .num { font-size: 22px; font-family: var(--font-space-grotesk); font-weight: 600; }
 .about-stat .label { font-size: 10.5px; color: var(--fg-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 4px; }
+.about-bio-intro { color: var(--fg-dim); font-size: 15px; margin: 0 0 16px; }
+.about-bio-sub { color: var(--fg-muted); font-size: 14px; margin: 0; }
+.about-gallery-header { margin-top: 28px; }
+.block-alt { background: var(--bg-2); }
 
 /* ====== GALLERY ====== */
 .gallery {
@@ -653,6 +657,7 @@ footer .contact-line a:hover { color: var(--fg); }
 .modal p.m-sub { font-size: 13px; color: var(--fg-muted); margin: 0 0 18px; }
 
 .slot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+.slot-grid + .slot-grid { margin-top: -8px; }
 .slot {
   padding: 12px 4px;
   border: 1px solid var(--line);
@@ -753,6 +758,12 @@ footer .contact-line a:hover { color: var(--fg); }
   font-weight: 600;
   margin: 8px 0 10px;
 }
+.label-tag.mt { margin-top: 18px; }
+.modal-confirmed { text-align: center; padding: 20px 0 10px; }
+.modal-confirmed h3 { margin-bottom: 8px; }
+.modal-confirmed .m-sub { margin-bottom: 24px; }
+.booking-id-val { font-size: 11px; opacity: 0.7; }
+.btn-full { width: 100%; display: flex; justify-content: center; }
 
 /* ====== CONFIRM STATE ====== */
 .confirm-icon {
@@ -809,6 +820,18 @@ footer .contact-line a:hover { color: var(--fg); }
 .admin-login-card { width: 100%; max-width: 360px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 20px; padding: 32px 28px; }
 .admin-login-card h1 { font-size: 24px; margin: 0 0 6px; }
 .admin-login-card p { color: var(--fg-muted); font-size: 13px; margin: 0 0 28px; }
+.admin-login-card .brand-mark { margin-bottom: 20px; }
+.admin-shell { background: var(--bg); min-height: 100vh; }
+.admin-shell .topnav .brand-muted { color: var(--fg-muted); }
+.admin-signout { padding: 8px 14px; font-size: 13px; }
+.admin-count { font-size: 12px; color: var(--fg-muted); }
+.admin-table-scroll { overflow-x: auto; }
+.admin-empty { color: var(--fg-muted); font-size: 14px; padding: 20px 0; }
+.td-name { font-weight: 600; color: var(--fg); }
+.td-email-sub { font-size: 11px; color: var(--fg-muted); }
+.td-actions { display: flex; gap: 6px; }
+.inq-date { font-size: 11px; color: var(--fg-muted); margin-top: 8px; }
+.brand-muted { color: var(--fg-muted); }
 
 /* ====== DESKTOP RESPONSIVE ====== */
 @media (min-width: 768px) {

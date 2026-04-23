@@ -24,13 +24,13 @@ export default function About() {
         </div>
       </RevealWrapper>
       <RevealWrapper delay={120}>
-        <p style={{ color: "var(--fg-dim)", fontSize: 15, margin: "0 0 16px" }}>
+        <p className="about-bio-intro">
           I&apos;m a 4.6 DUPR player, USTA/DUPR certified coach, and Head Pro
           at Dallas Indoor Pickleball Club. I built my game the hard way — film
           study, repeatable patterns, pressure-testing every shot. Now I build
           yours the same way.
         </p>
-        <p style={{ color: "var(--fg-muted)", fontSize: 14, margin: 0 }}>
+        <p className="about-bio-sub">
           I&apos;ll meet you at your level, diagnose the three things holding you
           back, and give you a plan you can actually execute — on the court and
           in your head.
@@ -55,7 +55,7 @@ export default function About() {
         </div>
       </RevealWrapper>
       <RevealWrapper delay={180}>
-        <div style={{ marginTop: 28 }}>
+        <div className="about-gallery-header">
           <div className="kicker">On the Court</div>
         </div>
         <div className="gallery">

@@ -98,10 +98,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const day = days[selectedDay];
 
   return (
-    <div
-      className="modal-backdrop open"
-      onClick={handleBackdropClick}
-    >
+    <div className="modal-backdrop open" onClick={handleBackdropClick}>
       <div className="modal">
         <div className="modal-grip" />
         <button
@@ -110,7 +107,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
           onClick={onClose}
           aria-label="Close"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          >
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
@@ -167,6 +170,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               </select>
             </div>
             <button
+              type="button"
               className="btn btn-primary"
               disabled={!form.name || !form.email}
               onClick={() => setStep("picker")}
@@ -179,7 +183,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                style={{ width: 14, height: 14 }}
               >
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
@@ -198,6 +201,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               {days.slice(0, 4).map((s, i) => (
                 <button
                   key={i}
+                  type="button"
                   className={`slot${selectedDay === i ? " selected" : ""}`}
                   onClick={() => setSelectedDay(i)}
                 >
@@ -206,10 +210,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 </button>
               ))}
             </div>
-            <div className="slot-grid" style={{ marginTop: -8 }}>
+            <div className="slot-grid">
               {days.slice(4, 8).map((s, i) => (
                 <button
                   key={i + 4}
+                  type="button"
                   className={`slot${selectedDay === i + 4 ? " selected" : ""}`}
                   onClick={() => setSelectedDay(i + 4)}
                 >
@@ -218,15 +223,14 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 </button>
               ))}
             </div>
-            <div className="label-tag" style={{ marginTop: 18 }}>
-              Select time
-            </div>
+            <div className="label-tag mt">Select time</div>
             <div className="time-grid">
               {TIMES.map((t) => {
                 const isBooked = BOOKED.has(t);
                 return (
                   <button
                     key={t}
+                    type="button"
                     className={`time-slot${selectedTime === t ? " selected" : ""}${isBooked ? " booked" : ""}`}
                     disabled={isBooked}
                     onClick={() => !isBooked && setSelectedTime(t)}
@@ -236,7 +240,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 );
               })}
             </div>
-            <button className="btn btn-primary" onClick={confirmBooking}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={confirmBooking}
+            >
               Confirm {day.d} {day.n} · {selectedTime}
               <svg
                 viewBox="0 0 24 24"
@@ -245,7 +253,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                style={{ width: 14, height: 14 }}
               >
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
@@ -264,14 +271,18 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
           <>
             <h3>Something went wrong</h3>
             <div className="modal-error">{errorMsg}</div>
-            <button className="btn btn-ghost" onClick={() => setStep("picker")}>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => setStep("picker")}
+            >
               Try again
             </button>
           </>
         )}
 
         {step === "confirmed" && (
-          <div style={{ textAlign: "center", padding: "20px 0 10px" }}>
+          <div className="modal-confirmed">
             <div className="confirm-icon">
               <svg
                 viewBox="0 0 24 24"
@@ -284,8 +295,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <h3 style={{ marginBottom: 8 }}>You&apos;re booked.</h3>
-            <p className="m-sub" style={{ marginBottom: 24 }}>
+            <h3>You&apos;re booked.</h3>
+            <p className="m-sub">
               {day.d} {day.n} at {selectedTime} · See you on the court.
             </p>
             <div className="booking-summary">
@@ -310,16 +321,16 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               {bookingId && (
                 <div className="booking-summary-row">
                   <span>Booking ID</span>
-                  <strong style={{ fontSize: 11, opacity: 0.7 }}>
+                  <strong className="booking-id-val">
                     {bookingId.slice(0, 8).toUpperCase()}
                   </strong>
                 </div>
               )}
             </div>
             <button
-              className="btn btn-ghost"
+              type="button"
+              className="btn btn-ghost btn-full"
               onClick={onClose}
-              style={{ width: "100%", justifyContent: "center" }}
             >
               Close
             </button>
