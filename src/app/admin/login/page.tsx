@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function AdminLoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -33,9 +33,7 @@ export default function AdminLoginPage() {
   return (
     <div className="admin-login-wrap">
       <div className="admin-login-card">
-        <div className="brand-mark">
-          D
-        </div>
+        <div className="brand-mark">D</div>
         <h1>Coach Login</h1>
         <p>Sign in to manage bookings and inquiries.</p>
         <form onSubmit={handleSubmit}>
@@ -72,5 +70,13 @@ export default function AdminLoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }
