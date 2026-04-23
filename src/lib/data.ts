@@ -67,7 +67,7 @@ export const LESSONS: Record<LessonKey, Lesson> = {
     name: "Strategy Lab",
     desc: "For 3.5+ players ready to level up their thinking.",
     price: "$125",
-    per: "per hour",
+    per: "per session",
     steps: [
       { t: "0:00", h: "Film review", p: "We watch 5 minutes of your last match. Patterns, leaks, tells." },
       { t: "0:15", h: "Tactical concept", p: "One theme per lesson: resets, stacking, third-shot strategy." },
@@ -103,7 +103,7 @@ export function generateDays(): DaySlot[] {
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const result: DaySlot[] = [];
   const today = new Date();
-  for (let i = 1; i <= 8; i++) {
+  for (let i = 1; i <= 30; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     result.push({

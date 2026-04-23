@@ -11,6 +11,7 @@ import Lessons from "@/components/Lessons";
 import About from "@/components/About";
 import FinalCta from "@/components/FinalCta";
 import BookingPlatforms from "@/components/BookingPlatforms";
+import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import StickyCta from "@/components/StickyCta";
 import BookingModal from "@/components/BookingModal";
@@ -20,7 +21,7 @@ export default function Home() {
 
   return (
     <div className="device" id="device">
-      <Nav />
+      <Nav onOpenBooking={() => setModalOpen(true)} />
       <Hero onOpenBooking={() => setModalOpen(true)} />
       <TrustBar />
       <Testimonials />
@@ -30,6 +31,7 @@ export default function Home() {
       <About />
       <FinalCta onOpenBooking={() => setModalOpen(true)} />
       <BookingPlatforms />
+      <ContactForm />
       <Footer />
       <StickyCta onOpenBooking={() => setModalOpen(true)} />
       <BookingModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />

@@ -2,7 +2,7 @@ import RevealWrapper from "./RevealWrapper";
 
 export default function About() {
   return (
-    <section className="block about">
+    <section className="block about" id="about">
       <RevealWrapper>
         <div className="kicker">About the Coach</div>
         <h2 className="section-title">

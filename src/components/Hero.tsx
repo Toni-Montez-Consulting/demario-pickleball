@@ -40,14 +40,18 @@ export default function Hero({ onOpenBooking }: HeroProps) {
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
             </button>
-            <a className="btn btn-ghost" href="#testimonials">
+            <a className="btn btn-ghost" href="#lessons">
               <svg
                 viewBox="0 0 24 24"
-                fill="currentColor"
-                >
-                <path d="M8 5v14l11-7z" />
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M6 9l6 6 6-6" />
               </svg>
-              Watch
+              See Lessons
             </a>
           </div>
           <div className="hero-stats">

@@ -29,6 +29,8 @@ const LESSON_PRICES: Record<string, string> = {
   clinic: "$55.00",
 };
 
+const FIRST_AVAILABLE = TIMES.find((t) => !BOOKED.has(t)) ?? TIMES[0];
+
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [step, setStep] = useState<Step>("form");
   const [form, setForm] = useState<FormData>({
@@ -39,7 +41,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   });
   const [days] = useState<DaySlot[]>(() => generateDays());
   const [selectedDay, setSelectedDay] = useState(0);
-  const [selectedTime, setSelectedTime] = useState("5:30 PM");
+  const [selectedTime, setSelectedTime] = useState(FIRST_AVAILABLE);
+  const [waiverAgreed, setWaiverAgreed] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [bookingId, setBookingId] = useState("");
 
@@ -49,7 +52,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       setStep("form");
       setForm({ name: "", email: "", phone: "", lessonType: "beginner" });
       setSelectedDay(0);
-      setSelectedTime("5:30 PM");
+      setSelectedTime(FIRST_AVAILABLE);
+      setWaiverAgreed(false);
       setErrorMsg("");
       setBookingId("");
     } else {
@@ -153,8 +157,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               />
             </div>
             <div className="modal-form-group">
-              <label>Lesson type</label>
+              <label htmlFor="lesson-type">Lesson type</label>
               <select
+                id="lesson-type"
                 className="modal-select"
                 value={form.lessonType}
                 onChange={(e) =>
@@ -169,10 +174,23 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 <option value="clinic">Group Clinic ($55)</option>
               </select>
             </div>
+            <label className="waiver-check">
+              <input
+                type="checkbox"
+                checked={waiverAgreed}
+                onChange={(e) => setWaiverAgreed(e.target.checked)}
+              />
+              <span>
+                I have read and agree to the{" "}
+                <a href="/terms" target="_blank" rel="noopener noreferrer">
+                  Coaching Agreement &amp; Terms
+                </a>
+              </span>
+            </label>
             <button
               type="button"
               className="btn btn-primary"
-              disabled={!form.name || !form.email}
+              disabled={!form.name || !form.email || !waiverAgreed}
               onClick={() => setStep("picker")}
             >
               Next — pick a time
@@ -197,8 +215,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               {LESSON_LABELS[form.lessonType]} · Dallas Indoor Pickleball Club
             </p>
             <div className="label-tag">Select day</div>
-            <div className="slot-grid">
-              {days.slice(0, 4).map((s, i) => (
+            <div className="slot-grid slot-grid-scroll">
+              {days.map((s, i) => (
                 <button
                   key={i}
                   type="button"
@@ -210,20 +228,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 </button>
               ))}
             </div>
-            <div className="slot-grid">
-              {days.slice(4, 8).map((s, i) => (
-                <button
-                  key={i + 4}
-                  type="button"
-                  className={`slot${selectedDay === i + 4 ? " selected" : ""}`}
-                  onClick={() => setSelectedDay(i + 4)}
-                >
-                  <div className="d">{s.d}</div>
-                  <div className="n">{s.n}</div>
-                </button>
-              ))}
+            <div className="label-tag mt">
+              Select time <span className="tz-label">CT</span>
             </div>
-            <div className="label-tag mt">Select time</div>
             <div className="time-grid">
               {TIMES.map((t) => {
                 const isBooked = BOOKED.has(t);
@@ -240,23 +247,32 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 );
               })}
             </div>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={confirmBooking}
-            >
-              Confirm {day.d} {day.n} · {selectedTime}
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            <div className="picker-actions">
+              <button
+                type="button"
+                className="btn btn-ghost picker-back"
+                onClick={() => setStep("form")}
               >
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
-            </button>
+                ← Back
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary picker-confirm"
+                onClick={confirmBooking}
+              >
+                Confirm {day.d} {day.n} · {selectedTime}
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M13 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </>
         )}
 

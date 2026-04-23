@@ -15,15 +15,73 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "DeMario Montez — Pickleball Coach",
+  metadataBase: new URL("https://demario-pickleball.vercel.app"),
+  title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
   description:
-    "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez.",
+    "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.6 DUPR, USTA certified, Top 3% SuperCoach.",
+  icons: { icon: "/favicon.svg" },
+  openGraph: {
+    type: "website",
+    url: "https://demario-pickleball.vercel.app",
+    title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
+    description:
+      "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.6 DUPR, USTA certified, Top 3% SuperCoach.",
+    images: [{ url: "/img/hero-ready.jpg", width: 1200, height: 630, alt: "DeMario Montez on the pickleball court" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
+    description:
+      "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez.",
+    images: ["/img/hero-ready.jpg"],
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://demario-pickleball.vercel.app/#business",
+      name: "DeMario Montez Pickleball Coaching",
+      url: "https://demario-pickleball.vercel.app",
+      telephone: "+14693719220",
+      email: "demariomontez10@gmail.com",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Farmers Branch",
+        addressRegion: "TX",
+        addressCountry: "US",
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: 32.9262,
+        longitude: -96.8892,
+      },
+      priceRange: "$$",
+      description:
+        "Strategic 1:1 pickleball coaching in Dallas–Fort Worth by Head Pro DeMario Montez.",
+    },
+    {
+      "@type": "Person",
+      "@id": "https://demario-pickleball.vercel.app/#coach",
+      name: "DeMario Montez",
+      jobTitle: "Head Pickleball Pro",
+      telephone: "+14693719220",
+      email: "demariomontez10@gmail.com",
+      sameAs: [
+        "https://instagram.com/Alexanderiio",
+        "https://tiktok.com/@DemarioMontez",
+        "https://facebook.com/DemarioMontez",
+      ],
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -33,6 +91,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );
