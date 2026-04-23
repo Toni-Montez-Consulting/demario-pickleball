@@ -1,6 +1,6 @@
 export default function TermsPage() {
   return (
-    <div style={{ background: "oklch(0.17 0.01 260)", minHeight: "100vh" }}>
+    <div className="legal-bg">
       <div className="legal-page">
         <a href="/" className="legal-back">← Back to site</a>
         <h1>Coaching Agreement &amp; Terms of Service</h1>

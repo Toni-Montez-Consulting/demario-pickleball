@@ -56,17 +56,17 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   const [blockTime, setBlockTime] = useState(TIMES[0]);
   const [blockLoading, setBlockLoading] = useState(false);
   const [blockError, setBlockError] = useState("");
-  const [avoidLoading, setAvoidLoading] = useState(false);
+  const [availLoading, setAvailLoading] = useState(false);
 
   const unread = inquiries.filter((i) => !i.read).length;
 
   useEffect(() => {
     if (tab !== "availability") return;
-    setAvoidLoading(true);
+    setAvailLoading(true);
     fetch("/api/blocked-slots")
       .then((r) => r.json())
       .then((data) => setBlockedSlots(Array.isArray(data) ? data : []))
-      .finally(() => setAvoidLoading(false));
+      .finally(() => setAvailLoading(false));
   }, [tab]);
 
   async function updateBookingStatus(id: string, status: "confirmed" | "cancelled") {
@@ -127,8 +127,10 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   async function unblockSlot(id: string) {
     setUpdating(id);
     try {
-      await fetch(`/api/blocked-slots/${id}`, { method: "DELETE" });
-      setBlockedSlots((prev) => prev.filter((s) => s.id !== id));
+      const res = await fetch(`/api/blocked-slots/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setBlockedSlots((prev) => prev.filter((s) => s.id !== id));
+      }
     } finally {
       setUpdating(null);
     }
@@ -279,7 +281,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
           {blockError && <div className="modal-error avail-error">{blockError}</div>}
 
           <div className="avail-list">
-            {avoidLoading ? (
+            {availLoading ? (
               <p className="admin-empty">Loading…</p>
             ) : blockedSlots.length === 0 ? (
               <p className="admin-empty">No blocked slots.</p>

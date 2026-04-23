@@ -42,23 +42,26 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [selectedTime, setSelectedTime] = useState("");
   const [bookedTimes, setBookedTimes] = useState<Set<string>>(new Set());
   const [availLoading, setAvailLoading] = useState(false);
+  const [availError, setAvailError] = useState("");
   const [waiverAgreed, setWaiverAgreed] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [bookingId, setBookingId] = useState("");
 
   const fetchAvailability = useCallback(async (dateStr: string) => {
     setAvailLoading(true);
+    setAvailError("");
     try {
       const res = await fetch(`/api/availability?date=${dateStr}`);
-      if (res.ok) {
-        const { booked } = await res.json();
-        const booked_set = new Set<string>(booked);
-        setBookedTimes(booked_set);
-        setSelectedTime((prev) => {
-          if (prev && !booked_set.has(prev)) return prev;
-          return TIMES.find((t) => !booked_set.has(t)) ?? TIMES[0];
-        });
-      }
+      if (!res.ok) throw new Error("Failed to load availability.");
+      const { booked } = await res.json();
+      const booked_set = new Set<string>(booked);
+      setBookedTimes(booked_set);
+      setSelectedTime((prev) => {
+        if (prev && !booked_set.has(prev)) return prev;
+        return TIMES.find((t) => !booked_set.has(t)) ?? TIMES[0];
+      });
+    } catch {
+      setAvailError("Could not load availability. Please try again.");
     } finally {
       setAvailLoading(false);
     }
@@ -73,6 +76,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       setBookedTimes(new Set());
       setSelectedTime("");
       setWaiverAgreed(false);
+      setAvailError("");
       setErrorMsg("");
       setBookingId("");
       fetchAvailability(days[0].dateStr);
@@ -246,6 +250,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             {availLoading ? (
               <div className="avail-loading">
                 <div className="spinner" />
+              </div>
+            ) : availError ? (
+              <div className="avail-fetch-error">
+                <div className="modal-error">{availError}</div>
+                <button type="button" className="btn btn-ghost avail-retry-btn" onClick={() => fetchAvailability(days[selectedDay].dateStr)}>
+                  Retry
+                </button>
               </div>
             ) : (
               <div className="time-grid">

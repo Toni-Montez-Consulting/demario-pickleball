@@ -51,7 +51,7 @@ export default function Nav({ onOpenBooking }: NavProps) {
         <div className="nav-overlay" onClick={() => setOpen(false)} aria-hidden="true" />
       )}
 
-      <div className={`nav-drawer${open ? " open" : ""}`} aria-hidden={open ? "false" : "true"}>
+      <div className={`nav-drawer${open ? " open" : ""}`} aria-hidden={open ? "false" : "true"} inert={open ? undefined : true}>
         <a className="nav-link" href="#lessons" onClick={() => setOpen(false)}>Lessons</a>
         <a className="nav-link" href="#about" onClick={() => setOpen(false)}>About</a>
         <a className="nav-link" href="#contact" onClick={() => setOpen(false)}>Contact</a>
