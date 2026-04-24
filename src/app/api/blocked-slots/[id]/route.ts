@@ -17,6 +17,9 @@ export async function DELETE(
   }
 
   const { error } = await supabase.from("blocked_slots").delete().eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[blocked-slots DELETE]", error);
+    return NextResponse.json({ error: "Failed to unblock slot." }, { status: 500 });
+  }
   return new NextResponse(null, { status: 204 });
 }

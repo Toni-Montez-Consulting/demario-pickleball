@@ -15,7 +15,10 @@ export async function GET() {
     .order("date", { ascending: true })
     .order("time", { ascending: true });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[blocked-slots GET]", error);
+    return NextResponse.json({ error: "Failed to load blocked slots." }, { status: 500 });
+  }
   return NextResponse.json(data);
 }
 
@@ -30,6 +33,10 @@ export async function POST(req: NextRequest) {
   if (!date || !DATE_RE.test(date)) {
     return NextResponse.json({ error: "Invalid date" }, { status: 400 });
   }
+  const today = new Date().toISOString().split("T")[0];
+  if (date < today) {
+    return NextResponse.json({ error: "Cannot block a date in the past" }, { status: 400 });
+  }
   if (!VALID_TIMES.includes(time)) {
     return NextResponse.json({ error: "Invalid time" }, { status: 400 });
   }
@@ -43,6 +50,9 @@ export async function POST(req: NextRequest) {
   if (error?.code === "23505") {
     return NextResponse.json({ error: "Slot already blocked" }, { status: 409 });
   }
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[blocked-slots POST]", error);
+    return NextResponse.json({ error: "Failed to block slot." }, { status: 500 });
+  }
   return NextResponse.json(data, { status: 201 });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { TIMES, generateDays, type DaySlot } from "@/lib/data";
 
 type Step = "form" | "picker" | "loading" | "error" | "confirmed";
@@ -43,9 +43,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [bookedTimes, setBookedTimes] = useState<Set<string>>(new Set());
   const [availLoading, setAvailLoading] = useState(false);
   const [availError, setAvailError] = useState("");
+  const [pickerError, setPickerError] = useState("");
   const [waiverAgreed, setWaiverAgreed] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [bookingId, setBookingId] = useState("");
+  const submittingRef = useRef(false);
 
   const fetchAvailability = useCallback(async (dateStr: string) => {
     setAvailLoading(true);
@@ -77,6 +79,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       setSelectedTime("");
       setWaiverAgreed(false);
       setAvailError("");
+      setPickerError("");
       setErrorMsg("");
       setBookingId("");
       fetchAvailability(days[0].dateStr);
@@ -90,11 +93,15 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
   function handleDaySelect(i: number) {
     setSelectedDay(i);
+    setPickerError("");
     fetchAvailability(days[i].dateStr);
   }
 
   async function confirmBooking() {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setStep("loading");
+    setPickerError("");
     try {
       const day = days[selectedDay];
       const res = await fetch("/api/bookings", {
@@ -109,6 +116,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
           lesson_time: selectedTime,
         }),
       });
+      if (res.status === 409) {
+        await fetchAvailability(day.dateStr);
+        setPickerError("That time was just taken. Please pick another.");
+        setStep("picker");
+        return;
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Booking failed. Please try again.");
@@ -119,6 +132,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong.");
       setStep("error");
+    } finally {
+      submittingRef.current = false;
     }
   }
 
@@ -134,6 +149,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     <div className="modal-backdrop open" onClick={handleBackdropClick}>
       <div className="modal">
         <div className="modal-grip" />
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {step === "loading" ? "Confirming your booking" : step === "confirmed" ? "Booking confirmed" : step === "error" ? "There was a booking error" : ""}
+        </div>
         <button
           type="button"
           className="modal-close"
@@ -158,6 +176,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 placeholder="Jane Smith"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                minLength={2}
+                maxLength={120}
               />
             </div>
             <div className="modal-form-group">
@@ -169,6 +189,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 placeholder="jane@example.com"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
+                spellCheck={false}
               />
             </div>
             <div className="modal-form-group">
@@ -237,6 +258,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   key={i}
                   type="button"
                   className={`slot${selectedDay === i ? " selected" : ""}`}
+                  aria-pressed={selectedDay === i ? "true" : "false"}
                   onClick={() => handleDaySelect(i)}
                 >
                   <div className="d">{s.d}</div>
@@ -268,7 +290,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       type="button"
                       className={`time-slot${selectedTime === t ? " selected" : ""}${isBooked ? " booked" : ""}`}
                       disabled={isBooked}
-                      onClick={() => !isBooked && setSelectedTime(t)}
+                      aria-pressed={(!isBooked && selectedTime === t) ? "true" : "false"}
+                      onClick={() => {
+                        if (!isBooked) {
+                          setSelectedTime(t);
+                          setPickerError("");
+                        }
+                      }}
                     >
                       {t}
                     </button>
@@ -276,6 +304,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 })}
               </div>
             )}
+            {pickerError && <div className="modal-error">{pickerError}</div>}
             <div className="picker-actions">
               <button
                 type="button"

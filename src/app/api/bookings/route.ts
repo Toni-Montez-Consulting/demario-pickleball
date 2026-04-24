@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   if (!name || !email || !lesson_type || !lesson_date || !lesson_time) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
-  if (typeof name !== "string" || name.length > 120) {
+  if (typeof name !== "string" || !name.trim() || name.length > 120) {
     return NextResponse.json({ error: "Invalid name" }, { status: 400 });
   }
   if (!EMAIL_RE.test(email) || email.length > 254) {
@@ -34,8 +34,15 @@ export async function POST(req: NextRequest) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(lesson_date)) {
     return NextResponse.json({ error: "Invalid date" }, { status: 400 });
   }
+  const today = new Date().toISOString().split("T")[0];
+  if (lesson_date < today) {
+    return NextResponse.json({ error: "Cannot book a date in the past" }, { status: 400 });
+  }
   if (!VALID_TIMES.includes(lesson_time)) {
     return NextResponse.json({ error: "Invalid time" }, { status: 400 });
+  }
+  if (phone && (typeof phone !== "string" || !/^[\d\s\-()+]{7,20}$/.test(phone))) {
+    return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
   }
 
   const supabase = anonClient();
@@ -44,16 +51,22 @@ export async function POST(req: NextRequest) {
     .insert({
       name: name.trim(),
       email: email.trim().toLowerCase(),
-      phone: phone ? String(phone).slice(0, 20) : null,
+      phone: phone ? String(phone).trim().slice(0, 20) : null,
       lesson_type,
       lesson_date,
       lesson_time,
-      notes: notes ? String(notes).slice(0, 500) : null,
+      notes: notes ? String(notes).trim().slice(0, 500) || null : null,
     })
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error?.code === "23505") {
+    return NextResponse.json({ error: "That time slot was just booked. Please pick another." }, { status: 409 });
+  }
+  if (error) {
+    console.error("[bookings POST]", error);
+    return NextResponse.json({ error: "Booking failed. Please try again." }, { status: 500 });
+  }
   return NextResponse.json(data, { status: 201 });
 }
 
@@ -67,6 +80,9 @@ export async function GET() {
     .select("*")
     .order("lesson_date", { ascending: true });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[bookings GET]", error);
+    return NextResponse.json({ error: "Failed to load bookings." }, { status: 500 });
+  }
   return NextResponse.json(data);
 }

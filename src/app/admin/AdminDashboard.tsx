@@ -49,6 +49,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [inquiries, setInquiries] = useState<Inquiry[]>(initialInquiries);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [updateError, setUpdateError] = useState("");
 
   // Availability state
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
@@ -71,6 +72,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
 
   async function updateBookingStatus(id: string, status: "confirmed" | "cancelled") {
     setUpdating(id);
+    setUpdateError("");
     try {
       const res = await fetch(`/api/bookings/${id}`, {
         method: "PATCH",
@@ -80,6 +82,8 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
       if (res.ok) {
         const updated = await res.json();
         setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: updated.status } : b)));
+      } else {
+        setUpdateError("Failed to update booking. Please try again.");
       }
     } finally {
       setUpdating(null);
@@ -159,60 +163,63 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
       </div>
 
       {tab === "bookings" && (
-        <div className="admin-table-scroll">
-          {bookings.length === 0 ? (
-            <p className="admin-empty">No bookings yet.</p>
-          ) : (
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Time</th>
-                  <th>Student</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((b) => (
-                  <tr key={b.id}>
-                    <td>{b.lesson_date}</td>
-                    <td>{b.lesson_time}</td>
-                    <td>
-                      <div className="td-name">{b.name}</div>
-                      <div className="td-email-sub">{b.email}</div>
-                    </td>
-                    <td>{LESSON_NAMES[b.lesson_type] ?? b.lesson_type}</td>
-                    <td>
-                      <span className={`status-badge status-${b.status}`}>{b.status}</span>
-                    </td>
-                    <td>
-                      <div className="td-actions">
-                        <button
-                          type="button"
-                          className="admin-btn confirm"
-                          disabled={b.status === "confirmed" || updating === b.id}
-                          onClick={() => updateBookingStatus(b.id, "confirmed")}
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          type="button"
-                          className="admin-btn cancel"
-                          disabled={b.status === "cancelled" || updating === b.id}
-                          onClick={() => updateBookingStatus(b.id, "cancelled")}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </td>
+        <>
+          {updateError && <div className="modal-error">{updateError}</div>}
+          <div className="admin-table-scroll">
+            {bookings.length === 0 ? (
+              <p className="admin-empty">No bookings yet.</p>
+            ) : (
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Student</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+                </thead>
+                <tbody>
+                  {bookings.map((b) => (
+                    <tr key={b.id}>
+                      <td>{b.lesson_date}</td>
+                      <td>{b.lesson_time}</td>
+                      <td>
+                        <div className="td-name">{b.name}</div>
+                        <div className="td-email-sub">{b.email}</div>
+                      </td>
+                      <td>{LESSON_NAMES[b.lesson_type] ?? b.lesson_type}</td>
+                      <td>
+                        <span className={`status-badge status-${b.status}`}>{b.status}</span>
+                      </td>
+                      <td>
+                        <div className="td-actions">
+                          <button
+                            type="button"
+                            className="admin-btn confirm"
+                            disabled={b.status === "confirmed" || updating === b.id}
+                            onClick={() => updateBookingStatus(b.id, "confirmed")}
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn cancel"
+                            disabled={b.status === "cancelled" || updating === b.id}
+                            onClick={() => updateBookingStatus(b.id, "cancelled")}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
       )}
 
       {tab === "inquiries" && (

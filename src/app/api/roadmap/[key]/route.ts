@@ -27,6 +27,9 @@ export async function PATCH(
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[roadmap PATCH]", error);
+    return NextResponse.json({ error: "Failed to save." }, { status: 500 });
+  }
   return NextResponse.json(data);
 }

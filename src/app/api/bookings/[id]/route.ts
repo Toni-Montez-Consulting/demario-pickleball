@@ -30,6 +30,9 @@ export async function PATCH(
   if (error?.code === "PGRST116") {
     return NextResponse.json({ error: "Booking not found" }, { status: 404 });
   }
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[bookings PATCH]", error);
+    return NextResponse.json({ error: "Failed to update booking." }, { status: 500 });
+  }
   return NextResponse.json(data);
 }

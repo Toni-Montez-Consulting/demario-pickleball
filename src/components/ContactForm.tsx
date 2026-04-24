@@ -12,6 +12,14 @@ export default function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
+  function reset() {
+    setName("");
+    setEmail("");
+    setMessage("");
+    setStatus("idle");
+    setErrorMsg("");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("loading");
@@ -53,6 +61,9 @@ export default function ContactForm() {
             </div>
             <h4>Message sent.</h4>
             <p>I&apos;ll get back to you within 24 hours.</p>
+            <button type="button" className="btn btn-ghost" onClick={reset}>
+              Send another message
+            </button>
           </div>
         ) : (
           <form className="contact-form" onSubmit={handleSubmit}>
@@ -66,6 +77,7 @@ export default function ContactForm() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                minLength={2}
                 maxLength={120}
               />
             </div>
@@ -80,6 +92,7 @@ export default function ContactForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 maxLength={254}
+                spellCheck={false}
               />
             </div>
             <div className="modal-form-group">
@@ -94,7 +107,7 @@ export default function ContactForm() {
                 maxLength={2000}
                 rows={5}
               />
-              <div className="char-count">{message.length} / 2000</div>
+              <div className={`char-count${message.length >= 1800 ? " char-warn" : ""}`}>{message.length} / 2000</div>
             </div>
             {status === "error" && (
               <div className="modal-error">{errorMsg}</div>

@@ -31,6 +31,9 @@ export async function PATCH(
   if (error?.code === "PGRST116") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[inquiries PATCH]", error);
+    return NextResponse.json({ error: "Failed to update inquiry." }, { status: 500 });
+  }
   return NextResponse.json(data);
 }
