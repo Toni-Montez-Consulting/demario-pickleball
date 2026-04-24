@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { TIMES, generateDays, type DaySlot } from "@/lib/data";
+import PaymentOptions from "./PaymentOptions";
 
 type Step = "form" | "picker" | "loading" | "error" | "confirmed";
 
@@ -382,6 +383,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 </div>
               )}
             </div>
+            <PaymentOptions bookingId={bookingId} amount={LESSON_PRICES[form.lessonType]} />
             <button type="button" className="btn btn-ghost btn-full" onClick={onClose}>
               Close
             </button>

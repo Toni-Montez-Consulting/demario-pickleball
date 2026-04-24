@@ -10,9 +10,26 @@ export async function PATCH(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => null);
-  const { status } = body ?? {};
-  if (!["confirmed", "cancelled"].includes(status)) {
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+  }
+  const { status, paid } = body;
+
+  const update: { status?: string; paid_at?: string | null } = {};
+  if (status !== undefined) {
+    if (!["confirmed", "cancelled"].includes(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+    update.status = status;
+  }
+  if (paid !== undefined) {
+    if (typeof paid !== "boolean") {
+      return NextResponse.json({ error: "Invalid paid value" }, { status: 400 });
+    }
+    update.paid_at = paid ? new Date().toISOString() : null;
+  }
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
   }
 
   const { id } = await params;
@@ -22,7 +39,7 @@ export async function PATCH(
 
   const { data, error } = await supabase
     .from("bookings")
-    .update({ status })
+    .update(update)
     .eq("id", id)
     .select()
     .single();

@@ -13,6 +13,7 @@ interface Booking {
   lesson_time: string;
   status: "pending" | "confirmed" | "cancelled";
   notes: string | null;
+  paid_at: string | null;
 }
 
 interface Inquiry {
@@ -90,6 +91,26 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
         setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: updated.status } : b)));
       } else {
         setUpdateError("Failed to update booking. Please try again.");
+      }
+    } finally {
+      setUpdating(null);
+    }
+  }
+
+  async function togglePaid(b: Booking) {
+    setUpdating(b.id);
+    setUpdateError("");
+    try {
+      const res = await fetch(`/api/bookings/${b.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paid: !b.paid_at }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paid_at: updated.paid_at } : x)));
+      } else {
+        setUpdateError("Failed to update payment status. Please try again.");
       }
     } finally {
       setUpdating(null);
@@ -183,6 +204,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                     <th>Student</th>
                     <th>Type</th>
                     <th>Status</th>
+                    <th>Paid</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -198,6 +220,24 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                       <td>{LESSON_NAMES[b.lesson_type] ?? b.lesson_type}</td>
                       <td>
                         <span className={`status-badge status-${b.status}`}>{b.status}</span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className={`paid-toggle${b.paid_at ? " paid" : ""}`}
+                          disabled={updating === b.id}
+                          onClick={() => togglePaid(b)}
+                          aria-label={b.paid_at ? "Mark as unpaid" : "Mark as paid"}
+                          title={b.paid_at ? `Paid ${new Date(b.paid_at).toLocaleDateString()}` : "Mark paid"}
+                        >
+                          {b.paid_at ? (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          ) : (
+                            <span className="paid-toggle-label">Mark paid</span>
+                          )}
+                        </button>
                       </td>
                       <td>
                         <div className="td-actions">
