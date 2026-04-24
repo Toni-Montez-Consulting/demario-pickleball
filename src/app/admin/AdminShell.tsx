@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -36,8 +37,8 @@ export default function AdminShell({
         </button>
       </nav>
       <div className="admin-nav">
-        <a href="/admin" className={`admin-nav-link${pathname === "/admin" ? " active" : ""}`}>Dashboard</a>
-        <a href="/admin/roadmap" className={`admin-nav-link${pathname === "/admin/roadmap" ? " active" : ""}`}>Roadmap</a>
+        <Link href="/admin" className={`admin-nav-link${pathname === "/admin" ? " active" : ""}`}>Dashboard</Link>
+        <Link href="/admin/roadmap" className={`admin-nav-link${pathname === "/admin/roadmap" ? " active" : ""}`}>Roadmap</Link>
       </div>
       {children}
     </div>

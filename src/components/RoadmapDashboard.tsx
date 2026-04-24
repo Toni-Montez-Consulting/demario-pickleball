@@ -227,7 +227,7 @@ const PHASES: RoadmapPhase[] = [
 
 const TOTAL_ITEMS = PHASES.reduce((sum, p) => sum + p.items.length, 0);
 
-export default function RoadmapDashboard({ initialChecked }: { initialChecked: Set<string> }) {
+export default function RoadmapDashboard({ initialChecked }: { initialChecked: string[] }) {
   const [checked, setChecked] = useState<Set<string>>(new Set(initialChecked));
 
   async function toggle(key: string) {
@@ -238,11 +238,19 @@ export default function RoadmapDashboard({ initialChecked }: { initialChecked: S
       else s.delete(key);
       return s;
     });
-    await fetch(`/api/roadmap/${key}`, {
+    const res = await fetch(`/api/roadmap/${key}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ checked: next }),
     });
+    if (!res.ok) {
+      setChecked((prev) => {
+        const s = new Set(prev);
+        if (next) s.delete(key);
+        else s.add(key);
+        return s;
+      });
+    }
   }
 
   const totalDone = checked.size;
@@ -281,14 +289,23 @@ export default function RoadmapDashboard({ initialChecked }: { initialChecked: S
                 <div className="phase-fill" style={{ width: `${phasePct}%` }} />
               </div>
             </div>
-            <ul className="roadmap-items">
+            <div className="roadmap-items" role="group">
               {phase.items.map((item) => {
                 const done = checked.has(item.key);
                 return (
-                  <li
+                  <div
                     key={item.key}
+                    role="checkbox"
+                    aria-checked={done ? "true" : "false"}
+                    tabIndex={0}
                     className={`roadmap-item${done ? " done" : ""}`}
                     onClick={() => toggle(item.key)}
+                    onKeyDown={(e) => {
+                      if (e.key === " " || e.key === "Enter") {
+                        e.preventDefault();
+                        toggle(item.key);
+                      }
+                    }}
                   >
                     <div className="item-check" aria-hidden="true">
                       <svg viewBox="0 0 12 10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -299,10 +316,10 @@ export default function RoadmapDashboard({ initialChecked }: { initialChecked: S
                       <div className="item-text">{item.text}</div>
                       {item.detail && <div className="item-detail">{item.detail}</div>}
                     </div>
-                  </li>
+                  </div>
                 );
               })}
-            </ul>
+            </div>
           </div>
         );
       })}

@@ -7,9 +7,7 @@ export default async function RoadmapPage() {
     .from("roadmap_checks")
     .select("key, checked");
 
-  const checkedKeys = new Set<string>(
-    (data ?? []).filter((r) => r.checked).map((r) => r.key)
-  );
+  const checkedKeys = (data ?? []).filter((r) => r.checked).map((r) => r.key);
 
   return <RoadmapDashboard initialChecked={checkedKeys} />;
 }
