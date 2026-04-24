@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { TIMES, generateDays, type DaySlot } from "@/lib/data";
+import { generateDays, type DaySlot } from "@/lib/data";
+import PaymentOptions from "./PaymentOptions";
 
 type Step = "form" | "picker" | "loading" | "error" | "confirmed";
 
@@ -42,7 +43,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [days, setDays] = useState<DaySlot[]>(() => generateDays());
   const [selectedDay, setSelectedDay] = useState(0);
   const [selectedTime, setSelectedTime] = useState("");
+  const [times, setTimes] = useState<string[]>([]);
+  const [timesLoaded, setTimesLoaded] = useState(false);
   const [bookedTimes, setBookedTimes] = useState<Set<string>>(new Set());
+  const [allDay, setAllDay] = useState(false);
   const [availLoading, setAvailLoading] = useState(false);
   const [availError, setAvailError] = useState("");
   const [pickerError, setPickerError] = useState("");
@@ -51,18 +55,20 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [bookingId, setBookingId] = useState("");
   const submittingRef = useRef(false);
 
-  const fetchAvailability = useCallback(async (dateStr: string) => {
+  const fetchAvailability = useCallback(async (dateStr: string, availableTimes: string[]) => {
     setAvailLoading(true);
     setAvailError("");
     try {
       const res = await fetch(`/api/availability?date=${dateStr}`);
       if (!res.ok) throw new Error("Failed to load availability.");
-      const { booked } = await res.json();
-      const booked_set = new Set<string>(booked);
-      setBookedTimes(booked_set);
+      const { unavailable = [], allDay: fullDay = false } = await res.json();
+      const unavailableSet = new Set<string>(unavailable);
+      setBookedTimes(unavailableSet);
+      setAllDay(fullDay);
       setSelectedTime((prev) => {
-        if (prev && !booked_set.has(prev)) return prev;
-        return TIMES.find((t) => !booked_set.has(t)) ?? "";
+        if (fullDay) return "";
+        if (prev && !unavailableSet.has(prev) && availableTimes.includes(prev)) return prev;
+        return availableTimes.find((t) => !unavailableSet.has(t)) ?? "";
       });
     } catch {
       setAvailError("Could not load availability. Please try again.");
@@ -80,13 +86,26 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       setForm({ name: "", email: "", phone: "", lessonType: "beginner" });
       setSelectedDay(0);
       setBookedTimes(new Set());
+      setAllDay(false);
       setSelectedTime("");
       setWaiverAgreed(false);
       setAvailError("");
       setPickerError("");
       setErrorMsg("");
       setBookingId("");
-      fetchAvailability(freshDays[0].dateStr);
+
+      fetch("/api/time-slots")
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("Failed to load times"))))
+        .then((data: { display_label: string }[]) => {
+          const loaded = data.map((d) => d.display_label);
+          setTimes(loaded);
+          setTimesLoaded(true);
+          fetchAvailability(freshDays[0].dateStr, loaded);
+        })
+        .catch(() => {
+          setTimesLoaded(true);
+          setAvailError("Could not load times. Please refresh.");
+        });
     } else {
       document.body.style.overflow = "";
     }
@@ -98,7 +117,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   function handleDaySelect(i: number) {
     setSelectedDay(i);
     setPickerError("");
-    fetchAvailability(days[i].dateStr);
+    fetchAvailability(days[i].dateStr, times);
   }
 
   async function confirmBooking() {
@@ -121,7 +140,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         }),
       });
       if (res.status === 409) {
-        await fetchAvailability(day.dateStr);
+        await fetchAvailability(day.dateStr, times);
         setPickerError("That time was just taken. Please pick another.");
         setStep("picker");
         return;
@@ -273,22 +292,28 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             <div className="label-tag mt">
               Select time <span className="tz-label">CT</span>
             </div>
-            {availLoading ? (
+            {availLoading || !timesLoaded ? (
               <div className="avail-loading">
                 <div className="spinner" />
               </div>
             ) : availError ? (
               <div className="avail-fetch-error">
                 <div className="modal-error">{availError}</div>
-                <button type="button" className="btn btn-ghost avail-retry-btn" onClick={() => fetchAvailability(days[selectedDay].dateStr)}>
+                <button type="button" className="btn btn-ghost avail-retry-btn" onClick={() => fetchAvailability(days[selectedDay].dateStr, times)}>
                   Retry
                 </button>
               </div>
-            ) : TIMES.every((t) => bookedTimes.has(t)) ? (
-              <p className="avail-all-booked">No available times for this date. Please select a different day.</p>
+            ) : allDay ? (
+              <div className="avail-all-day">
+                DeMario isn&apos;t taking lessons on this day. Pick another date.
+              </div>
+            ) : times.length === 0 ? (
+              <div className="avail-all-day">
+                No times are available right now. Please check back later.
+              </div>
             ) : (
               <div className="time-grid">
-                {TIMES.map((t) => {
+                {times.map((t) => {
                   const isBooked = bookedTimes.has(t);
                   return (
                     <button
@@ -386,6 +411,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 </div>
               )}
             </div>
+            <PaymentOptions bookingId={bookingId} amount={LESSON_PRICES[form.lessonType]} />
             <button type="button" className="btn btn-ghost btn-full" onClick={onClose}>
               Close
             </button>
