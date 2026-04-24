@@ -1,5 +1,5 @@
 import { SITE_URL } from "@/lib/site";
-import type { IcsBooking } from "./ics";
+import { generateGoogleCalendarUrl, type IcsBooking } from "./ics";
 
 const LESSON_NAMES: Record<string, string> = {
   beginner: "Foundations",
@@ -52,8 +52,11 @@ export function studentRequestedHtml(booking: IcsBooking): string {
     <p style="font-size:14px;margin:0 0 12px;">
       <strong>Pay before your lesson:</strong>
     </p>
-    <p style="margin:0 0 20px;">
+    <p style="margin:0 0 12px;">
       <a href="${SITE_URL}/pay" style="display:inline-block;padding:10px 16px;background:#111;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">Pay DeMario</a>
+    </p>
+    <p style="margin:0 0 20px;">
+      <a href="${generateGoogleCalendarUrl({ booking })}" style="display:inline-block;padding:10px 16px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">Add to Google Calendar</a>
     </p>
     <p style="font-size:13px;color:#666;line-height:1.5;margin:0;">
       Include booking ID <strong>${shortId}</strong> in the memo so Mario can match your payment.

@@ -89,6 +89,34 @@ const CHICAGO_TZ_BLOCK = [
   "END:VTIMEZONE",
 ];
 
+export function generateGoogleCalendarUrl({
+  booking,
+  organizerName = "DeMario Montez",
+}: {
+  booking: IcsBooking;
+  organizerName?: string;
+}): string {
+  const [y, mo, d] = booking.lesson_date.split("-").map((n) => parseInt(n, 10));
+  const parsed = parseDisplayTime(booking.lesson_time);
+  const start = parsed ?? { hour: 9, minute: 0 };
+  const durationMin = LESSON_DURATION_MINUTES[booking.lesson_type] ?? 60;
+  const endTotal = start.hour * 60 + start.minute + durationMin;
+  const dtStart = formatLocal(y, mo, d, start.hour, start.minute);
+  const dtEnd = formatLocal(y, mo, d, Math.floor(endTotal / 60), endTotal % 60);
+  const lessonName = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `Pickleball lesson — ${lessonName} with ${organizerName}`,
+    dates: `${dtStart}/${dtEnd}`,
+    ctz: "America/Chicago",
+    details: `Booking ID: ${booking.id.slice(0, 8).toUpperCase()}\nPay: ${SITE_URL}/pay`,
+    location: "Dallas Indoor Pickleball Club",
+    sf: "true",
+    output: "xml",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
 export function generateIcs({
   booking,
   method,
