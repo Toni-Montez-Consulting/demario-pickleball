@@ -849,6 +849,38 @@ footer .contact-line a:hover { color: var(--fg); }
 .admin-login-card h1 { font-size: 24px; margin: 0 0 6px; }
 .admin-login-card p { color: var(--fg-muted); font-size: 13px; margin: 0 0 28px; }
 .admin-login-card .brand-mark { margin-bottom: 20px; }
+.mfa-setup-card { max-width: 380px; }
+.mfa-qr-wrap {
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.mfa-qr-wrap img { display: block; width: 220px; height: 220px; }
+.mfa-secret-details {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-bottom: 20px;
+}
+.mfa-secret-details summary {
+  cursor: pointer;
+  padding: 6px 0;
+  color: var(--fg-dim);
+}
+.mfa-secret {
+  display: block;
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: var(--font-space-grotesk), monospace;
+  font-size: 13px;
+  word-break: break-all;
+  color: var(--fg-dim);
+}
 .admin-shell { background: var(--bg); min-height: 100vh; }
 .admin-shell .topnav .brand-muted { color: var(--fg-muted); }
 .admin-signout { padding: 8px 14px; font-size: 13px; }
@@ -1218,6 +1250,43 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
 }
 .avail-date { font-weight: 600; color: var(--fg); flex: 1; }
 .avail-time { color: var(--fg-dim); }
+.avail-section {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.avail-section:last-child { border-bottom: none; }
+.avail-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.avail-section-sub {
+  margin: 0 0 14px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.avail-slot-input { flex: 1; min-width: 140px; }
+.avail-all-day-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--fg-dim);
+  padding: 0 4px;
+}
+.avail-all-day-check input { width: 16px; height: 16px; }
+.avail-all-day {
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  text-align: center;
+  color: var(--fg-dim);
+  font-size: 13px;
+}
 
 /* ====== ADMIN INQUIRY IMPROVEMENTS ====== */
 .inq-header {

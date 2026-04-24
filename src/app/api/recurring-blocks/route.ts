@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
 export async function GET() {
   const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data, error } = await supabase
-    .from("blocked_slots")
+    .from("recurring_blocks")
     .select("*")
-    .order("date", { ascending: true })
-    .order("time", { ascending: true });
-
+    .order("day_of_week", { ascending: true });
   if (error) {
-    console.error("[blocked-slots GET]", error);
-    return NextResponse.json({ error: "Failed to load blocked slots." }, { status: 500 });
+    console.error("[recurring-blocks GET]", error);
+    return NextResponse.json({ error: "Failed to load recurring blocks." }, { status: 500 });
   }
   return NextResponse.json(data);
 }
@@ -27,20 +23,15 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => null);
-  const { date, time, all_day } = body ?? {};
+  const day = body?.day_of_week;
+  const time = body?.time;
 
-  if (!date || !DATE_RE.test(date)) {
-    return NextResponse.json({ error: "Invalid date" }, { status: 400 });
-  }
-  const today = new Date().toISOString().split("T")[0];
-  if (date < today) {
-    return NextResponse.json({ error: "Cannot block a date in the past" }, { status: 400 });
+  if (typeof day !== "number" || !Number.isInteger(day) || day < 0 || day > 6) {
+    return NextResponse.json({ error: "day_of_week must be 0–6" }, { status: 400 });
   }
 
-  const blockWholeDay = all_day === true;
-  let validatedTime: string | null = null;
-
-  if (!blockWholeDay) {
+  let timeValue: string | null = null;
+  if (time !== undefined && time !== null && time !== "") {
     if (typeof time !== "string") {
       return NextResponse.json({ error: "Invalid time" }, { status: 400 });
     }
@@ -50,23 +41,23 @@ export async function POST(req: NextRequest) {
       .eq("display_label", time)
       .maybeSingle();
     if (!slot) {
-      return NextResponse.json({ error: "Invalid time" }, { status: 400 });
+      return NextResponse.json({ error: "Unknown time slot" }, { status: 400 });
     }
-    validatedTime = slot.display_label;
+    timeValue = slot.display_label;
   }
 
   const { data, error } = await supabase
-    .from("blocked_slots")
-    .insert({ date, time: validatedTime, all_day: blockWholeDay })
+    .from("recurring_blocks")
+    .insert({ day_of_week: day, time: timeValue })
     .select()
     .single();
 
   if (error?.code === "23505") {
-    return NextResponse.json({ error: "Slot already blocked" }, { status: 409 });
+    return NextResponse.json({ error: "That recurring block already exists." }, { status: 409 });
   }
   if (error) {
-    console.error("[blocked-slots POST]", error);
-    return NextResponse.json({ error: "Failed to block slot." }, { status: 500 });
+    console.error("[recurring-blocks POST]", error);
+    return NextResponse.json({ error: "Failed to add recurring block." }, { status: 500 });
   }
   return NextResponse.json(data, { status: 201 });
 }
