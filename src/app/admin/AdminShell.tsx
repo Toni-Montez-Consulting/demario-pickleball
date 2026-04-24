@@ -25,7 +25,15 @@ export default function AdminShell({
         <div className="brand">
           <div className="brand-mark">D</div>
           <span>
-            Admin<span className="brand-muted"> / {pathname === "/admin/roadmap" ? "Roadmap" : "Dashboard"}</span>
+            Admin
+            <span className="brand-muted">
+              {" / "}
+              {pathname === "/admin/roadmap"
+                ? "Roadmap"
+                : pathname === "/admin/site-roadmap"
+                ? "Site Roadmap"
+                : "Dashboard"}
+            </span>
           </span>
         </div>
         <button
@@ -38,7 +46,8 @@ export default function AdminShell({
       </nav>
       <div className="admin-nav">
         <Link href="/admin" className={`admin-nav-link${pathname === "/admin" ? " active" : ""}`}>Dashboard</Link>
-        <Link href="/admin/roadmap" className={`admin-nav-link${pathname === "/admin/roadmap" ? " active" : ""}`}>Roadmap</Link>
+        <Link href="/admin/roadmap" className={`admin-nav-link${pathname === "/admin/roadmap" ? " active" : ""}`}>Business</Link>
+        <Link href="/admin/site-roadmap" className={`admin-nav-link${pathname === "/admin/site-roadmap" ? " active" : ""}`}>Site</Link>
       </div>
       {children}
     </div>

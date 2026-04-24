@@ -1426,8 +1426,24 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
 }
 .roadmap-item:last-child { border-bottom: none; }
 .roadmap-item:hover { background: var(--bg-3); }
+.roadmap-item.shipped { cursor: default; opacity: 0.85; }
+.roadmap-item.shipped:hover { background: transparent; }
 .roadmap-item.done { opacity: 0.55; }
 .roadmap-item.done .item-text { text-decoration: line-through; text-decoration-color: var(--fg-muted); }
+.roadmap-item.shipped.done .item-text { text-decoration: none; }
+.shipped-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
 
 .item-check {
   flex-shrink: 0;
