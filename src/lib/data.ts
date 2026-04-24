@@ -90,8 +90,6 @@ export const LESSONS: Record<LessonKey, Lesson> = {
   },
 };
 
-export const TIMES = ["7:00 AM", "9:00 AM", "11:00 AM", "1:00 PM", "3:00 PM", "5:30 PM"];
-
 export interface DaySlot {
   d: string;
   n: number;

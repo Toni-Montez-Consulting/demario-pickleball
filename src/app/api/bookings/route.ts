@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendBookingCreatedEmails } from "@/lib/email/client";
 
 const VALID_LESSON_TYPES = ["beginner", "advanced", "clinic"] as const;
-const VALID_TIMES = ["7:00 AM", "9:00 AM", "11:00 AM", "1:00 PM", "3:00 PM", "5:30 PM"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function anonClient() {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   if (lesson_date <= yesterday.toISOString().split("T")[0]) {
     return NextResponse.json({ error: "Cannot book a date in the past" }, { status: 400 });
   }
-  if (!VALID_TIMES.includes(lesson_time)) {
+  if (typeof lesson_time !== "string") {
     return NextResponse.json({ error: "Invalid time" }, { status: 400 });
   }
   if (phone && (typeof phone !== "string" || !/^[\d\s\-()+]{7,20}$/.test(phone))) {
@@ -48,13 +48,22 @@ export async function POST(req: NextRequest) {
 
   const supabase = anonClient();
 
-  const { data: blockedSlot } = await supabase
-    .from("blocked_slots")
-    .select("id")
-    .eq("date", lesson_date)
-    .eq("time", lesson_time)
+  const { data: slot } = await supabase
+    .from("time_slots")
+    .select("display_label")
+    .eq("display_label", lesson_time)
+    .eq("active", true)
     .maybeSingle();
-  if (blockedSlot) {
+  if (!slot) {
+    return NextResponse.json({ error: "Invalid time" }, { status: 400 });
+  }
+
+  const { data: blockedSlots } = await supabase
+    .from("blocked_slots")
+    .select("id, all_day, time")
+    .eq("date", lesson_date);
+  const isBlocked = (blockedSlots ?? []).some((b) => b.all_day || b.time === lesson_time);
+  if (isBlocked) {
     return NextResponse.json({ error: "That time slot is not available." }, { status: 409 });
   }
 
@@ -79,6 +88,16 @@ export async function POST(req: NextRequest) {
     console.error("[bookings POST]", error);
     return NextResponse.json({ error: "Booking failed. Please try again." }, { status: 500 });
   }
+
+  sendBookingCreatedEmails({
+    id: data.id,
+    name: data.name,
+    email: data.email,
+    lesson_type: data.lesson_type,
+    lesson_date: data.lesson_date,
+    lesson_time: data.lesson_time,
+  }).catch((err) => console.error("[bookings POST] email send failed", err));
+
   return NextResponse.json(data, { status: 201 });
 }
 

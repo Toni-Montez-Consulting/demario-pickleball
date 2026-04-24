@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
 
-const VALID_TIMES = ["7:00 AM", "9:00 AM", "11:00 AM", "1:00 PM", "3:00 PM", "5:30 PM"];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function GET() {
@@ -28,7 +27,7 @@ export async function POST(req: NextRequest) {
   if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => null);
-  const { date, time } = body ?? {};
+  const { date, time, all_day } = body ?? {};
 
   if (!date || !DATE_RE.test(date)) {
     return NextResponse.json({ error: "Invalid date" }, { status: 400 });
@@ -38,13 +37,28 @@ export async function POST(req: NextRequest) {
   if (date <= yesterday.toISOString().split("T")[0]) {
     return NextResponse.json({ error: "Cannot block a date in the past" }, { status: 400 });
   }
-  if (!VALID_TIMES.includes(time)) {
-    return NextResponse.json({ error: "Invalid time" }, { status: 400 });
+
+  const blockWholeDay = all_day === true;
+  let validatedTime: string | null = null;
+
+  if (!blockWholeDay) {
+    if (typeof time !== "string") {
+      return NextResponse.json({ error: "Invalid time" }, { status: 400 });
+    }
+    const { data: slot } = await supabase
+      .from("time_slots")
+      .select("display_label")
+      .eq("display_label", time)
+      .maybeSingle();
+    if (!slot) {
+      return NextResponse.json({ error: "Invalid time" }, { status: 400 });
+    }
+    validatedTime = slot.display_label;
   }
 
   const { data, error } = await supabase
     .from("blocked_slots")
-    .insert({ date, time })
+    .insert({ date, time: validatedTime, all_day: blockWholeDay })
     .select()
     .single();
 

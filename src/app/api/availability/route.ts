@@ -16,9 +16,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid date" }, { status: 400 });
   }
 
+  const parsedDate = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return NextResponse.json({ error: "Invalid date" }, { status: 400 });
+  }
+  const dayOfWeek = parsedDate.getUTCDay();
+
   const supabase = anonClient();
 
-  const [bookingsResult, blockedResult] = await Promise.all([
+  const [bookingsResult, blockedResult, recurringResult] = await Promise.all([
     supabase
       .from("bookings")
       .select("lesson_time")
@@ -26,13 +32,30 @@ export async function GET(req: NextRequest) {
       .neq("status", "cancelled"),
     supabase
       .from("blocked_slots")
-      .select("time")
+      .select("time, all_day")
       .eq("date", date),
+    supabase
+      .from("recurring_blocks")
+      .select("time")
+      .eq("day_of_week", dayOfWeek),
   ]);
 
-  const booked = new Set<string>();
-  bookingsResult.data?.forEach((b) => booked.add(b.lesson_time));
-  blockedResult.data?.forEach((b) => booked.add(b.time));
+  let allDay = false;
+  const unavailable = new Set<string>();
 
-  return NextResponse.json({ booked: Array.from(booked) });
+  bookingsResult.data?.forEach((b) => b.lesson_time && unavailable.add(b.lesson_time));
+  blockedResult.data?.forEach((b) => {
+    if (b.all_day) allDay = true;
+    else if (b.time) unavailable.add(b.time);
+  });
+  recurringResult.data?.forEach((b) => {
+    if (b.time === null) allDay = true;
+    else unavailable.add(b.time);
+  });
+
+  return NextResponse.json({
+    allDay,
+    unavailable: Array.from(unavailable),
+    booked: Array.from(unavailable),
+  });
 }

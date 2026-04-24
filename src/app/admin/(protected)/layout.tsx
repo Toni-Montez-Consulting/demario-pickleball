@@ -14,5 +14,13 @@ export default async function ProtectedAdminLayout({
 
   if (!user || !isAdminEmail(user.email)) redirect("/admin/login");
 
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.currentLevel !== "aal2") {
+    if (aal?.nextLevel === "aal1") {
+      redirect("/admin/mfa-setup");
+    }
+    redirect("/admin/login");
+  }
+
   return <AdminShell>{children}</AdminShell>;
 }
