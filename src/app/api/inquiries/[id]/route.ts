@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/server";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -7,9 +7,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
   const { id } = await params;
   if (!UUID_RE.test(id)) {
@@ -21,7 +20,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("inquiries")
     .update({ read: body.read })
     .eq("id", id)

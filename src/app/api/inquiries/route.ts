@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function anonClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -28,7 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid message" }, { status: 400 });
   }
 
-  const supabase = anonClient();
+  const supabase = createServiceRoleClient();
   const { data, error } = await supabase
     .from("inquiries")
     .insert({

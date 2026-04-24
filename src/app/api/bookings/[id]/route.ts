@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/server";
 import { sendBookingCancelledEmail } from "@/lib/email/client";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
@@ -38,7 +37,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("bookings")
     .update(update)
     .eq("id", id)

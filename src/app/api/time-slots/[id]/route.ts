@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/server";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -7,9 +7,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
   const { id } = await params;
   if (!UUID_RE.test(id)) {
@@ -21,7 +20,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("time_slots")
     .update({ active: body.active })
     .eq("id", id)
@@ -42,16 +41,15 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
   const { id } = await params;
   if (!UUID_RE.test(id)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }
 
-  const { error } = await supabase.from("time_slots").delete().eq("id", id).select().single();
+  const { error } = await admin.supabase.from("time_slots").delete().eq("id", id).select().single();
   if (error?.code === "PGRST116") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

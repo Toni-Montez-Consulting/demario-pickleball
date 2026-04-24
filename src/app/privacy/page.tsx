@@ -1,8 +1,10 @@
+import Link from "next/link";
+
 export default function PrivacyPage() {
   return (
     <div className="legal-bg">
       <div className="legal-page">
-        <a href="/" className="legal-back">← Back to site</a>
+        <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Privacy Policy</h1>
         <p className="legal-date">Effective April 23, 2026</p>
 

@@ -1,23 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServiceRoleClient, requireAdmin } from "@/lib/supabase/server";
 import { sendBookingCreatedEmails } from "@/lib/email/client";
+import { assertBookableSlot } from "@/lib/availability";
+import { WAIVER_VERSION } from "@/lib/business";
 
 const VALID_LESSON_TYPES = ["beginner", "advanced", "clinic"] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function anonClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
 
-  const { name, email, phone, lesson_type, lesson_date, lesson_time, notes } = body;
+  const { name, email, phone, lesson_type, lesson_date, lesson_time, notes, waiver_accepted } = body;
 
   if (!name || !email || !lesson_type || !lesson_date || !lesson_time) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -31,40 +25,23 @@ export async function POST(req: NextRequest) {
   if (!VALID_LESSON_TYPES.includes(lesson_type)) {
     return NextResponse.json({ error: "Invalid lesson type" }, { status: 400 });
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(lesson_date)) {
-    return NextResponse.json({ error: "Invalid date" }, { status: 400 });
-  }
-  const yesterday = new Date();
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  if (lesson_date <= yesterday.toISOString().split("T")[0]) {
-    return NextResponse.json({ error: "Cannot book a date in the past" }, { status: 400 });
-  }
   if (typeof lesson_time !== "string") {
     return NextResponse.json({ error: "Invalid time" }, { status: 400 });
   }
   if (phone && (typeof phone !== "string" || !/^[\d\s\-()+]{7,20}$/.test(phone))) {
     return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
   }
-
-  const supabase = anonClient();
-
-  const { data: slot } = await supabase
-    .from("time_slots")
-    .select("display_label")
-    .eq("display_label", lesson_time)
-    .eq("active", true)
-    .maybeSingle();
-  if (!slot) {
-    return NextResponse.json({ error: "Invalid time" }, { status: 400 });
+  if (waiver_accepted !== true) {
+    return NextResponse.json({ error: "You must agree to the coaching terms before booking." }, { status: 400 });
   }
 
-  const { data: blockedSlots } = await supabase
-    .from("blocked_slots")
-    .select("id, all_day, time")
-    .eq("date", lesson_date);
-  const isBlocked = (blockedSlots ?? []).some((b) => b.all_day || b.time === lesson_time);
-  if (isBlocked) {
-    return NextResponse.json({ error: "That time slot is not available." }, { status: 409 });
+  const supabase = createServiceRoleClient();
+  const availabilityError = await assertBookableSlot(supabase, lesson_date, lesson_time);
+  if (availabilityError) {
+    return NextResponse.json(
+      { error: availabilityError.error },
+      { status: availabilityError.status }
+    );
   }
 
   const { data, error } = await supabase
@@ -77,6 +54,8 @@ export async function POST(req: NextRequest) {
       lesson_date,
       lesson_time,
       notes: (typeof notes === "string" && notes.trim()) ? notes.trim().slice(0, 500) : null,
+      waiver_signed_at: new Date().toISOString(),
+      waiver_version: WAIVER_VERSION,
     })
     .select()
     .single();
@@ -102,11 +81,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("bookings")
     .select("*")
     .order("lesson_date", { ascending: true });

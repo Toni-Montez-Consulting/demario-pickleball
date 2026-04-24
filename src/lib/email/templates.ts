@@ -1,4 +1,5 @@
 import { SITE_URL } from "@/lib/site";
+import { LESSON_LOCATION } from "@/lib/business";
 import { generateGoogleCalendarUrl, type IcsBooking } from "./ics";
 
 const LESSON_NAMES: Record<string, string> = {
@@ -45,7 +46,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
       <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(lesson)}</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_date)}</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Location</td><td style="padding:6px 0;text-align:right;"><strong>Dallas Indoor PBC</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#777;">Location</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(LESSON_LOCATION)}</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;"><strong>${shortId}</strong></td></tr>
       ${price ? `<tr><td style="padding:6px 0;color:#777;">Amount</td><td style="padding:6px 0;text-align:right;"><strong>${price}</strong></td></tr>` : ""}
     </table>

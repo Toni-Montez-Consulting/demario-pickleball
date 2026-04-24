@@ -2,162 +2,104 @@
 
 import { useState } from "react";
 
-interface SiteRoadmapItem {
+interface DevRoadmapItem {
   key: string;
   text: string;
   detail?: string;
   shipped?: boolean;
 }
 
-interface SiteRoadmapPhase {
+interface DevRoadmapPhase {
   phase: string;
   title: string;
   timeframe: string;
-  items: SiteRoadmapItem[];
+  items: DevRoadmapItem[];
 }
 
-const PHASES: SiteRoadmapPhase[] = [
+const PHASES: DevRoadmapPhase[] = [
   {
-    phase: "Phase 1",
-    title: "Domain & Payments",
-    timeframe: "Shipped",
+    phase: "P0",
+    title: "Reliability Foundation",
+    timeframe: "Current implementation wave",
     items: [
       {
-        key: "site-p1-domain-code",
-        text: "Code centralizes site URL (SITE_URL env var) so domain swaps are one-line",
-        detail: "Codebase no longer has demario-pickleball.vercel.app hardcoded. Metadata, sitemap, robots, JSON-LD all read from src/lib/site.ts.",
-        shipped: true,
+        key: "dev-p0-lint-ci",
+        text: "Repair linting, add typecheck/test scripts, and run them in GitHub Actions",
+        detail: "CI should validate install, typecheck, lint, unit/API tests, and production build without production secrets.",
       },
       {
-        key: "site-p1-payments-code",
-        text: "PaymentOptions component on booking confirmation + /pay page + footer link",
-        detail: "Cash App, Zelle, and PayPal QR. Shows booking ID reminder so students tag payments with a memo you can match.",
-        shipped: true,
+        key: "dev-p0-booking-integrity",
+        text: "Centralize booking availability rules and enforce them in the API",
+        detail: "The booking POST and availability GET should share the same slot, booking, one-off block, and recurring block logic.",
       },
       {
-        key: "site-p1-paid-toggle",
-        text: "Admin 'Mark paid' toggle on bookings table",
-        detail: "Since Cash App / Zelle / PayPal personal have no webhook, you mark bookings paid manually when money arrives.",
-        shipped: true,
+        key: "dev-p0-public-data",
+        text: "Harden public data access and keep PII behind server-side routes",
+        detail: "Public users should not be able to read bookings or inquiries through Supabase anon access.",
       },
       {
-        key: "site-p1-domain-buy",
-        text: "Buy demariomontezpb.com and add it to your Vercel project",
-        detail: "Namecheap / GoDaddy / Cloudflare all work. Vercel will give you DNS records to paste into the registrar.",
+        key: "dev-p0-booking-a11y",
+        text: "Polish the booking modal on mobile and for keyboard/screen reader users",
+        detail: "Dialog semantics, focus management, Escape close, horizontal date strip, and clear empty/error states.",
       },
       {
-        key: "site-p1-sql-paid",
-        text: "Run SQL in Supabase: alter table bookings add column paid_at timestamptz",
-        detail: "One-liner in Supabase SQL editor. The 'Mark paid' toggle won't work until this column exists.",
-      },
-      {
-        key: "site-p1-paypal-qr",
-        text: "Drop the real PayPal QR image at public/img/paypal-qr.png",
-        detail: "Screenshot the QR from your PayPal app, save as PNG, upload to the repo at that path. Until then the PayPal slot shows a broken image (Cash App + Zelle still work).",
+        key: "dev-p0-tests",
+        text: "Add a practical test suite around booking, availability, email/ICS, and core UI states",
+        detail: "Vitest for utilities/API behavior; Playwright smoke tests for browser confidence.",
       },
     ],
   },
   {
-    phase: "Phase 2",
-    title: "Email, MFA, Availability Editor",
-    timeframe: "Shipped",
+    phase: "P1",
+    title: "Launch Confidence",
+    timeframe: "After P0 is green",
     items: [
       {
-        key: "site-p2-email-code",
-        text: "Booking confirmation emails with .ics calendar invites (via Resend)",
-        detail: "Student gets a 'you're booked' email with a calendar invite that adds the lesson to their calendar in one tap. You get a separate 'new booking' notification. Cancelling a booking sends a cancellation .ics that removes it from their calendar.",
-        shipped: true,
+        key: "dev-p1-admin-polish",
+        text: "Improve admin error states, destructive-action confirmations, and mobile usability",
+        detail: "Failed data loads should not look like empty data. Delete/cancel actions should be deliberate.",
       },
       {
-        key: "site-p2-mfa-code",
-        text: "TOTP multi-factor authentication on admin login",
-        detail: "Password + 6-digit code from Google Authenticator / 1Password / Authy. Anyone with just your password can't log in.",
-        shipped: true,
+        key: "dev-p1-docs",
+        text: "Refresh setup, release, rollback, and Supabase policy docs",
+        detail: "Old audit docs should be clearly marked historical or replaced with current operational docs.",
       },
       {
-        key: "site-p2-avail-code",
-        text: "DB-backed availability editor (time slots, recurring blocks, whole-day blocks)",
-        detail: "Three sections in admin: edit time slots, set recurring unavailability (e.g. every Tuesday), and block specific dates (single slot or whole day).",
-        shipped: true,
+        key: "dev-p1-e2e",
+        text: "Expand Playwright coverage for homepage, booking, payment options, contact, and admin gating",
+        detail: "Use mocked API responses by default so CI does not need production credentials.",
       },
       {
-        key: "site-p2-sql-migrate",
-        text: "Run Phase 2 SQL migrations in Supabase",
-        detail: "Creates time_slots + recurring_blocks tables and adds all_day to blocked_slots. Full SQL is in the Phase 2 commit message (808b031). Booking and admin will both break until this is run.",
-      },
-      {
-        key: "site-p2-resend",
-        text: "Sign up for Resend, add RESEND_API_KEY + EMAIL_FROM + ADMIN_EMAIL to Vercel",
-        detail: "Resend has a free tier (3k emails/mo). Until your sending domain is verified in Resend, use their shared sender 'onboarding@resend.dev'. Emails just won't send until this is set — bookings still work.",
-      },
-      {
-        key: "site-p2-mfa-enroll",
-        text: "Enroll your authenticator app at /admin/mfa-setup on first login",
-        detail: "After deploying Phase 2, your first admin login will redirect you here. Scan the QR with Google Authenticator / 1Password / Authy. Save the recovery secret somewhere safe in case you lose your phone.",
+        key: "dev-p1-rate-limit",
+        text: "Add lightweight abuse protection to public booking and inquiry endpoints",
+        detail: "Rate limiting and honeypot fields reduce fake booking and spam risk.",
       },
     ],
   },
   {
-    phase: "Phase 3",
-    title: "Post-launch Enhancements",
-    timeframe: "Next",
-    items: [
-      {
-        key: "site-p3-stripe",
-        text: "Stripe Checkout at booking (replaces the trust-based payment model)",
-        detail: "Charge upfront at the time of booking. Eliminates no-shows — anyone who paid is showing up. Also removes the 'include booking ID in memo' friction. Roughly 2.9% + $0.30 per transaction.",
-      },
-      {
-        key: "site-p3-reminders",
-        text: "Automated 24-hour lesson reminder email",
-        detail: "Scheduled job that scans upcoming bookings and emails a reminder the day before. Reduces no-shows and signals professionalism. Runs on Vercel Cron (free).",
-      },
-      {
-        key: "site-p3-reschedule",
-        text: "Self-serve student reschedule link in confirmation emails",
-        detail: "One less inbound text for you. Student clicks a signed link in their confirmation email, picks a new open slot, done. The system sends a new .ics invite + cancellation for the old slot.",
-      },
-      {
-        key: "site-p3-rate-limit",
-        text: "Rate-limit the booking API to prevent spam bookings",
-        detail: "Right now anyone can POST to /api/bookings without auth. A bot could flood your schedule with fake bookings and block real students. Fix: per-IP rate limit on the endpoint (e.g. 5 bookings / hour / IP).",
-      },
-      {
-        key: "site-p3-monitoring",
-        text: "Error alerts when the site errors in production",
-        detail: "Sentry (free tier) or similar. You find out about broken pages before your students do. One-liner install in the Next app.",
-      },
-      {
-        key: "site-p3-tests",
-        text: "Automated tests so future changes can't silently break booking",
-        detail: "API-level tests on /api/bookings, /api/availability, /api/time-slots. Catches regressions before deploy. Playwright for a smoke test on the full booking flow.",
-      },
-    ],
-  },
-  {
-    phase: "Phase 4",
-    title: "Nice-to-haves",
+    phase: "P2",
+    title: "Operations & Growth",
     timeframe: "Later",
     items: [
       {
-        key: "site-p4-packages",
-        text: "Lesson packages (3-pack / 5-pack) at a small discount",
-        detail: "Locks in repeat students. One click from the lesson-type dropdown. Needs Stripe (Phase 3) to collect the full amount upfront.",
+        key: "dev-p2-sentry",
+        text: "Add production error monitoring",
+        detail: "Sentry or equivalent should alert on server/client failures before students report them.",
       },
       {
-        key: "site-p4-analytics",
-        text: "Add GA4 + Meta Pixel for traffic / conversion tracking",
-        detail: "From the April audit — still open. Can't measure marketing ROI without it.",
+        key: "dev-p2-analytics",
+        text: "Add privacy-conscious analytics and conversion events",
+        detail: "Only after consent/cookie policy is settled. Track booking modal opens and successful booking requests.",
       },
       {
-        key: "site-p4-waitlist",
-        text: "Waitlist for fully-booked days",
-        detail: "If a slot becomes free (someone cancels), auto-notify the waitlist. Recovers revenue from cancellations.",
+        key: "dev-p2-reminders",
+        text: "Add 24-hour lesson reminder emails",
+        detail: "Scheduled job plus reminder_sent_at tracking after the core booking system is stable.",
       },
       {
-        key: "site-p4-student-notes",
-        text: "Private per-student notes on the admin dashboard",
-        detail: "Lightweight CRM — next to each booking, show past lessons + goals + notes from last session. Compounds your coaching quality.",
+        key: "dev-p2-stripe",
+        text: "Add Stripe Checkout after the pickleball business entity is ready",
+        detail: "Backburner until business banking/entity setup exists. Keep manual Cash App/Zelle/PayPal flow for now.",
       },
     ],
   },
@@ -199,12 +141,12 @@ export default function SiteRoadmapDashboard({ initialChecked }: { initialChecke
     <div className="admin-wrap roadmap-wrap">
       <div className="roadmap-header">
         <div className="admin-header">
-          <h1>Site Roadmap</h1>
-          <span className="admin-count">{totalDone} / {totalCheckable} open items done</span>
+          <h1>Developer Roadmap</h1>
+          <span className="admin-count">{totalDone} / {totalCheckable} complete</span>
         </div>
         <p className="roadmap-sub">
-          Tracks what&apos;s shipped in code, what you need to do manually, and what&apos;s planned next.
-          Separate from the business roadmap.
+          Implementation tracker for Tonio. DeMario&apos;s operational business checklist
+          lives separately under Business.
         </p>
         <div className="overall-bar">
           <div className="overall-fill" style={{ width: `${overallPct}%` }} />

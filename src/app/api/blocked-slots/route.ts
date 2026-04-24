@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/server";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function GET() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("blocked_slots")
     .select("*")
     .order("date", { ascending: true })
@@ -22,9 +21,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
   const body = await req.json().catch(() => null);
   const { date, time, all_day } = body ?? {};
@@ -45,7 +43,7 @@ export async function POST(req: NextRequest) {
     if (typeof time !== "string") {
       return NextResponse.json({ error: "Invalid time" }, { status: 400 });
     }
-    const { data: slot } = await supabase
+    const { data: slot } = await admin.supabase
       .from("time_slots")
       .select("display_label")
       .eq("display_label", time)
@@ -56,7 +54,7 @@ export async function POST(req: NextRequest) {
     validatedTime = slot.display_label;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("blocked_slots")
     .insert({ date, time: validatedTime, all_day: blockWholeDay })
     .select()

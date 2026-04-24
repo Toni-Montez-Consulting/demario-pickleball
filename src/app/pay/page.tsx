@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import PaymentOptions from "@/components/PaymentOptions";
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export default function PayPage() {
   return (
     <div className="legal-bg">
       <div className="legal-page">
-        <a href="/" className="legal-back">← Back to site</a>
+        <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Pay DeMario</h1>
         <p className="legal-date">
           Already booked a lesson? Use one of the options below. Include your booking ID

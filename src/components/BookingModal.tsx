@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { generateDays, type DaySlot } from "@/lib/data";
+import { LESSON_LOCATION } from "@/lib/business";
 import PaymentOptions from "./PaymentOptions";
 
 type Step = "form" | "picker" | "loading" | "error" | "confirmed";
@@ -16,6 +17,7 @@ interface FormData {
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialLessonType?: FormData["lessonType"];
 }
 
 const LESSON_LABELS: Record<string, string> = {
@@ -32,13 +34,13 @@ const LESSON_PRICES: Record<string, string> = {
   clinic: "$50.00",
 };
 
-export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
+export default function BookingModal({ isOpen, onClose, initialLessonType = "beginner" }: BookingModalProps) {
   const [step, setStep] = useState<Step>("form");
   const [form, setForm] = useState<FormData>({
     name: "",
     email: "",
     phone: "",
-    lessonType: "beginner",
+    lessonType: initialLessonType,
   });
   const [days, setDays] = useState<DaySlot[]>(() => generateDays());
   const [selectedDay, setSelectedDay] = useState(0);
@@ -54,6 +56,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [errorMsg, setErrorMsg] = useState("");
   const [bookingId, setBookingId] = useState("");
   const submittingRef = useRef(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   const fetchAvailability = useCallback(async (dateStr: string, availableTimes: string[]) => {
     setAvailLoading(true);
@@ -79,11 +84,14 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
   useEffect(() => {
     if (isOpen) {
+      previouslyFocusedRef.current = document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
       const freshDays = generateDays();
       setDays(freshDays);
       document.body.style.overflow = "hidden";
       setStep("form");
-      setForm({ name: "", email: "", phone: "", lessonType: "beginner" });
+      setForm({ name: "", email: "", phone: "", lessonType: initialLessonType });
       setSelectedDay(0);
       setBookedTimes(new Set());
       setAllDay(false);
@@ -111,8 +119,46 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     }
     return () => {
       document.body.style.overflow = "";
+      previouslyFocusedRef.current?.focus();
     };
-  }, [isOpen, fetchAvailability]);
+  }, [isOpen, fetchAvailability, initialLessonType]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    closeButtonRef.current?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+
+      const modal = modalRef.current;
+      if (!modal) return;
+      const focusable = Array.from(
+        modal.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute("aria-hidden"));
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
 
   function handleDaySelect(i: number) {
     setSelectedDay(i);
@@ -137,6 +183,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
           lesson_type: form.lessonType,
           lesson_date: day.dateStr,
           lesson_time: selectedTime,
+          waiver_accepted: waiverAgreed,
         }),
       });
       if (res.status === 409) {
@@ -170,7 +217,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
   return (
     <div className="modal-backdrop open" onClick={handleBackdropClick}>
-      <div className="modal">
+      <div
+        ref={modalRef}
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="booking-modal-title"
+      >
         <div className="modal-grip" />
         <div className="sr-only" aria-live="polite" aria-atomic="true">
           {step === "loading" ? "Confirming your booking" : step === "confirmed" ? "Booking confirmed" : step === "error" ? "There was a booking error" : ""}
@@ -178,6 +231,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         <button
           type="button"
           className="modal-close"
+          ref={closeButtonRef}
           onClick={onClose}
           aria-label="Close"
         >
@@ -188,7 +242,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
         {step === "form" && (
           <>
-            <h3>Book a lesson</h3>
+            <h3 id="booking-modal-title">Book a lesson</h3>
             <p className="m-sub">Fill in your details to reserve a spot.</p>
             <div className="modal-form-group">
               <label htmlFor="bm-name">Your name</label>
@@ -270,9 +324,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
         {step === "picker" && (
           <>
-            <h3>Book a lesson</h3>
+            <h3 id="booking-modal-title">Book a lesson</h3>
             <p className="m-sub">
-              {LESSON_LABELS[form.lessonType]} · Dallas Indoor Pickleball Club
+              {LESSON_LABELS[form.lessonType]} · {LESSON_LOCATION}
             </p>
             <div className="label-tag">Select day</div>
             <div className="slot-grid slot-grid-scroll">
@@ -305,11 +359,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               </div>
             ) : allDay ? (
               <div className="avail-all-day">
-                DeMario isn&apos;t taking lessons on this day. Pick another date.
+                DeMario is unavailable on this date. Pick another date.
               </div>
             ) : times.length === 0 ? (
               <div className="avail-all-day">
-                No times are available right now. Please check back later.
+                No lesson times available yet - check back soon or contact DeMario directly.
               </div>
             ) : (
               <div className="time-grid">
@@ -368,7 +422,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
         {step === "error" && (
           <>
-            <h3>Something went wrong</h3>
+            <h3 id="booking-modal-title">Something went wrong</h3>
             <div className="modal-error">{errorMsg}</div>
             <button type="button" className="btn btn-ghost" onClick={() => setStep("picker")}>
               Try again
@@ -383,7 +437,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <h3>You&apos;re booked.</h3>
+            <h3 id="booking-modal-title">You&apos;re booked.</h3>
             <p className="m-sub">
               {day.d} {day.n} at {selectedTime} · See you on the court.
             </p>
@@ -398,10 +452,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               </div>
               <div className="booking-summary-row">
                 <span>Location</span>
-                <strong>Dallas Indoor PBC</strong>
+                <strong>{LESSON_LOCATION}</strong>
               </div>
               <div className="booking-summary-row">
-                <span>Total</span>
+                <span>Amount due</span>
                 <strong className="accent">{LESSON_PRICES[form.lessonType]}</strong>
               </div>
               {bookingId && (

@@ -1,17 +1,19 @@
+import Link from "next/link";
+
 export default function TermsPage() {
   return (
     <div className="legal-bg">
       <div className="legal-page">
-        <a href="/" className="legal-back">← Back to site</a>
+        <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Coaching Agreement &amp; Terms of Service</h1>
         <p className="legal-date">Effective April 23, 2026</p>
 
         <h2>Services</h2>
         <p>
           DeMario Montez Pickleball Coaching provides one-on-one and group pickleball instruction
-          in the Dallas–Fort Worth area, primarily at Dallas Indoor Pickleball Club,
-          Farmers Branch, TX. Lessons are provided as described at the time of booking
-          (Foundations, Strategy Lab, or Group Clinic).
+          in the Dallas–Fort Worth area. Court location is confirmed after booking
+          unless a specific venue is listed in your confirmation. Lessons are provided
+          as described at the time of booking (Foundations, Strategy Lab, or Group Clinic).
         </p>
 
         <h2>Pricing</h2>

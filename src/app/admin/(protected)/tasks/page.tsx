@@ -1,8 +1,8 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import TasksDashboard from "@/components/TasksDashboard";
 
 export default async function TasksPage() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createServiceRoleClient();
   const { data } = await supabase
     .from("admin_tasks")
     .select("*")

@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/server";
 
 export async function GET() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("recurring_blocks")
     .select("*")
     .order("day_of_week", { ascending: true });
@@ -18,9 +17,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
   const body = await req.json().catch(() => null);
   const day = body?.day_of_week;
@@ -35,7 +33,7 @@ export async function POST(req: NextRequest) {
     if (typeof time !== "string") {
       return NextResponse.json({ error: "Invalid time" }, { status: 400 });
     }
-    const { data: slot } = await supabase
+    const { data: slot } = await admin.supabase
       .from("time_slots")
       .select("display_label")
       .eq("display_label", time)
@@ -46,7 +44,7 @@ export async function POST(req: NextRequest) {
     timeValue = slot.display_label;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("recurring_blocks")
     .insert({ day_of_week: day, time: timeValue })
     .select()

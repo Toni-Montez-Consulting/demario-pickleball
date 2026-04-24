@@ -16,26 +16,37 @@ import CookieBanner from "@/components/CookieBanner";
 import Footer from "@/components/Footer";
 import StickyCta from "@/components/StickyCta";
 import BookingModal from "@/components/BookingModal";
+import type { LessonKey } from "@/lib/data";
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [initialLessonType, setInitialLessonType] = useState<LessonKey>("beginner");
+
+  function openBooking(lessonType: LessonKey = "beginner") {
+    setInitialLessonType(lessonType);
+    setModalOpen(true);
+  }
 
   return (
     <div className="device" id="device">
-      <Nav onOpenBooking={() => setModalOpen(true)} />
-      <Hero onOpenBooking={() => setModalOpen(true)} />
+      <Nav onOpenBooking={() => openBooking()} />
+      <Hero onOpenBooking={() => openBooking()} />
       <TrustBar />
       <Testimonials />
       <ImproveGrid />
       <Philosophy />
-      <Lessons />
+      <Lessons onOpenBooking={openBooking} />
       <About />
-      <FinalCta onOpenBooking={() => setModalOpen(true)} />
+      <FinalCta onOpenBooking={() => openBooking()} />
       <BookingPlatforms />
       <ContactForm />
       <Footer />
-      <StickyCta onOpenBooking={() => setModalOpen(true)} />
-      <BookingModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <StickyCta onOpenBooking={() => openBooking()} />
+      <BookingModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        initialLessonType={initialLessonType}
+      />
       <CookieBanner />
     </div>
   );

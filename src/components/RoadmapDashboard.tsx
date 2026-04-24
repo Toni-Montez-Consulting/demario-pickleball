@@ -42,6 +42,16 @@ const PHASES: RoadmapPhase[] = [
         detail: "One injury claim without coverage could cost tens of thousands. Non-negotiable for a solo coach.",
       },
       {
+        key: "p0-waiver-review",
+        text: "Have a Texas sports/recreation attorney review the coaching waiver and terms",
+        detail: "The site can collect agreement, but the final release language should come from a qualified attorney and be checked against your insurance requirements.",
+      },
+      {
+        key: "p0-venue",
+        text: "Confirm where direct site bookings can run before taking live bookings",
+        detail: "Get written approval from the venue, confirm court fees, cancellation rules, and whether they require their own waiver or insurance certificate.",
+      },
+      {
         key: "p0-taxes",
         text: "Set aside 25–30% of every payment for self-employment taxes",
         detail: "SE tax is ~15.3% on top of income tax. Coaches get hit hard at year-end if unprepared.",

@@ -87,7 +87,7 @@ export default function PaymentOptions({ bookingId, amount }: PaymentOptionsProp
           className="pay-qr"
           loading="lazy"
         />
-        <p className="pay-qr-caption">Scan to pay Demario Montez</p>
+        <p className="pay-qr-caption">Scan to pay DeMario Montez</p>
       </div>
     </div>
   );

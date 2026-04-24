@@ -1,4 +1,5 @@
 import { SITE_URL } from "@/lib/site";
+import { LESSON_LOCATION } from "@/lib/business";
 
 export type IcsMethod = "REQUEST" | "CANCEL";
 
@@ -110,7 +111,7 @@ export function generateGoogleCalendarUrl({
     dates: `${dtStart}/${dtEnd}`,
     ctz: "America/Chicago",
     details: `Booking ID: ${booking.id.slice(0, 8).toUpperCase()}\nPay: ${SITE_URL}/pay`,
-    location: "Dallas Indoor Pickleball Club",
+    location: LESSON_LOCATION,
     sf: "true",
     output: "xml",
   });
@@ -149,7 +150,7 @@ export function generateIcs({
   const description = [
     `Lesson: ${lessonName}`,
     `Coach: ${organizerName}`,
-    `Location: Dallas Indoor Pickleball Club`,
+    `Location: ${LESSON_LOCATION}`,
     ``,
     `Booking ID: ${booking.id.slice(0, 8).toUpperCase()}`,
     `Pay: ${SITE_URL}/pay (include booking ID in memo)`,
@@ -169,7 +170,7 @@ export function generateIcs({
     `DTEND;TZID=America/Chicago:${dtEnd}`,
     `SUMMARY:${escapeIcs(summary)}`,
     `DESCRIPTION:${escapeIcs(description)}`,
-    `LOCATION:${escapeIcs("Dallas Indoor Pickleball Club")}`,
+    `LOCATION:${escapeIcs(LESSON_LOCATION)}`,
     `ORGANIZER;CN=${escapeIcs(organizerName)}:mailto:${organizerEmail}`,
     `ATTENDEE;CN=${escapeIcs(booking.name)};RSVP=FALSE:mailto:${booking.email}`,
     `STATUS:${method === "CANCEL" ? "CANCELLED" : "CONFIRMED"}`,

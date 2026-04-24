@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/server";
 import { RECURRENCE_VALUES, isValidDateString, type Recurrence } from "@/lib/tasks";
 
 export async function GET() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("admin_tasks")
     .select("*")
     .order("completed_at", { ascending: true, nullsFirst: true })
@@ -22,9 +21,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
@@ -52,7 +50,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Recurring tasks need a due date." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("admin_tasks")
     .insert({ title, notes, category, due_date, recurrence })
     .select()

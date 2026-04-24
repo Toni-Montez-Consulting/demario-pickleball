@@ -31,7 +31,7 @@ export default function AdminShell({
               {pathname === "/admin/roadmap"
                 ? "Roadmap"
                 : pathname === "/admin/site-roadmap"
-                ? "Site Roadmap"
+                ? "Developer"
                 : pathname === "/admin/tasks"
                 ? "Tasks"
                 : "Dashboard"}
@@ -50,7 +50,7 @@ export default function AdminShell({
         <Link href="/admin" className={`admin-nav-link${pathname === "/admin" ? " active" : ""}`}>Dashboard</Link>
         <Link href="/admin/tasks" className={`admin-nav-link${pathname === "/admin/tasks" ? " active" : ""}`}>Tasks</Link>
         <Link href="/admin/roadmap" className={`admin-nav-link${pathname === "/admin/roadmap" ? " active" : ""}`}>Business</Link>
-        <Link href="/admin/site-roadmap" className={`admin-nav-link${pathname === "/admin/site-roadmap" ? " active" : ""}`}>Site</Link>
+        <Link href="/admin/site-roadmap" className={`admin-nav-link${pathname === "/admin/site-roadmap" ? " active" : ""}`}>Developer</Link>
       </div>
       {children}
     </div>

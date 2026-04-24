@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 
 const TIME_RE = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
@@ -33,10 +33,9 @@ export async function GET(req: NextRequest) {
   const includeInactive = req.nextUrl.searchParams.get("all") === "true";
 
   if (includeInactive) {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const { data, error } = await supabase
+    const admin = await requireAdmin();
+    if (!admin.ok) return admin.response;
+    const { data, error } = await admin.supabase
       .from("time_slots")
       .select("*")
       .order("sort_key", { ascending: true });
@@ -61,9 +60,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
   const body = await req.json().catch(() => null);
   const rawLabel = body?.display_label;
@@ -76,7 +74,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Use format like '7:00 AM' or '5:30 PM'." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("time_slots")
     .insert({ display_label: display, sort_key: sortKey, active: true })
     .select()

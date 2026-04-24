@@ -9,3 +9,6 @@ out/
 .playwright-mcp/
 .vercel
 .env*.local
+coverage/
+playwright-report/
+test-results/

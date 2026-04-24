@@ -10,7 +10,11 @@ const TABS: { key: LessonKey; label: string }[] = [
   { key: "clinic", label: "Clinic" },
 ];
 
-export default function Lessons() {
+export default function Lessons({
+  onOpenBooking,
+}: {
+  onOpenBooking: (lessonType: LessonKey) => void;
+}) {
   const [active, setActive] = useState<LessonKey>("beginner");
   const l = LESSONS[active];
 
@@ -60,6 +64,16 @@ export default function Lessons() {
               </div>
             ))}
           </div>
+          <button
+            type="button"
+            className="btn btn-primary lesson-book-btn"
+            onClick={() => onOpenBooking(active)}
+          >
+            Book this lesson
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </RevealWrapper>
     </section>

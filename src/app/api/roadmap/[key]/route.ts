@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/server";
 
 const KEY_RE = /^[a-z0-9-]{2,30}$/;
 
@@ -7,9 +7,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ key: string }> }
 ) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin.ok) return admin.response;
 
   const { key } = await params;
   if (!KEY_RE.test(key)) {
@@ -21,7 +20,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await admin.supabase
     .from("roadmap_checks")
     .upsert({ key, checked: body.checked, updated_at: new Date().toISOString() })
     .select()

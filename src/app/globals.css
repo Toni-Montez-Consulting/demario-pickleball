@@ -970,9 +970,26 @@ footer .contact-line a:hover { color: var(--fg); }
 
   .pillars { grid-template-columns: 1fr; }
 
+  .modal-backdrop {
+    align-items: center;
+  }
+  .modal {
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    animation: modalFade .2s ease;
+  }
+  .modal-grip {
+    display: none;
+  }
+
   h1.hero-title { font-size: clamp(52px, 8vw, 80px); }
   .section-title { font-size: clamp(40px, 5vw, 56px); }
   .final-title { font-size: clamp(48px, 6vw, 72px); }
+}
+
+@keyframes modalFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (min-width: 1100px) {
@@ -1136,9 +1153,23 @@ footer .contact-line a:hover { color: var(--fg); }
 
 /* ====== SLOT GRID SCROLL ====== */
 .slot-grid-scroll {
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  padding-bottom: 6px;
   margin-bottom: 18px;
+}
+.slot-grid-scroll .slot {
+  flex: 0 0 64px;
+  scroll-snap-align: start;
+}
+
+.lesson-book-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 18px;
 }
 
 /* ====== CONTACT FORM ====== */
