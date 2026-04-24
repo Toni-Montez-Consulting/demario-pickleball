@@ -3,8 +3,9 @@ import { cookies } from "next/headers";
 
 export function isAdminEmail(email: string | undefined): boolean {
   const adminEmail = process.env.ADMIN_EMAIL;
-  if (!adminEmail) return false;
-  return email === adminEmail;
+  if (!adminEmail || !email) return false;
+  const allowed = adminEmail.split(",").map((e) => e.trim().toLowerCase());
+  return allowed.includes(email.toLowerCase());
 }
 
 export async function createServerSupabaseClient() {
