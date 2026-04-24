@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,14 +16,14 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://demario-pickleball.vercel.app"),
+  metadataBase: new URL(SITE_URL),
   title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
   description:
     "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.6 DUPR, USTA certified, Top 3% SuperCoach.",
   icons: { icon: "/favicon.svg" },
   openGraph: {
     type: "website",
-    url: "https://demario-pickleball.vercel.app",
+    url: SITE_URL,
     title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
     description:
       "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.6 DUPR, USTA certified, Top 3% SuperCoach.",
@@ -48,9 +49,9 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "LocalBusiness",
-      "@id": "https://demario-pickleball.vercel.app/#business",
+      "@id": `${SITE_URL}/#business`,
       name: "DeMario Montez Pickleball Coaching",
-      url: "https://demario-pickleball.vercel.app",
+      url: SITE_URL,
       telephone: "+14693719220",
       email: "demariomontez10@gmail.com",
       address: {
@@ -70,7 +71,7 @@ const jsonLd = {
     },
     {
       "@type": "Person",
-      "@id": "https://demario-pickleball.vercel.app/#coach",
+      "@id": `${SITE_URL}/#coach`,
       name: "DeMario Montez",
       jobTitle: "Head Pickleball Pro",
       telephone: "+14693719220",

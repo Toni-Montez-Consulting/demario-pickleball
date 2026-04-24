@@ -50,6 +50,8 @@ export default function Footer() {
         </a>
       </div>
       <div className="footer-legal">
+        <a href="/pay">Pay DeMario</a>
+        <span className="legal-sep">·</span>
         <a href="/privacy">Privacy Policy</a>
         <span className="legal-sep">·</span>
         <a href="/terms">Terms of Service</a>
