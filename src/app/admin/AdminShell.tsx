@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AdminShell({
@@ -9,6 +9,7 @@ export default function AdminShell({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   async function signOut() {
     const supabase = createClient();
@@ -23,7 +24,7 @@ export default function AdminShell({
         <div className="brand">
           <div className="brand-mark">D</div>
           <span>
-            Admin<span className="brand-muted"> / Dashboard</span>
+            Admin<span className="brand-muted"> / {pathname === "/admin/roadmap" ? "Roadmap" : "Dashboard"}</span>
           </span>
         </div>
         <button
@@ -34,6 +35,10 @@ export default function AdminShell({
           Sign out
         </button>
       </nav>
+      <div className="admin-nav">
+        <a href="/admin" className={`admin-nav-link${pathname === "/admin" ? " active" : ""}`}>Dashboard</a>
+        <a href="/admin/roadmap" className={`admin-nav-link${pathname === "/admin/roadmap" ? " active" : ""}`}>Roadmap</a>
+      </div>
       {children}
     </div>
   );
