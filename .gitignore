@@ -8,3 +8,4 @@ out/
 *.tsbuildinfo
 .playwright-mcp/
 .vercel
+.env*.local
