@@ -13,7 +13,8 @@ function emailFrom(): string {
 }
 
 function adminEmail(): string {
-  return process.env.ADMIN_EMAIL ?? "demariomontez10@gmail.com";
+  const val = process.env.ADMIN_EMAIL ?? "demariomontez10@gmail.com";
+  return val.split(",")[0].trim();
 }
 
 const LESSON_NAMES: Record<string, string> = {
