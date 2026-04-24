@@ -101,8 +101,21 @@ export default function MfaSetupPage() {
     <div className="admin-login-wrap">
       <div className="admin-login-card mfa-setup-card">
         <div className="brand-mark">D</div>
-        <h1>Set up 2-factor</h1>
-        <p>Scan this QR code with Google Authenticator, Authy, or 1Password. Then enter the 6-digit code to confirm.</p>
+        <h1>Set up 2-factor auth</h1>
+        <p className="mfa-intro">This is a one-time setup. You&apos;ll need an authenticator app on your phone.</p>
+
+        <ol className="mfa-steps">
+          <li>
+            <strong>Download an authenticator app</strong> if you don&apos;t have one:
+            <div className="mfa-app-links">
+              <a href="https://apps.apple.com/us/app/google-authenticator/id388497605" target="_blank" rel="noopener noreferrer">Google Authenticator (iPhone)</a>
+              <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" rel="noopener noreferrer">Google Authenticator (Android)</a>
+            </div>
+          </li>
+          <li><strong>Open the app</strong>, tap the <strong>+</strong> button, then tap <strong>Scan a QR code</strong>.</li>
+          <li><strong>Scan the QR code</strong> below with your phone&apos;s camera.</li>
+          <li>The app will show a <strong>6-digit code</strong>. Type it in the box below and tap <strong>Verify &amp; finish</strong>.</li>
+        </ol>
 
         {loading && <p className="admin-empty">Preparing QR code…</p>}
 
@@ -113,7 +126,8 @@ export default function MfaSetupPage() {
               <img src={enroll.qrCodeDataUrl} alt="Scan this QR code with your authenticator app" width={220} height={220} />
             </div>
             <details className="mfa-secret-details">
-              <summary>Can&apos;t scan? Enter this secret manually</summary>
+              <summary>Can&apos;t scan the QR code? Enter this secret manually instead</summary>
+              <p className="mfa-secret-note">In your app, choose <strong>Enter setup key</strong>, then paste this code:</p>
               <code className="mfa-secret">{enroll.secret}</code>
             </details>
 

@@ -881,6 +881,25 @@ footer .contact-line a:hover { color: var(--fg); }
   word-break: break-all;
   color: var(--fg-dim);
 }
+.mfa-intro { color: var(--fg-muted); font-size: 14px; margin: 0 0 20px; }
+.mfa-steps {
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg-dim);
+  padding-left: 20px;
+  margin: 0 0 24px;
+}
+.mfa-steps li { margin-bottom: 10px; }
+.mfa-steps strong { color: var(--fg); }
+.mfa-app-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.mfa-app-links a { font-size: 13px; color: var(--accent); text-decoration: underline; }
+.mfa-secret-note { font-size: 12px; color: var(--fg-muted); margin: 6px 0 0; }
 .admin-shell { background: var(--bg); min-height: 100vh; }
 .admin-shell .topnav .brand-muted { color: var(--fg-muted); }
 .admin-signout { padding: 8px 14px; font-size: 13px; }
