@@ -652,7 +652,7 @@ footer .contact-line a:hover { color: var(--fg); }
   to   { transform: translateY(0);    opacity: 1; }
 }
 .modal-grip { width: 40px; height: 4px; background: var(--line); border-radius: 2px; margin: 0 auto 16px; }
-.modal-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-2); color: var(--fg-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; }
+.modal-close { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-2); color: var(--fg-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; }
 .modal-close:hover { background: var(--line); color: var(--fg); }
 .modal-close svg { width: 14px; height: 14px; }
 .modal h3 { font-size: 22px; margin: 0 0 8px; font-family: var(--font-space-grotesk); font-weight: 600; }
@@ -678,6 +678,7 @@ footer .contact-line a:hover { color: var(--fg); }
 .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
 .time-slot {
   padding: 12px;
+  min-height: 44px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--bg-3);
@@ -687,6 +688,9 @@ footer .contact-line a:hover { color: var(--fg); }
   font-family: var(--font-space-grotesk);
   cursor: pointer;
   transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .time-slot.selected { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .time-slot.booked { opacity: 0.35; text-decoration: line-through; pointer-events: none; }
