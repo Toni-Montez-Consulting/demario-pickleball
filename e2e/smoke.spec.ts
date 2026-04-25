@@ -50,3 +50,29 @@ test("admin route is gated when unauthenticated", async ({ page }) => {
   await expect(page).toHaveURL(/\/admin\/login/);
   await expect(page.getByRole("heading", { name: /coach login/i })).toBeVisible();
 });
+
+test("contact form submits with normal visible fields", async ({ page }) => {
+  await page.route("**/api/inquiries", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    const body = route.request().postDataJSON();
+    expect(body).toMatchObject({
+      name: "Jane Student",
+      email: "jane@example.com",
+      message: "Do you offer beginner clinics?",
+      company: "",
+    });
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({ id: "12345678-1234-1234-1234-123456789abc" }),
+    });
+  });
+
+  await page.goto("/");
+  await page.getByLabel(/your name/i).fill("Jane Student");
+  await page.getByLabel(/email/i).fill("jane@example.com");
+  await page.getByLabel(/message/i).fill("Do you offer beginner clinics?");
+  await page.getByRole("button", { name: /send message/i }).click();
+
+  await expect(page.getByText(/message sent/i)).toBeVisible();
+});

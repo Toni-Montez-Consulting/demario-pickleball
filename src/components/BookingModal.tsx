@@ -53,6 +53,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   const [availError, setAvailError] = useState("");
   const [pickerError, setPickerError] = useState("");
   const [waiverAgreed, setWaiverAgreed] = useState(false);
+  const [company, setCompany] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [bookingId, setBookingId] = useState("");
   const submittingRef = useRef(false);
@@ -97,6 +98,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       setAllDay(false);
       setSelectedTime("");
       setWaiverAgreed(false);
+      setCompany("");
       setAvailError("");
       setPickerError("");
       setErrorMsg("");
@@ -184,6 +186,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
           lesson_date: day.dateStr,
           lesson_time: selectedTime,
           waiver_accepted: waiverAgreed,
+          company,
         }),
       });
       if (res.status === 409) {
@@ -308,6 +311,18 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 </a>
               </span>
             </label>
+            <div className="honeypot-field" aria-hidden="true">
+              <label htmlFor="bm-company">Company</label>
+              <input
+                id="bm-company"
+                type="text"
+                name="company"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+              />
+            </div>
             <button
               type="button"
               className="btn btn-primary"

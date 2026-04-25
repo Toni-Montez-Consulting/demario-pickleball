@@ -21,6 +21,11 @@ interface Props {
 
 const UNCATEGORIZED = "Uncategorized";
 
+async function responseError(res: Response, fallback: string): Promise<string> {
+  const data = await res.json().catch(() => ({}));
+  return typeof data?.error === "string" ? data.error : fallback;
+}
+
 function dueStatus(dueDate: string | null, completed: boolean): {
   label: string;
   tone: "overdue" | "today" | "soon" | "future" | "none" | "done";
@@ -159,6 +164,7 @@ export default function TasksDashboard({ initialTasks }: Props) {
   }
 
   async function deleteTask(id: string) {
+    if (!window.confirm("Delete this task?")) return;
     setActingId(id);
     setActError("");
     try {
@@ -166,7 +172,7 @@ export default function TasksDashboard({ initialTasks }: Props) {
       if (res.ok) {
         setTasks((prev) => prev.filter((t) => t.id !== id));
       } else {
-        setActError("Failed to delete task.");
+        setActError(await responseError(res, "Failed to delete task."));
       }
     } finally {
       setActingId(null);

@@ -60,6 +60,11 @@ const LESSON_NAMES: Record<string, string> = {
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
+async function responseError(res: Response, fallback: string): Promise<string> {
+  const data = await res.json().catch(() => ({}));
+  return typeof data?.error === "string" ? data.error : fallback;
+}
+
 export default function AdminDashboard({ initialBookings, initialInquiries }: Props) {
   const [tab, setTab] = useState<"bookings" | "inquiries" | "availability">("bookings");
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
@@ -116,6 +121,9 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   }, [tab]);
 
   async function updateBookingStatus(id: string, status: "confirmed" | "cancelled") {
+    if (status === "cancelled" && !window.confirm("Cancel this booking and email the student?")) {
+      return;
+    }
     setUpdating(id);
     setUpdateError("");
     try {
@@ -128,7 +136,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
         const updated = await res.json();
         setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: updated.status } : b)));
       } else {
-        setUpdateError("Failed to update booking. Please try again.");
+        setUpdateError(await responseError(res, "Failed to update booking. Please try again."));
       }
     } finally {
       setUpdating(null);
@@ -148,7 +156,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
         const updated = await res.json();
         setBookings((prev) => prev.map((x) => (x.id === b.id ? { ...x, paid_at: updated.paid_at } : x)));
       } else {
-        setUpdateError("Failed to update payment status. Please try again.");
+        setUpdateError(await responseError(res, "Failed to update payment status. Please try again."));
       }
     } finally {
       setUpdating(null);
@@ -165,6 +173,8 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
       });
       if (res.ok) {
         setInquiries((prev) => prev.map((i) => (i.id === inq.id ? { ...i, read: !i.read } : i)));
+      } else {
+        setUpdateError(await responseError(res, "Failed to update inquiry."));
       }
     } finally {
       setUpdating(null);
@@ -203,11 +213,15 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   }
 
   async function unblockSlot(id: string) {
+    if (!window.confirm("Unblock this date or time?")) return;
     setUpdating(id);
+    setBlockError("");
     try {
       const res = await fetch(`/api/blocked-slots/${id}`, { method: "DELETE" });
       if (res.ok) {
         setBlockedSlots((prev) => prev.filter((s) => s.id !== id));
+      } else {
+        setBlockError(await responseError(res, "Failed to unblock slot."));
       }
     } finally {
       setUpdating(null);
@@ -238,6 +252,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
 
   async function toggleSlotActive(slot: TimeSlot) {
     setUpdating(slot.id);
+    setSlotError("");
     try {
       const res = await fetch(`/api/time-slots/${slot.id}`, {
         method: "PATCH",
@@ -247,6 +262,8 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
       if (res.ok) {
         const updated = await res.json();
         setTimeSlots((prev) => prev.map((s) => (s.id === slot.id ? updated : s)));
+      } else {
+        setSlotError(await responseError(res, "Failed to update time slot."));
       }
     } finally {
       setUpdating(null);
@@ -254,11 +271,15 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   }
 
   async function deleteTimeSlot(id: string) {
+    if (!window.confirm("Delete this time slot? Existing bookings will not be deleted.")) return;
     setUpdating(id);
+    setSlotError("");
     try {
       const res = await fetch(`/api/time-slots/${id}`, { method: "DELETE" });
       if (res.ok) {
         setTimeSlots((prev) => prev.filter((s) => s.id !== id));
+      } else {
+        setSlotError(await responseError(res, "Failed to delete time slot."));
       }
     } finally {
       setUpdating(null);
@@ -291,11 +312,15 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   }
 
   async function deleteRecurring(id: string) {
+    if (!window.confirm("Delete this recurring unavailability rule?")) return;
     setUpdating(id);
+    setRecurringError("");
     try {
       const res = await fetch(`/api/recurring-blocks/${id}`, { method: "DELETE" });
       if (res.ok) {
         setRecurringBlocks((prev) => prev.filter((r) => r.id !== id));
+      } else {
+        setRecurringError(await responseError(res, "Failed to delete recurring block."));
       }
     } finally {
       setUpdating(null);
@@ -323,6 +348,8 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
           Availability
         </button>
       </div>
+
+      {tab !== "bookings" && updateError && <div className="modal-error">{updateError}</div>}
 
       {tab === "bookings" && (
         <>

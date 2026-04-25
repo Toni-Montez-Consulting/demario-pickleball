@@ -6,6 +6,12 @@ Paste this entire file as your prompt in a new Claude Code session.
 
 ## Context
 
+# Historical Note
+
+This prompt is historical audit context from April 2026. The current source of
+truth for launch checks is `docs/RELEASE_CHECKLIST.md`; the current developer
+tracker is `docs/DEVELOPER_PLAN.md`.
+
 You are auditing **demariomontezpb.com** — a pickleball coaching booking site for DeMario Montez (Dallas, TX).
 The goal is to find every bug, UX problem, broken link, misspelling, and policy issue, then fix them all.
 
