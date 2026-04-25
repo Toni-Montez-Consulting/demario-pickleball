@@ -1198,6 +1198,7 @@ footer .contact-line a:hover { color: var(--fg); }
   white-space: nowrap;
   border: 0;
 }
+.honeypot-field { display: none; }
 .contact-success {
   display: flex;
   flex-direction: column;

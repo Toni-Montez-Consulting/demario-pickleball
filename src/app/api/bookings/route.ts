@@ -3,6 +3,7 @@ import { createServiceRoleClient, requireAdmin } from "@/lib/supabase/server";
 import { sendBookingCreatedEmails } from "@/lib/email/client";
 import { assertBookableSlot } from "@/lib/availability";
 import { WAIVER_VERSION } from "@/lib/business";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const VALID_LESSON_TYPES = ["beginner", "advanced", "clinic"] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -11,7 +12,29 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
 
-  const { name, email, phone, lesson_type, lesson_date, lesson_time, notes, waiver_accepted } = body;
+  const { name, email, phone, lesson_type, lesson_date, lesson_time, notes, waiver_accepted, company } = body;
+
+  if (typeof company === "string" && company.trim()) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  const supabase = createServiceRoleClient();
+  const rateLimit = await checkRateLimit(supabase, req, {
+    route: "bookings",
+    limit: 5,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (rateLimit.limited) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: rateLimit.retryAfterSeconds
+          ? { "Retry-After": String(rateLimit.retryAfterSeconds) }
+          : undefined,
+      }
+    );
+  }
 
   if (!name || !email || !lesson_type || !lesson_date || !lesson_time) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -35,7 +58,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "You must agree to the coaching terms before booking." }, { status: 400 });
   }
 
-  const supabase = createServiceRoleClient();
   const availabilityError = await assertBookableSlot(supabase, lesson_date, lesson_time);
   if (availabilityError) {
     return NextResponse.json(

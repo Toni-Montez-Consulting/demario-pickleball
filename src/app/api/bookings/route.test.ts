@@ -12,6 +12,7 @@ interface QueryResult {
 const mocks = vi.hoisted(() => ({
   serviceClient: undefined as unknown,
   sendBookingCreatedEmails: vi.fn(),
+  checkRateLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -21,6 +22,10 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/email/client", () => ({
   sendBookingCreatedEmails: mocks.sendBookingCreatedEmails,
+}));
+
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: mocks.checkRateLimit,
 }));
 
 class MockQuery {
@@ -108,6 +113,7 @@ function createMockClient(tables: Tables, inserted: Row[]) {
 async function postBooking(body: Record<string, unknown>) {
   const { POST } = await import("./route");
   return POST({
+    headers: new Headers({ "x-forwarded-for": "203.0.113.10" }),
     json: async () => body,
   } as NextRequest);
 }
@@ -119,6 +125,8 @@ describe("POST /api/bookings", () => {
     inserted.length = 0;
     mocks.sendBookingCreatedEmails.mockReset();
     mocks.sendBookingCreatedEmails.mockResolvedValue(undefined);
+    mocks.checkRateLimit.mockReset();
+    mocks.checkRateLimit.mockResolvedValue({ limited: false });
   });
 
   it("creates a booking with waiver metadata after validating availability", async () => {
@@ -191,6 +199,42 @@ describe("POST /api/bookings", () => {
     });
 
     expect(response.status).toBe(400);
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("rejects honeypot submissions before insert", async () => {
+    mocks.serviceClient = createMockClient({}, inserted);
+
+    const response = await postBooking({
+      name: "Jane Student",
+      email: "jane@example.com",
+      lesson_type: "beginner",
+      lesson_date: "2026-05-04",
+      lesson_time: "9:00 AM",
+      waiver_accepted: true,
+      company: "Spam Co",
+    });
+
+    expect(response.status).toBe(400);
+    expect(inserted).toHaveLength(0);
+    expect(mocks.checkRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("returns 429 when booking attempts are rate limited", async () => {
+    mocks.serviceClient = createMockClient({}, inserted);
+    mocks.checkRateLimit.mockResolvedValue({ limited: true, retryAfterSeconds: 3600 });
+
+    const response = await postBooking({
+      name: "Jane Student",
+      email: "jane@example.com",
+      lesson_type: "beginner",
+      lesson_date: "2026-05-04",
+      lesson_time: "9:00 AM",
+      waiver_accepted: true,
+    });
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("3600");
     expect(inserted).toHaveLength(0);
   });
 });

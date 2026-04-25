@@ -14,6 +14,7 @@ Use this before promoting changes to `demariomontezpb.com`.
 ## Supabase
 
 - Run `docs/supabase-p0-migration.sql`.
+- Run `docs/supabase-p1-hardening.sql`.
 - Verify `bookings.waiver_signed_at` and `bookings.waiver_version` exist.
 - Verify `bookings` and `inquiries` no longer have the exact `public insert` policy.
 - Verify anon users cannot read `bookings` or `inquiries`.
@@ -31,6 +32,7 @@ Use this before promoting changes to `demariomontezpb.com`.
 - Check payment links and QR rendering on booking confirmation and `/pay`.
 - Enroll and verify MFA for each admin account.
 - Confirm DeMario knows the weekly admin routine: review bookings, inquiries, unpaid lessons, and blocked dates.
+- Review `docs/ADMIN_HANDOFF.md` with DeMario.
 
 ## Business Gates
 
@@ -41,7 +43,7 @@ Use this before promoting changes to `demariomontezpb.com`.
 
 ## Broader Promotion Gates
 
-- Rate limiting or honeypot protection is active on public booking and inquiry forms.
+- Rate limiting and honeypot protection are active on public booking and inquiry forms.
 - Production error monitoring is configured.
-- Dependency advisories have been reviewed and tracked.
+- Dependency advisories have been reviewed in `docs/DEPENDENCY_ADVISORIES.md`.
 - Stale audit/setup docs are marked historical or replaced with current docs.

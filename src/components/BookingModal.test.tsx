@@ -32,6 +32,7 @@ describe("BookingModal", () => {
           lesson_type: "beginner",
           lesson_time: "9:00 AM",
           waiver_accepted: true,
+          company: "",
         });
         return jsonResponse({
           id: "12345678-1234-1234-1234-123456789abc",

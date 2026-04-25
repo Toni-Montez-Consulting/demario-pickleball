@@ -9,6 +9,7 @@ export default function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [company, setCompany] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -16,6 +17,7 @@ export default function ContactForm() {
     setName("");
     setEmail("");
     setMessage("");
+    setCompany("");
     setStatus("idle");
     setErrorMsg("");
   }
@@ -27,7 +29,7 @@ export default function ContactForm() {
       const res = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ name, email, message, company }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -108,6 +110,18 @@ export default function ContactForm() {
                 rows={5}
               />
               <div className={`char-count${message.length >= 1800 ? " char-warn" : ""}`}>{message.length} / 2000</div>
+            </div>
+            <div className="honeypot-field" aria-hidden="true">
+              <label htmlFor="cf-company">Company</label>
+              <input
+                id="cf-company"
+                type="text"
+                name="company"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+              />
             </div>
             {status === "error" && (
               <div className="modal-error">{errorMsg}</div>

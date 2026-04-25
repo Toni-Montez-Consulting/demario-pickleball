@@ -219,7 +219,11 @@ If two students try to book the same slot simultaneously, one gets a 409 error a
 
 ### Row Level Security
 
-All tables use RLS. Public routes use the anon key (limited read access). Admin routes use the service role key (full access). The service role key is never exposed to the browser.
+All tables use RLS. Public browser reads use the anon key only for non-PII schedule data. Public form submissions go through Next.js API routes, which validate input and then use the service role from trusted server code. Admin routes require Supabase Auth, an allowed admin email, MFA, and then use the service role for data operations. The service role key is never exposed to the browser.
+
+### Abuse protection
+
+Run `docs/supabase-p1-hardening.sql` to create the `rate_limit_events` table used by public booking and inquiry rate limits. The app stores hashed IP identifiers only, and rate limiting fails open if the table is unavailable.
 
 ---
 
