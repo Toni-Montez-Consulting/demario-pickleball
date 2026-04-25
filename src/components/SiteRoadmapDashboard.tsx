@@ -65,6 +65,11 @@ const PHASES: DevRoadmapPhase[] = [
         detail: "Old audit docs should be clearly marked historical or replaced with current operational docs.",
       },
       {
+        key: "dev-p1-db-constraints",
+        text: "Verify production database constraints and indexes",
+        detail: "Confirm the active-booking unique index exists in Supabase so simultaneous booking attempts cannot double-book a lesson time.",
+      },
+      {
         key: "dev-p1-e2e",
         text: "Expand Playwright coverage for homepage, booking, payment options, contact, and admin gating",
         detail: "Use mocked API responses by default so CI does not need production credentials.",
@@ -85,6 +90,11 @@ const PHASES: DevRoadmapPhase[] = [
         key: "dev-p2-sentry",
         text: "Add production error monitoring",
         detail: "Sentry or equivalent should alert on server/client failures before students report them.",
+      },
+      {
+        key: "dev-p2-dependency-watch",
+        text: "Track dependency advisories without forcing unsafe upgrades",
+        detail: "Review Next/PostCSS and Resend/Svix advisories during regular maintenance; avoid npm audit --force unless the migration path is tested.",
       },
       {
         key: "dev-p2-analytics",

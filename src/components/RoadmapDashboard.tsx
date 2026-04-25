@@ -52,6 +52,11 @@ const PHASES: RoadmapPhase[] = [
         detail: "Get written approval from the venue, confirm court fees, cancellation rules, and whether they require their own waiver or insurance certificate.",
       },
       {
+        key: "p0-soft-launch",
+        text: "Start with a controlled soft launch for known students and referrals",
+        detail: "Use the site for real clients, but manually confirm each booking by text until the venue, legal, insurance, and workflow details are fully settled.",
+      },
+      {
         key: "p0-taxes",
         text: "Set aside 25–30% of every payment for self-employment taxes",
         detail: "SE tax is ~15.3% on top of income tax. Coaches get hit hard at year-end if unprepared.",
@@ -129,6 +134,11 @@ const PHASES: RoadmapPhase[] = [
         key: "p2-cancel-policy",
         text: "Text every new student your 24-hour cancellation policy before their first session",
         detail: "Set expectations early. Most people respect it — and the few who don't need to know.",
+      },
+      {
+        key: "p2-weekly-admin-review",
+        text: "Review bookings, inquiries, unpaid lessons, and blocked dates every week",
+        detail: "Keep the admin dashboard clean so students do not book stale times and follow-ups do not slip through.",
       },
     ],
   },
