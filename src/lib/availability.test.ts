@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { assertBookableSlot, getAvailabilityForDate } from "./availability";
+import { assertBookableSlot, getAvailabilityForDate, isValidDateString } from "./availability";
 
 type Row = Record<string, string | number | boolean | null>;
 type Tables = Record<string, Row[]>;
@@ -74,6 +74,11 @@ function mockSupabase(tables: Tables, errors: Record<string, string> = {}) {
 }
 
 describe("availability", () => {
+  it("rejects calendar rollover dates", () => {
+    expect(isValidDateString("2026-02-28")).toBe(true);
+    expect(isValidDateString("2026-02-31")).toBe(false);
+  });
+
   it("combines bookings, one-off blocks, and recurring blocks", async () => {
     const supabase = mockSupabase({
       bookings: [

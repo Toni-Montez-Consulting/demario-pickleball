@@ -16,7 +16,7 @@ export interface BookableSlotResult {
 export function isValidDateString(date: string): boolean {
   if (!DATE_RE.test(date)) return false;
   const parsed = new Date(`${date}T00:00:00Z`);
-  return !Number.isNaN(parsed.getTime());
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date;
 }
 
 export function isPastBookingDate(date: string, now = new Date()): boolean {

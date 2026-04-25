@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface DevRoadmapItem {
   key: string;
@@ -109,8 +109,11 @@ const CHECKABLE_ITEMS = PHASES.flatMap((p) => p.items).filter((i) => !i.shipped)
 
 export default function SiteRoadmapDashboard({ initialChecked }: { initialChecked: string[] }) {
   const [checked, setChecked] = useState<Set<string>>(new Set(initialChecked));
+  const pendingRef = useRef(new Set<string>());
 
   async function toggle(key: string) {
+    if (pendingRef.current.has(key)) return;
+    pendingRef.current.add(key);
     const next = !checked.has(key);
     setChecked((prev) => {
       const s = new Set(prev);
@@ -118,18 +121,22 @@ export default function SiteRoadmapDashboard({ initialChecked }: { initialChecke
       else s.delete(key);
       return s;
     });
-    const res = await fetch(`/api/roadmap/${key}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ checked: next }),
-    });
-    if (!res.ok) {
-      setChecked((prev) => {
-        const s = new Set(prev);
-        if (next) s.delete(key);
-        else s.add(key);
-        return s;
+    try {
+      const res = await fetch(`/api/roadmap/${key}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ checked: next }),
       });
+      if (!res.ok) {
+        setChecked((prev) => {
+          const s = new Set(prev);
+          if (next) s.delete(key);
+          else s.add(key);
+          return s;
+        });
+      }
+    } finally {
+      pendingRef.current.delete(key);
     }
   }
 

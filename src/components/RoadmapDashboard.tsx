@@ -236,9 +236,12 @@ const PHASES: RoadmapPhase[] = [
 ];
 
 const TOTAL_ITEMS = PHASES.reduce((sum, p) => sum + p.items.length, 0);
+const VALID_KEYS = new Set(PHASES.flatMap((p) => p.items.map((item) => item.key)));
 
 export default function RoadmapDashboard({ initialChecked }: { initialChecked: string[] }) {
-  const [checked, setChecked] = useState<Set<string>>(new Set(initialChecked));
+  const [checked, setChecked] = useState<Set<string>>(
+    new Set(initialChecked.filter((key) => VALID_KEYS.has(key)))
+  );
   const pendingRef = useRef(new Set<string>());
 
   async function toggle(key: string) {
