@@ -9,7 +9,8 @@ Use this before promoting changes to `demariomontezpb.com`.
 - `npm run lint`
 - `npm run test`
 - `npm run build`
-- Optional after browser install: `npm run test:e2e`
+- `npm run test:e2e`
+- Confirm the latest GitHub Actions CI run is green.
 
 ## Supabase
 
@@ -18,6 +19,8 @@ Use this before promoting changes to `demariomontezpb.com`.
 - Verify `bookings.waiver_signed_at` and `bookings.waiver_version` exist.
 - Verify `bookings` and `inquiries` no longer have the exact `public insert` policy.
 - Verify anon users cannot read `bookings` or `inquiries`.
+- Verify anon users cannot read or write `rate_limit_events`.
+- Verify `rate_limit_events` has RLS enabled and no public policies.
 - Verify the `bookings_unique_active_slot` partial unique index exists.
 - Verify active `time_slots` include the current lesson schedule.
 - Verify venue/location copy is correct before accepting live direct bookings.
@@ -46,4 +49,4 @@ Use this before promoting changes to `demariomontezpb.com`.
 - Rate limiting and honeypot protection are active on public booking and inquiry forms.
 - Production error monitoring is configured.
 - Dependency advisories have been reviewed in `docs/DEPENDENCY_ADVISORIES.md`.
-- Stale audit/setup docs are marked historical or replaced with current docs.
+- Historical audit/planning docs have been reviewed against current docs.
