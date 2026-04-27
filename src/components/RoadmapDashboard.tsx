@@ -48,8 +48,8 @@ const PHASES: RoadmapPhase[] = [
       },
       {
         key: "p0-venue",
-        text: "Confirm where direct site bookings can run before taking live bookings",
-        detail: "Mario task: get a text or email from the venue saying you can coach direct-booked lessons there. Confirm court fees, cancellation rules, insurance requirements, and whether the venue has its own waiver. Send the written yes to Tonio.",
+        text: "Confirm venue and platform permission before taking direct site bookings",
+        detail: "Mario task: list every place/platform you coach through, including TeachMe.To, Grove/Podplay, Dallas Pickle Club/Podplay, and any other venue. Ask each one if you can book lessons there through demariomontezpb.com instead of only through their platform. Confirm any contract, exclusivity, referral fee, court fee, cancellation, insurance, or waiver rules. Send the written yes or restrictions to Tonio.",
       },
       {
         key: "p0-soft-launch",

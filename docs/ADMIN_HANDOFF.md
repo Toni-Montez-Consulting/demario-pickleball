@@ -29,7 +29,11 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
 
 ## Before Broader Promotion
 
-- Confirm venue permission in writing.
+- Confirm venue and platform permission in writing for every place Mario wants
+  to use for direct site bookings.
+- Confirm direct bookings through `demariomontezpb.com` do not conflict with
+  TeachMe.To, Grove/Podplay, Dallas Pickle Club/Podplay, venue, contractor, or
+  exclusivity rules.
 - Confirm insurance is active.
 - Confirm waiver and terms were reviewed by a Texas sports/recreation attorney and the insurance carrier or broker.
 - Confirm rate limiting is active by running `docs/supabase-p1-hardening.sql`.

@@ -81,21 +81,27 @@ Mario does:
 
 Done when: the public booking picker only shows times Mario is willing to teach.
 
-### Confirm Direct-Booking Venue
+### Confirm Venue And Platform Permission For Direct Site Bookings
 
-Why: the site should not take direct bookings for a court unless the venue
-allows it.
+Why: the site should not take direct bookings for a court unless the venue and
+any existing booking platform agreement allow it.
 
 Mario does:
 
-1. Ask the venue if direct-booked private lessons are allowed.
-2. Confirm court fees, cancellation rules, and insurance requirements.
-3. Ask whether the venue requires its own waiver.
-4. Save the answer as a text, email, or screenshot.
-5. Send the written yes to Tonio.
+1. Make a list of every place/platform he currently coaches through, including
+   TeachMe.To, Grove/Podplay, Dallas Pickle Club/Podplay, and any other venue.
+2. For each one, ask: "Am I allowed to book lessons at this location through my
+   own website, demariomontezpb.com, instead of only through your platform?"
+3. Ask whether any coach agreement, contractor agreement, exclusivity rule,
+   referral fee, or venue policy limits direct bookings.
+4. Confirm court fees, cancellation rules, insurance requirements, and whether
+   the venue requires its own waiver.
+5. Save the answer as a text, email, screenshot, or signed agreement.
+6. Send the written yes or restrictions to Tonio.
 
-Done when: Mario has written permission and the site location copy matches the
-actual lesson plan.
+Done when: every location Mario wants to use for direct site bookings has a
+written yes or clear restrictions, and the site location copy/availability match
+those rules.
 
 ### Confirm Insurance And Waiver Review
 

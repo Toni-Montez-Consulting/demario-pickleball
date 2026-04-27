@@ -24,6 +24,7 @@ Use this before promoting changes to `demariomontezpb.com`.
 - Verify the `bookings_unique_active_slot` partial unique index exists.
 - Verify active `time_slots` include the current lesson schedule.
 - Verify venue/location copy is correct before accepting live direct bookings.
+- Verify each venue/platform allows direct bookings through `demariomontezpb.com` rather than only through the existing platforms.
 
 ## Google Calendar OAuth
 
@@ -54,7 +55,8 @@ Use this before promoting changes to `demariomontezpb.com`.
 
 ## Business Gates
 
-- Direct-booking venue is confirmed in writing.
+- Direct-booking venue/platform permission is confirmed in writing for every place Mario plans to coach from site bookings.
+- Any TeachMe.To, Grove/Podplay, Dallas Pickle Club/Podplay, venue, contractor, exclusivity, referral fee, court fee, insurance, cancellation, and waiver restrictions are reflected in the site workflow.
 - Insurance is active.
 - Waiver/terms are reviewed by a Texas sports/recreation attorney and insurance carrier or broker.
 - Cancellation/payment policy is final.
