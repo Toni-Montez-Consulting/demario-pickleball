@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { LESSON_DURATION_MINUTES } from "@/lib/business";
+import { getGoogleCalendarBusyForDate, type BusyInterval } from "@/lib/google-calendar";
+import { parseDisplayTime, zonedDateTimeToUtc } from "@/lib/time";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_ZONE = "America/Chicago";
 
 export interface Availability {
   allDay: boolean;
@@ -11,6 +15,11 @@ export interface BookableSlotResult {
   ok: boolean;
   status: 400 | 409 | 500;
   error: string;
+}
+
+interface AvailabilityOptions {
+  lessonType?: string;
+  busyProvider?: (date: string) => Promise<{ busy: BusyInterval[]; error: string | null }>;
 }
 
 export function isValidDateString(date: string): boolean {
@@ -25,9 +34,29 @@ export function isPastBookingDate(date: string, now = new Date()): boolean {
   return date <= yesterday.toISOString().split("T")[0];
 }
 
+function slotOverlapsBusyInterval(
+  date: string,
+  displayLabel: string,
+  lessonType: string | undefined,
+  busy: BusyInterval[]
+): boolean {
+  const parsed = parseDisplayTime(displayLabel);
+  if (!parsed) return false;
+
+  const durationMin = LESSON_DURATION_MINUTES[lessonType ?? "beginner"] ?? 60;
+  const slotStart = zonedDateTimeToUtc(date, parsed, TIME_ZONE).getTime();
+  const slotEnd = slotStart + durationMin * 60_000;
+  return busy.some((interval) => {
+    const busyStart = interval.start.getTime();
+    const busyEnd = interval.end.getTime();
+    return slotStart < busyEnd && slotEnd > busyStart;
+  });
+}
+
 export async function getAvailabilityForDate(
   supabase: SupabaseClient,
-  date: string
+  date: string,
+  options: AvailabilityOptions = {}
 ): Promise<{ data: Availability | null; error: string | null }> {
   if (!isValidDateString(date)) {
     return { data: null, error: "Invalid date" };
@@ -36,7 +65,7 @@ export async function getAvailabilityForDate(
   const parsedDate = new Date(`${date}T00:00:00Z`);
   const dayOfWeek = parsedDate.getUTCDay();
 
-  const [bookingsResult, blockedResult, recurringResult] = await Promise.all([
+  const [bookingsResult, blockedResult, recurringResult, timeSlotsResult, busyResult] = await Promise.all([
     supabase
       .from("bookings")
       .select("lesson_time")
@@ -50,12 +79,19 @@ export async function getAvailabilityForDate(
       .from("recurring_blocks")
       .select("time")
       .eq("day_of_week", dayOfWeek),
+    supabase
+      .from("time_slots")
+      .select("display_label")
+      .eq("active", true),
+    (options.busyProvider ?? getGoogleCalendarBusyForDate)(date),
   ]);
 
   const firstError =
     bookingsResult.error?.message ??
     blockedResult.error?.message ??
     recurringResult.error?.message ??
+    timeSlotsResult.error?.message ??
+    busyResult.error ??
     null;
 
   if (firstError) {
@@ -76,6 +112,14 @@ export async function getAvailabilityForDate(
     if (block.time === null) allDay = true;
     else if (block.time) unavailable.add(block.time);
   });
+  timeSlotsResult.data?.forEach((slot) => {
+    if (
+      typeof slot.display_label === "string" &&
+      slotOverlapsBusyInterval(date, slot.display_label, options.lessonType, busyResult.busy)
+    ) {
+      unavailable.add(slot.display_label);
+    }
+  });
 
   return {
     data: {
@@ -89,7 +133,8 @@ export async function getAvailabilityForDate(
 export async function assertBookableSlot(
   supabase: SupabaseClient,
   lessonDate: string,
-  lessonTime: string
+  lessonTime: string,
+  lessonType?: string
 ): Promise<BookableSlotResult | null> {
   if (!isValidDateString(lessonDate)) {
     return { ok: false, status: 400, error: "Invalid date" };
@@ -115,7 +160,7 @@ export async function assertBookableSlot(
     return { ok: false, status: 400, error: "Invalid time" };
   }
 
-  const availability = await getAvailabilityForDate(supabase, lessonDate);
+  const availability = await getAvailabilityForDate(supabase, lessonDate, { lessonType });
   if (availability.error || !availability.data) {
     return { ok: false, status: 500, error: "Could not verify availability." };
   }

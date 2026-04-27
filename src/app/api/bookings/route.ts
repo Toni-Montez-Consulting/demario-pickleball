@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "You must agree to the coaching terms before booking." }, { status: 400 });
   }
 
-  const availabilityError = await assertBookableSlot(supabase, lesson_date, lesson_time);
+  const availabilityError = await assertBookableSlot(supabase, lesson_date, lesson_time, lesson_type);
   if (availabilityError) {
     return NextResponse.json(
       { error: availabilityError.error },
