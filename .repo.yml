@@ -1,0 +1,25 @@
+repo_id: demario-pickleball-1
+display_name: "Demario Pickleball"
+repo_type: client-engagement
+owner: toni
+client_id: demario-pickleball
+engagement_id: eng_2026_04_demario_pickleball
+sensitivity_tier: 3
+domains:
+  - local-services
+  - booking
+  - admin-handoff
+  - launch-readiness
+allowed_context_consumers:
+  - hub-indexer
+  - this-engagement-agents
+artifact_roots:
+  - docs/
+source_of_truth_files:
+  - package.json
+  - docs/DEVELOPER_PLAN.md
+  - docs/RELEASE_CHECKLIST.md
+  - docs/ADMIN_HANDOFF.md
+status: active
+created_at: 2026-04-27
+last_verified_at: 2026-04-27
