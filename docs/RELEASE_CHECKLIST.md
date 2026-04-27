@@ -25,6 +25,21 @@ Use this before promoting changes to `demariomontezpb.com`.
 - Verify active `time_slots` include the current lesson schedule.
 - Verify venue/location copy is correct before accepting live direct bookings.
 
+## Google Calendar OAuth
+
+- Confirm the Google Calendar API is enabled in the production Google Cloud project.
+- Confirm the OAuth consent screen publishing status is **In production**, not **Testing**.
+- Confirm the OAuth consent screen uses `https://demariomontezpb.com` as the app homepage.
+- Confirm the OAuth consent screen uses `https://demariomontezpb.com/privacy` as the privacy policy URL.
+- Confirm `demariomontezpb.com` is listed as an authorized domain.
+- Confirm the only Calendar scope requested is `https://www.googleapis.com/auth/calendar.freebusy`.
+- Confirm `/privacy` discloses Google Calendar FreeBusy use and the Google API Services User Data Policy / Limited Use commitment.
+- Revoke any old test authorization from DeMario's Google Account before generating the production refresh token.
+- Generate a fresh DeMario refresh token after the OAuth app is published to production.
+- Update Vercel production `GOOGLE_OAUTH_REFRESH_TOKEN` and redeploy.
+- Set `GOOGLE_CALENDAR_SYNC_ENABLED=true` only after the admin Availability diagnostic shows the sync is connected.
+- Create a busy Google Calendar event over an active lesson slot and confirm the public booking picker blocks that slot.
+
 ## Live Manual Checks
 
 - Submit a test inquiry.

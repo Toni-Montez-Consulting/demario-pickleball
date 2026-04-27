@@ -94,7 +94,59 @@ Use this when DeMario's other lesson platforms already send Google Calendar
 invites. The site reads Google Calendar FreeBusy data and treats overlapping
 events as unavailable in both the booking picker and final booking API guard.
 
-Setup:
+The only Google scope this app needs is:
+
+```text
+https://www.googleapis.com/auth/calendar.freebusy
+```
+
+Do not add broader Calendar scopes such as `calendar`, `calendar.readonly`, or
+`calendar.events` unless the product actually starts reading or writing event
+details.
+
+### Google OAuth production setup
+
+Google OAuth apps created as **External** start in **Testing**. In Testing,
+DeMario can authorize the integration as a test user, but the authorization can
+expire after 7 days. Before turning calendar blocking on permanently, move the
+OAuth app to production and create a fresh refresh token after publishing.
+
+In **Google Cloud Console -> Google Auth Platform / OAuth consent screen**:
+
+1. Confirm the app name clearly matches the site, for example
+   `DeMario Montez Pickleball`.
+2. Set the user support email to an address you monitor.
+3. Add the app home page:
+   `https://demariomontezpb.com`
+4. Add the privacy policy URL:
+   `https://demariomontezpb.com/privacy`
+5. Add the terms URL if Google asks for it:
+   `https://demariomontezpb.com/terms`
+6. Add the authorized domain:
+   `demariomontezpb.com`
+7. Add only this requested scope:
+   `https://www.googleapis.com/auth/calendar.freebusy`
+8. Use this scope justification:
+   `The site checks DeMario Montez's Google Calendar free/busy availability so students cannot book lesson times that overlap his existing appointments. The app only receives busy time ranges and does not read event titles, notes, locations, attendees, or descriptions.`
+9. Save the consent screen and click **Publish app** to move the publishing
+   status from Testing to In production.
+10. If Google shows an unverified-app warning or asks for verification, continue
+    through the verification flow with the same narrow scope and justification.
+
+After the app is published:
+
+1. Have DeMario open his Google Account third-party access page and remove the
+   old test authorization for this app if it exists.
+2. Re-run OAuth Playground using **Use your own OAuth credentials** with the
+   production OAuth client ID and secret.
+3. Authorize DeMario's Google account with only:
+   `https://www.googleapis.com/auth/calendar.freebusy`
+4. Exchange the code for tokens and copy the new refresh token.
+5. Replace `GOOGLE_OAUTH_REFRESH_TOKEN` in Vercel production.
+6. Set `GOOGLE_CALENDAR_SYNC_ENABLED=true` only after the new token is saved.
+7. Redeploy production so the server picks up the new environment values.
+
+### Google Calendar setup
 
 1. In Google Cloud, create or reuse a project and enable **Google Calendar API**.
 2. Configure an OAuth consent screen with the
@@ -109,18 +161,19 @@ Setup:
    - `GOOGLE_OAUTH_CLIENT_SECRET=<OAuth client secret>`
    - `GOOGLE_OAUTH_REFRESH_TOKEN=<refresh token from DeMario authorization>`
 6. Redeploy Vercel after adding the variables.
-7. Test by adding a Google Calendar event that overlaps a public time slot, then
+7. Log into `/admin`, open **Availability**, and confirm the Google Calendar sync
+   row says connected for the diagnostic date.
+8. Test by adding a Google Calendar event that overlaps a public time slot, then
    open the booking modal and confirm that slot is unavailable.
 
 If Google Calendar sync is enabled but the OAuth values are wrong, the
 availability API fails closed instead of showing risky open slots. The refresh
 token is a secret; keep it only in Vercel env vars and a password manager.
 
-Important: if the Google OAuth consent screen stays in **Testing** with an
-External app, Google can expire this refresh token after 7 days for Calendar
-scopes. After confirming the integration works, move the OAuth app to
-production/published status or plan to re-authorize and replace
-`GOOGLE_OAUTH_REFRESH_TOKEN` weekly.
+Important: do not leave the production site dependent on an OAuth app that is
+still in **Testing**. Testing is useful for the first proof-of-concept, but the
+production site should use an In production OAuth app, a current refresh token,
+and the public privacy policy disclosure at `/privacy`.
 
 ---
 
@@ -370,6 +423,8 @@ Requires a `.env.local` file with all variables listed in Section 2.
   - [ ] `tony.montez@gmail.com`
   - [ ] `ericaxholloway@gmail.com`
 - [ ] **Add time slots** — go to Admin → Availability → Time slots → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists
+- [ ] **Publish Google OAuth app to production** before leaving Google Calendar blocking enabled long-term (see Google Calendar blocking)
+- [ ] **Generate a fresh DeMario Google OAuth refresh token** after publishing, then update Vercel and redeploy
 
 ---
 

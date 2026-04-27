@@ -6,7 +6,7 @@ export default function PrivacyPage() {
       <div className="legal-page">
         <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Privacy Policy</h1>
-        <p className="legal-date">Effective April 23, 2026</p>
+        <p className="legal-date">Effective April 27, 2026</p>
 
         <h2>What we collect</h2>
         <p>
@@ -22,6 +22,33 @@ export default function PrivacyPage() {
           <li>To send lesson reminders (if you opt in)</li>
         </ul>
         <p>We do not sell, rent, or share your personal information with third parties for marketing purposes.</p>
+
+        <h2>Google Calendar availability data</h2>
+        <p>
+          DeMario may connect his Google Calendar so this site can check whether a
+          requested lesson time is already busy. The site uses Google Calendar FreeBusy
+          access only to read busy time ranges for scheduling availability. It does not
+          request event titles, notes, locations, attendees, or event descriptions.
+        </p>
+        <p>
+          Google Calendar availability data is used only to prevent double-booking lessons.
+          It is not sold, used for advertising, or used to build marketing profiles.
+          OAuth tokens are stored server-side as deployment secrets, and Google Calendar
+          data is not shown to students.
+        </p>
+        <p>
+          This site&apos;s use and transfer of information received from Google APIs will adhere
+          to the{" "}
+          <a
+            href="https://developers.google.com/terms/api-services-user-data-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Google API Services User Data Policy
+          </a>, including the Limited Use requirements. DeMario can revoke access at any
+          time from his Google Account permissions or by removing the Google OAuth
+          credentials from the site&apos;s deployment settings.
+        </p>
 
         <h2>Data storage</h2>
         <p>
