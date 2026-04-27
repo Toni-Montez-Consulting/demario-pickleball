@@ -100,8 +100,8 @@ const PHASES: RoadmapPhase[] = [
       },
       {
         key: "p1-dupr-api-access",
-        text: "Request official DUPR API or partner access for automated rating updates",
-        detail: "Use DUPR's support request flow and ask for an external read-only token or partner path to display your verified singles/doubles ratings on this site. Until approved, keep DUPR numbers updated manually.",
+        text: "Ask DUPR for read-only API or partner access for your coaching site",
+        detail: "Mario task: contact DUPR support from your coach/player account and ask for an external read-only token or partner integration that can display your verified singles and doubles ratings on demariomontezpb.com. Send Tonio the approval email, token instructions, or partner contact. Until DUPR approves access, keep the ratings updated manually.",
       },
       {
         key: "p1-email-list",

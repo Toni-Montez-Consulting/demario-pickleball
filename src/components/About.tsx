@@ -31,7 +31,7 @@ export default function About() {
       </RevealWrapper>
       <RevealWrapper delay={120}>
         <p className="about-bio-intro">
-          I&apos;m a 4.6 DUPR player, USTA/DUPR certified coach, and Head Pro
+          I&apos;m a 4.70 doubles / 4.58 singles DUPR player, USTA/DUPR certified coach, and Head Pro
           at Dallas Indoor Pickleball Club. I built my game the hard way — film
           study, repeatable patterns, pressure-testing every shot. Now I build
           yours the same way.
@@ -43,11 +43,11 @@ export default function About() {
         </p>
         <div className="about-stats">
           <div className="about-stat">
-            <div className="num">4.612</div>
+            <div className="num">4.702</div>
             <div className="label">Doubles DUPR</div>
           </div>
           <div className="about-stat">
-            <div className="num">4.629</div>
+            <div className="num">4.579</div>
             <div className="label">Singles DUPR</div>
           </div>
           <div className="about-stat">
