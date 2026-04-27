@@ -364,6 +364,13 @@ Short-term work belongs in `/admin/tasks`; long-term business development belong
 in `/admin/roadmap`; developer/code work belongs in `/admin/site-roadmap`.
 The plain-language owner checklist is also written in `docs/MARIO_ACTION_PLAN.md`.
 
+Before direct bookings are promoted, Mario needs written confirmation from each
+venue/platform he coaches through that booking lessons on `demariomontezpb.com`
+is allowed. This includes checking TeachMe.To, Grove/Podplay, Dallas Pickle
+Club/Podplay, venue policies, contractor agreements, exclusivity language,
+referral fees, court fees, insurance rules, cancellation rules, and waiver
+requirements.
+
 The DUPR API item is a manual access step first. DUPR's public API docs show
 public endpoints that require external read-only tokens, while broader
 integrations are handled through DUPR support/API partner paths. DeMario can do
@@ -433,6 +440,7 @@ Requires a `.env.local` file with all variables listed in Section 2.
   - [ ] `tony.montez@gmail.com`
   - [ ] `ericaxholloway@gmail.com`
 - [ ] **Add time slots** — go to Admin → Availability → Time slots → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists
+- [ ] **Confirm venue/platform permission** — get written confirmation that direct bookings through `demariomontezpb.com` are allowed at each place Mario plans to coach from site bookings
 - [ ] **Publish Google OAuth app to production** before leaving Google Calendar blocking enabled long-term (see Google Calendar blocking)
 - [ ] **Generate a fresh DeMario Google OAuth refresh token** after publishing, then update Vercel and redeploy
 

@@ -42,8 +42,8 @@ roadmap lives at `/admin/roadmap`; the developer roadmap lives at
 - Verify production RLS and index state from `docs/RELEASE_CHECKLIST.md`.
 - Generate a fresh production Google refresh token with DeMario and confirm a busy Google Calendar event blocks a public lesson slot.
 - Complete live manual checks: inquiry, booking, emails, cancellation, payment links, QR rendering, MFA, and DeMario handoff.
-- Confirm business gates before broad promotion: venue permission, insurance, legal review, and final payment/cancellation policy.
-- Have Mario complete the short-term Admin Tasks list: Google Calendar connection, DUPR access request, bookable lesson times, venue permission, insurance/waiver review, and Google Business verification.
+- Confirm business gates before broad promotion: venue/platform direct-booking permission, insurance, legal review, and final payment/cancellation policy.
+- Have Mario complete the short-term Admin Tasks list: Google Calendar connection, DUPR access request, bookable lesson times, venue/platform permission, insurance/waiver review, and Google Business verification.
 
 ## Deferred Technical Work
 

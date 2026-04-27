@@ -8,7 +8,7 @@ should stay in `/admin/roadmap`.
 - P0 reliability work is shipped.
 - P1 launch-confidence work is shipped in code and CI.
 - The repo is ready for controlled client use after the manual Supabase and live-release checks in `docs/RELEASE_CHECKLIST.md`.
-- Broader promotion still depends on business gates: venue approval, insurance, waiver/terms review, and final payment/cancellation policy.
+- Broader promotion still depends on business gates: venue/platform direct-booking approval, insurance, waiver/terms review, and final payment/cancellation policy.
 
 ## Shipped
 
@@ -55,7 +55,7 @@ should stay in `/admin/roadmap`.
 
 ## Long-Term Reference
 
-- Keep the Business roadmap focused on DeMario's operating tasks: venue approval, insurance, legal review, payments, follow-ups, and growth.
+- Keep the Business roadmap focused on DeMario's operating tasks: venue/platform direct-booking approval, insurance, legal review, payments, follow-ups, and growth.
 - Keep `docs/MARIO_ACTION_PLAN.md`, `/admin/tasks`, and `/admin/roadmap` nontechnical enough for Mario to complete without understanding code or infrastructure.
 - Keep the Developer roadmap focused on Tonio's code/ops tasks: CI, tests, monitoring, database constraints, dependency upgrades, and stale documentation.
 - Before broader promotion or paid ads, complete the manual launch gates, production monitoring, and business gates.
