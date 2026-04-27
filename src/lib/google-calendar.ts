@@ -34,17 +34,30 @@ interface TokenCache {
 
 let tokenCache: TokenCache | null = null;
 
+function envValue(name: string): string | null {
+  const raw = process.env[name]?.trim();
+  if (!raw) return null;
+  if (
+    (raw.startsWith("\"") && raw.endsWith("\"")) ||
+    (raw.startsWith("'") && raw.endsWith("'"))
+  ) {
+    const unquoted = raw.slice(1, -1).trim();
+    return unquoted || null;
+  }
+  return raw;
+}
+
 function getConfig(): OAuthCalendarConfig | null {
-  const calendarId = process.env.GOOGLE_CALENDAR_ID?.trim();
-  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID?.trim();
-  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET?.trim();
-  const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN?.trim();
+  const calendarId = envValue("GOOGLE_CALENDAR_ID");
+  const clientId = envValue("GOOGLE_OAUTH_CLIENT_ID");
+  const clientSecret = envValue("GOOGLE_OAUTH_CLIENT_SECRET");
+  const refreshToken = envValue("GOOGLE_OAUTH_REFRESH_TOKEN");
   if (!calendarId || !clientId || !clientSecret || !refreshToken) return null;
   return { calendarId, clientId, clientSecret, refreshToken };
 }
 
 export function isGoogleCalendarSyncEnabled(): boolean {
-  return process.env.GOOGLE_CALENDAR_SYNC_ENABLED === "true";
+  return envValue("GOOGLE_CALENDAR_SYNC_ENABLED") === "true";
 }
 
 export function getGoogleCalendarSyncConfigStatus(): CalendarSyncConfigStatus {
@@ -73,7 +86,12 @@ async function getAccessToken(config: OAuthCalendarConfig): Promise<string> {
   });
 
   if (!res.ok) {
-    throw new Error(`Google OAuth refresh failed: ${res.status}`);
+    const data = await res.json().catch(() => null) as
+      | { error?: string; error_description?: string }
+      | null;
+    const reason = data?.error ? `: ${data.error}` : "";
+    const description = data?.error_description ? ` (${data.error_description})` : "";
+    throw new Error(`Google OAuth refresh failed: ${res.status}${reason}${description}`);
   }
 
   const data = await res.json() as { access_token?: string; expires_in?: number };
