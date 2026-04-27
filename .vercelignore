@@ -1,0 +1,14 @@
+.env
+.env.local
+.env.*.local
+
+.git
+.github
+.next
+.playwright-mcp
+.vercel
+node_modules
+coverage
+playwright-report
+test-results
+*.tsbuildinfo
