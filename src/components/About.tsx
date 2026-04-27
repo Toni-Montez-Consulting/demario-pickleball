@@ -60,6 +60,32 @@ export default function About() {
           </div>
         </div>
       </RevealWrapper>
+      <RevealWrapper delay={150}>
+        <div className="achievement-card">
+          <div className="achievement-photo">
+            <Image
+              src="/img/crazy-ape-dill-dinkers-podium.jpg"
+              alt="DeMario Montez after winning the Crazy Ape Dill Dinkers Plano pickleball tournament"
+              fill
+              className="gallery-img"
+              sizes="(max-width: 430px) 100vw, 430px"
+            />
+          </div>
+          <div className="achievement-copy">
+            <div className="kicker">Recent Win</div>
+            <h3>Crazy Ape x Dill Dinkers Champion</h3>
+            <p>
+              DeMario took first in the 4.5-5.0 DUPR division at the Crazy Ape
+              x Dill Dinkers Plano tournament and finished the run undefeated.
+            </p>
+            <div className="achievement-meta">
+              <span>First place</span>
+              <span>Dill Dinkers Plano</span>
+              <span>April 2026</span>
+            </div>
+          </div>
+        </div>
+      </RevealWrapper>
       <RevealWrapper delay={180}>
         <div className="about-gallery-header">
           <div className="kicker">On the Court</div>

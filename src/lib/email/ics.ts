@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/site";
-import { LESSON_LOCATION } from "@/lib/business";
+import { LESSON_DURATION_MINUTES, LESSON_LOCATION } from "@/lib/business";
+import { parseDisplayTime } from "@/lib/time";
 
 export type IcsMethod = "REQUEST" | "CANCEL";
 
@@ -17,23 +18,6 @@ const LESSON_NAMES: Record<string, string> = {
   advanced: "Strategy Lab",
   clinic: "Group Clinic",
 };
-
-const LESSON_DURATION_MINUTES: Record<string, number> = {
-  beginner: 60,
-  advanced: 75,
-  clinic: 90,
-};
-
-function parseDisplayTime(display: string): { hour: number; minute: number } | null {
-  const m = display.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!m) return null;
-  let hour = parseInt(m[1], 10);
-  const minute = parseInt(m[2], 10);
-  const mer = m[3].toUpperCase();
-  if (hour === 12) hour = 0;
-  if (mer === "PM") hour += 12;
-  return { hour, minute };
-}
 
 function formatLocal(year: number, month: number, day: number, hour: number, minute: number): string {
   const pad = (n: number) => String(n).padStart(2, "0");

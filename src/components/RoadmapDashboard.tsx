@@ -99,6 +99,11 @@ const PHASES: RoadmapPhase[] = [
         detail: "Their site traffic is warm leads — people already at the club looking for instruction.",
       },
       {
+        key: "p1-dupr-api-access",
+        text: "Request official DUPR API or partner access for automated rating updates",
+        detail: "Use DUPR's support request flow and ask for an external read-only token or partner path to display your verified singles/doubles ratings on this site. Until approved, keep DUPR numbers updated manually.",
+      },
+      {
         key: "p1-email-list",
         text: "Start an email list with Mailchimp (free up to 500 contacts)",
         detail: "You own your email list. Algorithms change — your list doesn't.",

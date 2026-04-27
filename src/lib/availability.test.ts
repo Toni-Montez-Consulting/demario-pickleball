@@ -102,6 +102,62 @@ describe("availability", () => {
     });
   });
 
+  it("blocks slots that overlap Google Calendar busy intervals", async () => {
+    const supabase = mockSupabase({
+      bookings: [],
+      blocked_slots: [],
+      recurring_blocks: [],
+      time_slots: [
+        { display_label: "9:00 AM", active: true },
+        { display_label: "10:00 AM", active: true },
+        { display_label: "11:00 AM", active: true },
+      ],
+    });
+
+    const result = await getAvailabilityForDate(supabase, "2026-05-04", {
+      lessonType: "beginner",
+      busyProvider: async () => ({
+        busy: [
+          {
+            start: new Date("2026-05-04T15:30:00.000Z"),
+            end: new Date("2026-05-04T15:45:00.000Z"),
+          },
+        ],
+        error: null,
+      }),
+    });
+
+    expect(result.error).toBeNull();
+    expect(result.data?.unavailable).toContain("10:00 AM");
+    expect(result.data?.unavailable).not.toContain("9:00 AM");
+    expect(result.data?.unavailable).not.toContain("11:00 AM");
+  });
+
+  it("uses lesson duration when checking Google Calendar overlap", async () => {
+    const supabase = mockSupabase({
+      bookings: [],
+      blocked_slots: [],
+      recurring_blocks: [],
+      time_slots: [{ display_label: "9:00 AM", active: true }],
+    });
+
+    const result = await getAvailabilityForDate(supabase, "2026-05-04", {
+      lessonType: "advanced",
+      busyProvider: async () => ({
+        busy: [
+          {
+            start: new Date("2026-05-04T15:05:00.000Z"),
+            end: new Date("2026-05-04T15:30:00.000Z"),
+          },
+        ],
+        error: null,
+      }),
+    });
+
+    expect(result.error).toBeNull();
+    expect(result.data?.unavailable).toContain("9:00 AM");
+  });
+
   it("marks a date all-day unavailable from one-off or recurring blocks", async () => {
     const supabase = mockSupabase({
       bookings: [],

@@ -61,11 +61,19 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  const fetchAvailability = useCallback(async (dateStr: string, availableTimes: string[]) => {
+  const fetchAvailability = useCallback(async (
+    dateStr: string,
+    availableTimes: string[],
+    lessonType: FormData["lessonType"]
+  ) => {
     setAvailLoading(true);
     setAvailError("");
     try {
-      const res = await fetch(`/api/availability?date=${dateStr}`);
+      const params = new URLSearchParams({
+        date: dateStr,
+        lesson_type: lessonType,
+      });
+      const res = await fetch(`/api/availability?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load availability.");
       const { unavailable = [], allDay: fullDay = false } = await res.json();
       const unavailableSet = new Set<string>(unavailable);
@@ -110,7 +118,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
           const loaded = data.map((d) => d.display_label);
           setTimes(loaded);
           setTimesLoaded(true);
-          fetchAvailability(freshDays[0].dateStr, loaded);
+          fetchAvailability(freshDays[0].dateStr, loaded, initialLessonType);
         })
         .catch(() => {
           setTimesLoaded(true);
@@ -165,7 +173,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   function handleDaySelect(i: number) {
     setSelectedDay(i);
     setPickerError("");
-    fetchAvailability(days[i].dateStr, times);
+    fetchAvailability(days[i].dateStr, times, form.lessonType);
   }
 
   async function confirmBooking() {
@@ -190,7 +198,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
         }),
       });
       if (res.status === 409) {
-        await fetchAvailability(day.dateStr, times);
+        await fetchAvailability(day.dateStr, times, form.lessonType);
         setPickerError("That time was just taken. Please pick another.");
         setStep("picker");
         return;
@@ -327,7 +335,10 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
               type="button"
               className="btn btn-primary"
               disabled={!form.name.trim() || !EMAIL_RE.test(form.email) || !waiverAgreed}
-              onClick={() => setStep("picker")}
+              onClick={() => {
+                fetchAvailability(days[selectedDay].dateStr, times, form.lessonType);
+                setStep("picker");
+              }}
             >
               Next — pick a time
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -368,7 +379,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
             ) : availError ? (
               <div className="avail-fetch-error">
                 <div className="modal-error">{availError}</div>
-                <button type="button" className="btn btn-ghost avail-retry-btn" onClick={() => fetchAvailability(days[selectedDay].dateStr, times)}>
+                <button type="button" className="btn btn-ghost avail-retry-btn" onClick={() => fetchAvailability(days[selectedDay].dateStr, times, form.lessonType)}>
                   Retry
                 </button>
               </div>

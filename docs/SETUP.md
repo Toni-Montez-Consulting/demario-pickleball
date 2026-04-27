@@ -64,6 +64,11 @@ They are also in `.env.local` for local development (not committed to git).
 | `ADMIN_EMAIL` | comma-separated list | Controls who can log into the admin panel |
 | `RESEND_API_KEY` | `re_...` | Resend API key for sending emails |
 | `EMAIL_FROM` | `DeMario Pickleball <bookings@demariomontezpb.com>` | The "from" address on all emails |
+| `GOOGLE_CALENDAR_SYNC_ENABLED` | `true` / `false` | Optional. When true, booking availability also checks DeMario's Google Calendar busy times |
+| `GOOGLE_CALENDAR_ID` | `primary` or calendar ID | Calendar to read for busy blocks |
+| `GOOGLE_OAUTH_CLIENT_ID` | OAuth client ID | Google OAuth app client ID |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth client secret | Google OAuth app secret |
+| `GOOGLE_OAUTH_REFRESH_TOKEN` | OAuth refresh token | Token generated after DeMario authorizes calendar free/busy access |
 
 ### Adding or updating a variable via CLI
 
@@ -80,6 +85,42 @@ echo "new-value" | npx vercel env add VARIABLE_NAME production
 # Trigger a redeploy to pick up changes
 npx vercel --prod
 ```
+
+---
+
+### Google Calendar blocking
+
+Use this when DeMario's other lesson platforms already send Google Calendar
+invites. The site reads Google Calendar FreeBusy data and treats overlapping
+events as unavailable in both the booking picker and final booking API guard.
+
+Setup:
+
+1. In Google Cloud, create or reuse a project and enable **Google Calendar API**.
+2. Configure an OAuth consent screen with the
+   `https://www.googleapis.com/auth/calendar.freebusy` scope.
+3. Create a Web application OAuth client and use OAuth Playground with that
+   client ID/secret to authorize DeMario's Google account.
+4. Exchange the authorization code for tokens and copy the refresh token.
+5. Add these Vercel environment variables:
+   - `GOOGLE_CALENDAR_SYNC_ENABLED=true`
+   - `GOOGLE_CALENDAR_ID=primary` unless using a secondary calendar ID
+   - `GOOGLE_OAUTH_CLIENT_ID=<OAuth client ID>`
+   - `GOOGLE_OAUTH_CLIENT_SECRET=<OAuth client secret>`
+   - `GOOGLE_OAUTH_REFRESH_TOKEN=<refresh token from DeMario authorization>`
+6. Redeploy Vercel after adding the variables.
+7. Test by adding a Google Calendar event that overlaps a public time slot, then
+   open the booking modal and confirm that slot is unavailable.
+
+If Google Calendar sync is enabled but the OAuth values are wrong, the
+availability API fails closed instead of showing risky open slots. The refresh
+token is a secret; keep it only in Vercel env vars and a password manager.
+
+Important: if the Google OAuth consent screen stays in **Testing** with an
+External app, Google can expire this refresh token after 7 days for Calendar
+scopes. After confirming the integration works, move the OAuth app to
+production/published status or plan to re-authorize and replace
+`GOOGLE_OAUTH_REFRESH_TOKEN` weekly.
 
 ---
 
@@ -255,13 +296,19 @@ Run `docs/supabase-p1-hardening.sql` to create the `rate_limit_events` table use
 
 A private business checklist covering:
 - Phase 0: Legal & Financial Foundation (LLC, EIN, business bank account, insurance, taxes)
-- Phase 1: Digital Presence (Google Business, Instagram, TikTok, email list)
+- Phase 1: Digital Presence (Google Business, DUPR API/partner access, Instagram, TikTok, email list)
 - Phase 2: Booking & Payments (Stripe, packages, cancellation policy)
 - Phase 3: Revenue Diversification (clinics, content, referrals, gift cards)
 - Phase 4: Systems & Business Health (P&L review, quarterly taxes, second coach)
 - Phase 5: Long-term Growth (video course, sponsorship, coaching team)
 
 Checkbox state is saved to Supabase (`roadmap_checks` table) so it persists across devices.
+
+The DUPR API item is a manual access step first. DUPR's current public docs show
+public APIs that require external read-only tokens, while broader integrations
+are handled through DUPR support/API partner paths. Once DeMario has approved
+access, the site can add a small server-side sync to refresh verified singles
+and doubles ratings instead of hardcoding them.
 
 ---
 

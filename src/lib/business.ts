@@ -8,3 +8,9 @@ export const LESSON_LOCATION =
   "Dallas, TX - court location confirmed after booking";
 
 export const WAIVER_VERSION = "2026-04-24";
+
+export const LESSON_DURATION_MINUTES: Record<string, number> = {
+  beginner: 60,
+  advanced: 75,
+  clinic: 90,
+};
