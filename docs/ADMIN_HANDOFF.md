@@ -2,6 +2,8 @@
 
 Use this when showing DeMario how to operate the site.
 
+For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
+
 ## Daily
 
 - Open `/admin` and review new bookings.
@@ -17,6 +19,7 @@ Use this when showing DeMario how to operate the site.
 - Confirm recurring unavailability still matches the real lesson schedule.
 - Clear completed follow-up tasks.
 - Check the Business roadmap for the next operating task.
+- Keep Tasks limited to short-term actions Mario can finish this week or next.
 
 ## When Cancelling
 
@@ -30,3 +33,5 @@ Use this when showing DeMario how to operate the site.
 - Confirm insurance is active.
 - Confirm waiver and terms were reviewed by a Texas sports/recreation attorney and the insurance carrier or broker.
 - Confirm rate limiting is active by running `docs/supabase-p1-hardening.sql`.
+- Confirm Google Calendar blocking is connected in Admin -> Availability.
+- Confirm DUPR automation is still manual until DUPR grants read-only API or partner access.

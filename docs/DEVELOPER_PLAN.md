@@ -31,6 +31,7 @@ should stay in `/admin/roadmap`.
 - Added Supabase-backed rate limiting and honeypot fields to public POST endpoints.
 - Added DeMario admin handoff docs.
 - Added dependency advisory tracking docs.
+- Added Google Calendar FreeBusy blocking and admin Availability diagnostics.
 
 ## Remaining Manual Launch Gates
 
@@ -39,7 +40,9 @@ should stay in `/admin/roadmap`.
 - Verify `bookings_unique_active_slot` exists in production Supabase.
 - Verify anon users cannot read or write `bookings`, `inquiries`, or `rate_limit_events`.
 - Run the live manual checks in `docs/RELEASE_CHECKLIST.md`.
+- Generate a fresh production Google refresh token with DeMario and confirm Admin -> Availability reports Google Calendar connected.
 - Review `docs/ADMIN_HANDOFF.md` with DeMario.
+- Have Mario review `docs/MARIO_ACTION_PLAN.md` and complete the live Tasks list.
 
 ## Deferred P2
 
@@ -47,11 +50,13 @@ should stay in `/admin/roadmap`.
 - Add privacy-conscious analytics after consent/cookie policy is final.
 - Add 24-hour reminder emails and student reschedule links.
 - Add Stripe Checkout only after the pickleball business entity and banking setup exist.
+- Add automated DUPR rating sync only after Mario receives official read-only API or partner access from DUPR.
 - Upgrade dependency advisories when compatible patched versions are available; do not use `npm audit fix --force` without a tested migration branch.
 
 ## Long-Term Reference
 
 - Keep the Business roadmap focused on DeMario's operating tasks: venue approval, insurance, legal review, payments, follow-ups, and growth.
+- Keep `docs/MARIO_ACTION_PLAN.md`, `/admin/tasks`, and `/admin/roadmap` nontechnical enough for Mario to complete without understanding code or infrastructure.
 - Keep the Developer roadmap focused on Tonio's code/ops tasks: CI, tests, monitoring, database constraints, dependency upgrades, and stale documentation.
 - Before broader promotion or paid ads, complete the manual launch gates, production monitoring, and business gates.
 - DUPR automation should wait for official DUPR API/partner access. The business roadmap tracks DeMario's request step: he should ask DUPR for an external read-only token or partner integration for `demariomontezpb.com` and send Tonio the approval email, token instructions, or partner contact. Once credentials exist, add a server-side sync for verified singles/doubles ratings.

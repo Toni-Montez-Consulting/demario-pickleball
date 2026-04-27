@@ -33,13 +33,17 @@ roadmap lives at `/admin/roadmap`; the developer roadmap lives at
 - `docs/supabase-p1-hardening.sql` creates/verifies the active-booking unique index and rate-limit table.
 - Admin destructive actions now require confirmation and show API error messages where available.
 - Admin handoff and dependency advisory docs were added.
+- Google Calendar FreeBusy blocking was added to availability and booking APIs, with admin diagnostics in Availability.
+- Mario-facing tasks and the owner action plan were clarified in `/admin/tasks`, `/admin/roadmap`, and `docs/MARIO_ACTION_PLAN.md`.
 
 ## Remaining Manual Launch Work
 
 - Run `docs/supabase-p1-hardening.sql` in Supabase before treating rate limiting as active in production.
 - Verify production RLS and index state from `docs/RELEASE_CHECKLIST.md`.
+- Generate a fresh production Google refresh token with DeMario and confirm a busy Google Calendar event blocks a public lesson slot.
 - Complete live manual checks: inquiry, booking, emails, cancellation, payment links, QR rendering, MFA, and DeMario handoff.
 - Confirm business gates before broad promotion: venue permission, insurance, legal review, and final payment/cancellation policy.
+- Have Mario complete the short-term Admin Tasks list: Google Calendar connection, DUPR access request, bookable lesson times, venue permission, insurance/waiver review, and Google Business verification.
 
 ## Deferred Technical Work
 
@@ -88,6 +92,15 @@ Future implementation shape:
 - Privacy-conscious analytics only.
 - Track booking modal opens, booking successes, inquiry submissions, and payment page views.
 
+### DUPR Rating Sync
+
+Deferred until Mario receives official read-only API token instructions or partner access from DUPR.
+
+Future implementation shape:
+- Store DUPR credentials in Vercel only.
+- Add a server-side sync or cached fetch for verified singles/doubles ratings.
+- Keep the current manual ratings as fallback if DUPR access is unavailable.
+
 ## Not Scheduled
 
 - Lesson packages, because they depend on Stripe/payment operations.
@@ -98,8 +111,10 @@ Future implementation shape:
 ## Current Priority Order
 
 1. Complete Supabase/live manual release checks.
-2. Use the site with controlled referrals and known students.
-3. Resolve business gates for broader promotion.
-4. Add production monitoring.
-5. Revisit reminders/rescheduling after real booking volume appears.
-6. Revisit Stripe after business entity and banking setup are ready.
+2. Help Mario finish the short-term Admin Tasks list.
+3. Confirm Google Calendar blocking with a real busy event.
+4. Use the site with controlled referrals and known students.
+5. Resolve business gates for broader promotion.
+6. Add production monitoring.
+7. Revisit reminders/rescheduling after real booking volume appears.
+8. Revisit Stripe after business entity and banking setup are ready.

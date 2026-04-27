@@ -355,7 +355,14 @@ A private business checklist covering:
 - Phase 4: Systems & Business Health (P&L review, quarterly taxes, second coach)
 - Phase 5: Long-term Growth (video course, sponsorship, coaching team)
 
-Checkbox state is saved to Supabase (`roadmap_checks` table) so it persists across devices.
+This is Mario's nontechnical business checklist. Each item should explain what
+Mario does, what "done" means, and when to hand something back to Tonio.
+Checkbox state is saved to Supabase (`roadmap_checks` table) so it persists
+across devices.
+
+Short-term work belongs in `/admin/tasks`; long-term business development belongs
+in `/admin/roadmap`; developer/code work belongs in `/admin/site-roadmap`.
+The plain-language owner checklist is also written in `docs/MARIO_ACTION_PLAN.md`.
 
 The DUPR API item is a manual access step first. DUPR's public API docs show
 public endpoints that require external read-only tokens, while broader

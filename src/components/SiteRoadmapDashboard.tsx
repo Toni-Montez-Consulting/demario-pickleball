@@ -88,6 +88,12 @@ const PHASES: DevRoadmapPhase[] = [
         detail: "Rate limiting and honeypot fields reduce fake booking and spam risk.",
         shipped: true,
       },
+      {
+        key: "dev-p1-google-calendar",
+        text: "Add Google Calendar FreeBusy blocking and admin diagnostics",
+        detail: "Availability and booking POST both check DeMario's Google busy ranges. Admin Availability shows whether the sync is connected after Mario authorizes Google.",
+        shipped: true,
+      },
     ],
   },
   {
@@ -120,6 +126,11 @@ const PHASES: DevRoadmapPhase[] = [
         key: "dev-p2-stripe",
         text: "Add Stripe Checkout after the pickleball business entity is ready",
         detail: "Backburner until business banking/entity setup exists. Keep manual Cash App/Zelle/PayPal flow for now.",
+      },
+      {
+        key: "dev-p2-dupr-sync",
+        text: "Add automated DUPR rating sync after Mario gets official access",
+        detail: "Wait for Mario to receive DUPR read-only token instructions or partner approval, then add a server-side sync for verified singles/doubles ratings.",
       },
     ],
   },
@@ -172,8 +183,8 @@ export default function SiteRoadmapDashboard({ initialChecked }: { initialChecke
           <span className="admin-count">{totalDone} / {totalCheckable} complete</span>
         </div>
         <p className="roadmap-sub">
-          Implementation tracker for Tonio. DeMario&apos;s operational business checklist
-          lives separately under Business.
+          Implementation tracker for Tonio. Mario&apos;s nontechnical operating tasks
+          live under Tasks and Business.
         </p>
         <div className="overall-bar">
           <div className="overall-fill" style={{ width: `${overallPct}%` }} />

@@ -58,6 +58,9 @@ Use this before promoting changes to `demariomontezpb.com`.
 - Insurance is active.
 - Waiver/terms are reviewed by a Texas sports/recreation attorney and insurance carrier or broker.
 - Cancellation/payment policy is final.
+- Mario has reviewed `docs/MARIO_ACTION_PLAN.md`.
+- `/admin/tasks` contains only real, current Mario tasks; no test tasks or developer-only work.
+- `/admin/roadmap` uses plain-language Mario actions with clear done conditions.
 
 ## Broader Promotion Gates
 
