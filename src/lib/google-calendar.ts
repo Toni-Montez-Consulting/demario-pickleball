@@ -14,6 +14,12 @@ export interface BusyResult {
   error: string | null;
 }
 
+export interface CalendarSyncConfigStatus {
+  enabled: boolean;
+  configured: boolean;
+  calendarId: string | null;
+}
+
 interface OAuthCalendarConfig {
   calendarId: string;
   clientId: string;
@@ -39,6 +45,15 @@ function getConfig(): OAuthCalendarConfig | null {
 
 export function isGoogleCalendarSyncEnabled(): boolean {
   return process.env.GOOGLE_CALENDAR_SYNC_ENABLED === "true";
+}
+
+export function getGoogleCalendarSyncConfigStatus(): CalendarSyncConfigStatus {
+  const config = getConfig();
+  return {
+    enabled: isGoogleCalendarSyncEnabled(),
+    configured: Boolean(config),
+    calendarId: config?.calendarId ?? null,
+  };
 }
 
 async function getAccessToken(config: OAuthCalendarConfig): Promise<string> {

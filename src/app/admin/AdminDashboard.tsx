@@ -47,6 +47,16 @@ interface RecurringBlock {
   created_at: string;
 }
 
+interface CalendarSyncStatus {
+  enabled: boolean;
+  configured: boolean;
+  calendarId: string | null;
+  checkedDate: string;
+  ok: boolean;
+  busyCount: number;
+  error: string | null;
+}
+
 interface Props {
   initialBookings: Booking[];
   initialInquiries: Inquiry[];
@@ -90,6 +100,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   const [recurringLoading, setRecurringLoading] = useState(false);
   const [availLoading, setAvailLoading] = useState(false);
   const [availFetchError, setAvailFetchError] = useState("");
+  const [calendarSync, setCalendarSync] = useState<CalendarSyncStatus | null>(null);
   const hasLoadedAvailRef = useRef(false);
 
   const activeTimeSlots = timeSlots.filter((s) => s.active);
@@ -104,11 +115,13 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
       fetch("/api/blocked-slots").then((r) => (r.ok ? r.json() : Promise.reject())),
       fetch("/api/time-slots?all=true").then((r) => (r.ok ? r.json() : Promise.reject())),
       fetch("/api/recurring-blocks").then((r) => (r.ok ? r.json() : Promise.reject())),
+      fetch("/api/calendar-sync").then((r) => (r.ok ? r.json() : Promise.reject())),
     ])
-      .then(([blocked, slots, recurring]) => {
+      .then(([blocked, slots, recurring, sync]) => {
         setBlockedSlots(Array.isArray(blocked) ? blocked : []);
         setTimeSlots(Array.isArray(slots) ? slots : []);
         setRecurringBlocks(Array.isArray(recurring) ? recurring : []);
+        setCalendarSync(sync && typeof sync === "object" ? sync : null);
         const firstActive = Array.isArray(slots) ? (slots as TimeSlot[]).find((s) => s.active) : null;
         if (firstActive) {
           setBlockTime((prev) => prev || firstActive.display_label);
@@ -463,6 +476,35 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
       {tab === "availability" && (
         <div className="avail-admin">
           {availFetchError && <div className="modal-error">{availFetchError}</div>}
+
+          <section className="avail-section">
+            <h2 className="avail-section-title">Google Calendar sync</h2>
+            <p className="avail-section-sub">
+              Checks DeMario&apos;s Google Calendar busy times before students can book.
+            </p>
+            {availLoading && !calendarSync ? (
+              <p className="admin-empty">Checking Google Calendar…</p>
+            ) : calendarSync ? (
+              <div className="avail-row">
+                <span className="avail-date">
+                  {calendarSync.enabled
+                    ? calendarSync.configured
+                      ? calendarSync.ok
+                        ? "Connected"
+                        : "Needs attention"
+                      : "Missing OAuth values"
+                    : "Disabled"}
+                </span>
+                <span className={`status-badge ${calendarSync.ok ? "status-confirmed" : "status-pending"}`}>
+                  {calendarSync.ok ? `${calendarSync.busyCount} busy blocks` : "not verified"}
+                </span>
+                <span className="avail-time">{calendarSync.checkedDate}</span>
+                {calendarSync.error && <span className="avail-time">{calendarSync.error}</span>}
+              </div>
+            ) : (
+              <p className="admin-empty">Google Calendar sync status unavailable.</p>
+            )}
+          </section>
 
           <section className="avail-section">
             <h2 className="avail-section-title">Time slots</h2>
