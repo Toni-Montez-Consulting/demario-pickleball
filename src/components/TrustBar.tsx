@@ -30,7 +30,7 @@ export default function TrustBar() {
         <div className="trust-chip">
           <StarIcon />
           <span>
-            <strong>DUPR</strong> · Certified 4.6
+            <strong>DUPR</strong> · 4.70 Dbl · 4.58 Sngl
           </span>
         </div>
         <div className="trust-chip">

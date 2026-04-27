@@ -19,14 +19,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
   description:
-    "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.6 DUPR, USTA certified, Top 3% SuperCoach.",
+    "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.70 doubles DUPR, USTA certified, Top 3% SuperCoach.",
   icons: { icon: "/favicon.svg" },
   openGraph: {
     type: "website",
     url: SITE_URL,
     title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
     description:
-      "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.6 DUPR, USTA certified, Top 3% SuperCoach.",
+      "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.70 doubles DUPR, USTA certified, Top 3% SuperCoach.",
     images: [{ url: "/img/hero-ready.jpg", width: 1200, height: 630, alt: "DeMario Montez on the pickleball court" }],
   },
   twitter: {

@@ -54,4 +54,4 @@ should stay in `/admin/roadmap`.
 - Keep the Business roadmap focused on DeMario's operating tasks: venue approval, insurance, legal review, payments, follow-ups, and growth.
 - Keep the Developer roadmap focused on Tonio's code/ops tasks: CI, tests, monitoring, database constraints, dependency upgrades, and stale documentation.
 - Before broader promotion or paid ads, complete the manual launch gates, production monitoring, and business gates.
-- DUPR automation should wait for official DUPR API/partner access. The business roadmap tracks DeMario's request step; once an external read-only token or partner credentials exist, add a server-side sync for verified singles/doubles ratings.
+- DUPR automation should wait for official DUPR API/partner access. The business roadmap tracks DeMario's request step: he should ask DUPR for an external read-only token or partner integration for `demariomontezpb.com` and send Tonio the approval email, token instructions, or partner contact. Once credentials exist, add a server-side sync for verified singles/doubles ratings.

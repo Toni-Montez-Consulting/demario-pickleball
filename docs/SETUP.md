@@ -357,11 +357,14 @@ A private business checklist covering:
 
 Checkbox state is saved to Supabase (`roadmap_checks` table) so it persists across devices.
 
-The DUPR API item is a manual access step first. DUPR's current public docs show
-public APIs that require external read-only tokens, while broader integrations
-are handled through DUPR support/API partner paths. Once DeMario has approved
-access, the site can add a small server-side sync to refresh verified singles
-and doubles ratings instead of hardcoding them.
+The DUPR API item is a manual access step first. DUPR's public API docs show
+public endpoints that require external read-only tokens, while broader
+integrations are handled through DUPR support/API partner paths. DeMario can do
+this part himself: contact DUPR support from his coach/player account, ask for a
+read-only token or partner integration for `demariomontezpb.com`, and send Tonio
+the approval email, token instructions, or partner contact. Once approved, the
+site can add a small server-side sync to refresh verified singles and doubles
+ratings instead of hardcoding them.
 
 ---
 
