@@ -110,7 +110,7 @@ const PHASES: DevRoadmapPhase[] = [
       {
         key: "dev-p2-sentry",
         text: "Add production error monitoring",
-        detail: "Sentry SDK is wired for server/client errors. Production DSN setup and a verified test event remain release gates.",
+        detail: "Sentry SDK is wired for server/client errors. Production DSN setup and a verified test event are post-launch ops work unless Tonio and Mario decide to make monitoring mandatory.",
         shipped: true,
       },
       {
@@ -118,6 +118,11 @@ const PHASES: DevRoadmapPhase[] = [
         text: "Track dependency advisories without forcing unsafe upgrades",
         detail: "docs/DEPENDENCY_ADVISORIES.md tracks current advisories and the GitHub Actions Node transition.",
         shipped: true,
+      },
+      {
+        key: "dev-p2-github-actions-node24",
+        text: "Move GitHub Actions to the Node 24 runner default",
+        detail: "GitHub is moving JavaScript actions from Node 20 to Node 24 defaults in 2026. Update/verify checkout and setup-node before the runner cutoff, then run the full CI and e2e suite.",
       },
       {
         key: "dev-p2-analytics",

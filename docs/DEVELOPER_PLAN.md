@@ -8,9 +8,9 @@ should stay in `/admin/roadmap`.
 - P0 reliability work is shipped.
 - P1 launch-confidence work is shipped in code and CI.
 - Location Clarity Booking V1 is shipped in code: phone is required, court preference is collected, and Mario gets the handoff details.
-- Sentry monitoring is wired in code; public launch still requires production DSN/env setup and a verified test event.
+- Sentry monitoring is wired in code; production DSN/env setup and a verified test event are tracked as post-launch ops unless Tonio and Mario decide to make monitoring mandatory.
 - Outstanding business and operational launch gates are tracked in `docs/LAUNCH_OUTSTANDING.md`.
-- The repo is ready for controlled client use after the manual Supabase, monitoring, and live-release checks in `docs/RELEASE_CHECKLIST.md`.
+- The repo is ready for controlled client use after the manual Supabase and live-release checks in `docs/RELEASE_CHECKLIST.md`.
 - Broader promotion still depends on business gates: venue/platform direct-booking approval, insurance, waiver/terms review, and final payment/cancellation policy.
 
 ## Shipped
@@ -45,7 +45,6 @@ should stay in `/admin/roadmap`.
 - Run `docs/supabase-p1-hardening.sql` in the Supabase SQL Editor.
 - Verify `bookings_unique_active_slot` exists in production Supabase.
 - Verify anon users cannot read or write `bookings`, `inquiries`, or `rate_limit_events`.
-- Configure production Sentry env vars and confirm `POST /api/monitoring-test` creates an event.
 - Run the live manual checks in `docs/RELEASE_CHECKLIST.md`.
 - Generate a fresh production Google refresh token with DeMario and confirm Admin -> Availability reports Google Calendar connected.
 - Review `docs/ADMIN_HANDOFF.md` with DeMario.
@@ -57,6 +56,7 @@ should stay in `/admin/roadmap`.
 - Add 24-hour reminder emails and student reschedule links.
 - Add Stripe Checkout only after the pickleball business entity and banking setup exist.
 - Add automated DUPR rating sync only after Mario receives official read-only API or partner access from DUPR.
+- Move GitHub Actions to the Node 24 runner default before GitHub's June 2, 2026 default change.
 - Upgrade dependency advisories when compatible patched versions are available; do not use `npm audit fix --force` without a tested migration branch.
 
 ## Long-Term Reference
