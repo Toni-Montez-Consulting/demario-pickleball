@@ -75,7 +75,7 @@ They are also in `.env.local` for local development (not committed to git).
 | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth client secret | Google OAuth app secret |
 | `GOOGLE_OAUTH_REFRESH_TOKEN` | OAuth refresh token | Token generated after DeMario authorizes calendar free/busy access |
 
-Launch email and monitoring env vars can be checked and applied with:
+Launch email and monitoring env vars can be checked with:
 
 ```powershell
 npm run launch:env -- -Verify
@@ -468,10 +468,10 @@ Requires a `.env.local` file with all variables listed in Section 2.
 
 ## 9. Remaining Setup Checklist
 
-- [ ] **Add RESEND_API_KEY** — emails don't send without this (see Section 4)
+- [ ] **Confirm RESEND_API_KEY is present in production** — emails don't send without this (see Section 4)
 - [ ] **Verify domain in Resend** — so emails come from `bookings@demariomontezpb.com` (see Section 4)
 - [ ] **Update EMAIL_FROM** after domain verified (see Section 4)
-- [ ] **Configure Sentry** — add `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` in production, then verify a test event from `POST /api/monitoring-test` while logged in as an MFA-verified admin
+- [ ] **Post-launch: configure Sentry** — add `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` in production, then verify a test event from `POST /api/monitoring-test` while logged in as an MFA-verified admin
 - [ ] **Enroll MFA** for each admin account (see Section 3) — nobody can access the admin panel until their account has MFA set up
   - [ ] `tonio.montez@gmail.com`
   - [ ] `demariomontez10@gmail.com`
