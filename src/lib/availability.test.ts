@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { assertBookableSlot, getAvailabilityForDate, isValidDateString } from "./availability";
+import { assertBookableSlot, getAvailabilityForDate, isValidDateString, isWithinPublicBookingWindow } from "./availability";
 
 type Row = Record<string, string | number | boolean | null>;
 type Tables = Record<string, Row[]>;
@@ -74,9 +74,25 @@ function mockSupabase(tables: Tables, errors: Record<string, string> = {}) {
 }
 
 describe("availability", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-28T12:00:00-05:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("rejects calendar rollover dates", () => {
     expect(isValidDateString("2026-02-28")).toBe(true);
     expect(isValidDateString("2026-02-31")).toBe(false);
+  });
+
+  it("keeps public bookings inside the next 30 days", () => {
+    expect(isWithinPublicBookingWindow("2026-04-29")).toBe(true);
+    expect(isWithinPublicBookingWindow("2026-05-28")).toBe(true);
+    expect(isWithinPublicBookingWindow("2026-04-28")).toBe(false);
+    expect(isWithinPublicBookingWindow("2026-05-29")).toBe(false);
   });
 
   it("combines bookings, one-off blocks, and recurring blocks", async () => {
@@ -185,6 +201,23 @@ describe("availability", () => {
       ok: false,
       status: 409,
       error: "That time slot is not available.",
+    });
+  });
+
+  it("rejects public bookings beyond the 30-day booking window", async () => {
+    const supabase = mockSupabase({
+      time_slots: [{ display_label: "4:00 PM", active: true }],
+      bookings: [],
+      blocked_slots: [],
+      recurring_blocks: [],
+    });
+
+    const result = await assertBookableSlot(supabase, "2026-05-29", "4:00 PM");
+
+    expect(result).toEqual({
+      ok: false,
+      status: 400,
+      error: "Bookings are available for the next 30 days.",
     });
   });
 

@@ -1,10 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { LESSON_DURATION_MINUTES } from "@/lib/business";
 import { getGoogleCalendarBusyForDate, type BusyInterval } from "@/lib/google-calendar";
-import { parseDisplayTime, zonedDateTimeToUtc } from "@/lib/time";
+import { addDays, parseDisplayTime, zonedDateTimeToUtc } from "@/lib/time";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_ZONE = "America/Chicago";
+const PUBLIC_BOOKING_WINDOW_DAYS = 30;
 
 export interface Availability {
   allDay: boolean;
@@ -32,6 +33,24 @@ export function isPastBookingDate(date: string, now = new Date()): boolean {
   const yesterday = new Date(now);
   yesterday.setUTCDate(yesterday.getUTCDate() - 1);
   return date <= yesterday.toISOString().split("T")[0];
+}
+
+function dateStringInTimeZone(date: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+export function isWithinPublicBookingWindow(date: string, now = new Date()): boolean {
+  const today = dateStringInTimeZone(now, TIME_ZONE);
+  const firstBookableDate = addDays(today, 1);
+  const lastBookableDate = addDays(today, PUBLIC_BOOKING_WINDOW_DAYS);
+  return date >= firstBookableDate && date <= lastBookableDate;
 }
 
 function slotOverlapsBusyInterval(
@@ -141,6 +160,9 @@ export async function assertBookableSlot(
   }
   if (isPastBookingDate(lessonDate)) {
     return { ok: false, status: 400, error: "Cannot book a date in the past" };
+  }
+  if (!isWithinPublicBookingWindow(lessonDate)) {
+    return { ok: false, status: 400, error: "Bookings are available for the next 30 days." };
   }
   if (typeof lessonTime !== "string" || !lessonTime.trim()) {
     return { ok: false, status: 400, error: "Invalid time" };

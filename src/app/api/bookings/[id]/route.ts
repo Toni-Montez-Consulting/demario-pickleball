@@ -37,6 +37,24 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }
 
+  if (update.status === "confirmed") {
+    const { data: existing, error: fetchError } = await admin.supabase
+      .from("bookings")
+      .select("status")
+      .eq("id", id)
+      .single();
+    if (fetchError?.code === "PGRST116" || !existing) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+    if (fetchError) {
+      console.error("[bookings PATCH existing]", fetchError);
+      return NextResponse.json({ error: "Failed to update booking." }, { status: 500 });
+    }
+    if (existing.status === "cancelled") {
+      return NextResponse.json({ error: "Cancelled bookings cannot be confirmed." }, { status: 409 });
+    }
+  }
+
   const { data, error } = await admin.supabase
     .from("bookings")
     .update(update)

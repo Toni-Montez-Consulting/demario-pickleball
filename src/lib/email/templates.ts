@@ -52,7 +52,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
       ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Preference</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(court.courtSetup)}</strong></td></tr>` : ""}
       ${court.preferredArea ? `<tr><td style="padding:6px 0;color:#777;">Area/court note</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(court.preferredArea)}</strong></td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;"><strong>${shortId}</strong></td></tr>
-      ${price ? `<tr><td style="padding:6px 0;color:#777;">Amount</td><td style="padding:6px 0;text-align:right;"><strong>${price}</strong></td></tr>` : ""}
+      ${price ? `<tr><td style="padding:6px 0;color:#777;">Lesson fee</td><td style="padding:6px 0;text-align:right;"><strong>${price}</strong></td></tr>` : ""}
     </table>
     <p style="font-size:14px;margin:0 0 12px;">
       <strong>Pay before your lesson:</strong>
@@ -65,6 +65,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
     </p>
     <p style="font-size:13px;color:#666;line-height:1.5;margin:0;">
       Include booking ID <strong>${shortId}</strong> in the memo so Mario can match your payment. ${escapeHtml(COURT_CONFIRMATION_MESSAGE)}
+      Court reservation fees, if any, are confirmed separately by Mario before the lesson.
     </p>
     `,
     `Booking confirmed — ${booking.lesson_date}`

@@ -462,7 +462,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                             <button
                               type="button"
                               className="admin-btn confirm"
-                              disabled={b.status === "confirmed" || updating === b.id}
+                              disabled={b.status !== "pending" || updating === b.id}
                               onClick={() => updateBookingStatus(b.id, "confirmed")}
                             >
                               Confirm

@@ -19,6 +19,8 @@ describe("email templates", () => {
     expect(html).toContain("Mario will confirm the exact court");
     expect(html).toContain("Outdoor public court");
     expect(html).toContain("Lake Highlands");
+    expect(html).toContain("Lesson fee");
+    expect(html).toContain("Court reservation fees, if any, are confirmed separately");
   });
 
   it("includes phone and court preference in the admin notification", () => {

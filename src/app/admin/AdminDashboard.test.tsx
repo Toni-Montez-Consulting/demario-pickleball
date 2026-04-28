@@ -42,6 +42,32 @@ describe("AdminDashboard availability", () => {
     expect(screen.getByText("Area: Lake Highlands")).toBeVisible();
   });
 
+  it("does not allow a cancelled booking to be confirmed again", () => {
+    render(
+      <AdminDashboard
+        initialBookings={[
+          {
+            id: "booking-1",
+            created_at: "2026-04-27T12:00:00Z",
+            name: "Jane Student",
+            email: "jane@example.com",
+            phone: "(469) 371-9220",
+            lesson_type: "beginner",
+            lesson_date: "2026-05-05",
+            lesson_time: "9:00 AM",
+            status: "cancelled",
+            notes: "Preferred court setup: Outdoor public court",
+            paid_at: null,
+          },
+        ]}
+        initialInquiries={[]}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /^confirm$/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^cancel$/i })).toBeDisabled();
+  });
+
   it("loads the control center and adds a manual block with mocked admin APIs", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
