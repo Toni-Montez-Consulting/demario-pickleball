@@ -51,12 +51,12 @@ describe("BookingModal", () => {
 
     await userEvent.type(screen.getByLabelText(/your name/i), "Jane Student");
     await userEvent.type(screen.getByLabelText(/email/i), "jane@example.com");
-    expect(screen.getByRole("button", { name: /next/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /continue to available times/i })).toBeDisabled();
 
     await userEvent.click(screen.getByRole("checkbox"));
-    await userEvent.click(screen.getByRole("button", { name: /next/i }));
+    await userEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
 
-    await userEvent.click(screen.getByRole("button", { name: /confirm/i }));
+    await userEvent.click(screen.getByRole("button", { name: /reserve/i }));
 
     await screen.findByText(/you're booked/i);
     expect(screen.getByText(/Lesson 12345678/i)).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe("BookingModal", () => {
     await userEvent.type(screen.getByLabelText(/your name/i), "Jane Student");
     await userEvent.type(screen.getByLabelText(/email/i), "jane@example.com");
     await userEvent.click(screen.getByRole("checkbox"));
-    await userEvent.click(screen.getByRole("button", { name: /next/i }));
+    await userEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/No lesson times available yet/i)).toBeInTheDocument();

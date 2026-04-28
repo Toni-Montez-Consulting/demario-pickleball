@@ -70,6 +70,27 @@ const LESSON_NAMES: Record<string, string> = {
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
+function formatAdminDate(date: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(`${date}T12:00:00`));
+}
+
+function groupBlockedSlots(slots: BlockedSlot[]): Array<{ date: string; items: BlockedSlot[] }> {
+  const groups = new Map<string, BlockedSlot[]>();
+  [...slots]
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.time ?? "").localeCompare(b.time ?? ""))
+    .forEach((slot) => {
+      const existing = groups.get(slot.date) ?? [];
+      existing.push(slot);
+      groups.set(slot.date, existing);
+    });
+
+  return Array.from(groups, ([date, items]) => ({ date, items }));
+}
+
 async function responseError(res: Response, fallback: string): Promise<string> {
   const data = await res.json().catch(() => ({}));
   return typeof data?.error === "string" ? data.error : fallback;
@@ -104,6 +125,17 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   const hasLoadedAvailRef = useRef(false);
 
   const activeTimeSlots = timeSlots.filter((s) => s.active);
+  const hiddenTimeSlots = timeSlots.filter((s) => !s.active);
+  const groupedBlockedSlots = groupBlockedSlots(blockedSlots);
+  const calendarStatusLabel = calendarSync
+    ? calendarSync.enabled
+      ? calendarSync.configured
+        ? calendarSync.ok
+          ? "Google Calendar Connected"
+          : "Calendar Needs Attention"
+        : "Missing OAuth Values"
+      : "Calendar Sync Disabled"
+    : "Checking Calendar";
 
   const unread = inquiries.filter((i) => !i.read).length;
 
@@ -477,38 +509,38 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
         <div className="avail-admin">
           {availFetchError && <div className="modal-error">{availFetchError}</div>}
 
-          <section className="avail-section">
-            <h2 className="avail-section-title">Google Calendar sync</h2>
-            <p className="avail-section-sub">
-              Checks DeMario&apos;s Google Calendar busy times before students can book.
-            </p>
-            {availLoading && !calendarSync ? (
-              <p className="admin-empty">Checking Google Calendar…</p>
-            ) : calendarSync ? (
-              <div className="avail-row">
-                <span className="avail-date">
-                  {calendarSync.enabled
-                    ? calendarSync.configured
-                      ? calendarSync.ok
-                        ? "Connected"
-                        : "Needs attention"
-                      : "Missing OAuth values"
-                    : "Disabled"}
-                </span>
-                <span className={`status-badge ${calendarSync.ok ? "status-confirmed" : "status-pending"}`}>
-                  {calendarSync.ok ? `${calendarSync.busyCount} busy blocks` : "not verified"}
-                </span>
-                <span className="avail-time">{calendarSync.checkedDate}</span>
-                {calendarSync.error && <span className="avail-time">{calendarSync.error}</span>}
+          <div className="availability-hero">
+            <div>
+              <p className="avail-kicker">Availability control center</p>
+              <h2>Keep Mario bookable without double-booking.</h2>
+              <p>
+                Manage lesson times, one-off blocks, weekly rules, and Google Calendar protection from one place.
+              </p>
+            </div>
+            <div className={`calendar-status-card${calendarSync?.ok ? " is-good" : ""}`}>
+              <span className="status-dot" />
+              <div>
+                <strong>{calendarStatusLabel}</strong>
+                <p>
+                  {calendarSync
+                    ? calendarSync.ok
+                      ? `${calendarSync.busyCount} busy block${calendarSync.busyCount === 1 ? "" : "s"} found for ${calendarSync.checkedDate}.`
+                      : calendarSync.error ?? "Mario can still use manual blocks while this is checked."
+                    : "Checking the calendar diagnostic now."}
+                </p>
               </div>
-            ) : (
-              <p className="admin-empty">Google Calendar sync status unavailable.</p>
-            )}
-          </section>
+            </div>
+          </div>
 
-          <section className="avail-section">
-            <h2 className="avail-section-title">Time slots</h2>
-            <p className="avail-section-sub">The times students can book on the site.</p>
+          <section className="avail-card">
+            <div className="avail-card-head">
+              <div>
+                <p className="avail-kicker">Lesson times students can book</p>
+                <h2 className="avail-section-title">Public lesson schedule</h2>
+                <p className="avail-section-sub">Active times appear in the booking modal immediately.</p>
+              </div>
+              <span className="avail-count-pill">{activeTimeSlots.length} active</span>
+            </div>
             <div className="avail-form">
               <input
                 className="modal-input avail-slot-input"
@@ -528,15 +560,18 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
               </button>
             </div>
             {slotError && <div className="modal-error avail-error">{slotError}</div>}
-            <div className="avail-list">
+            <div className="slot-pill-list">
               {availLoading ? (
                 <p className="admin-empty">Loading…</p>
               ) : timeSlots.length === 0 ? (
-                <p className="admin-empty">No time slots yet. Add one above.</p>
+                <div className="admin-empty-state">
+                  <strong>No lesson times yet.</strong>
+                  <span>Add the first time above so students can book.</span>
+                </div>
               ) : (
                 timeSlots.map((slot) => (
-                  <div key={slot.id} className="avail-row">
-                    <span className="avail-time">{slot.display_label}</span>
+                  <div key={slot.id} className={`slot-admin-pill${slot.active ? "" : " is-hidden"}`}>
+                    <span>{slot.display_label}</span>
                     <span className={`status-badge ${slot.active ? "status-confirmed" : "status-cancelled"}`}>
                       {slot.active ? "active" : "hidden"}
                     </span>
@@ -562,11 +597,70 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                 ))
               )}
             </div>
+            {hiddenTimeSlots.length > 0 && (
+              <p className="avail-section-sub muted-note">
+                Hidden times stay saved for later, but students cannot book them.
+              </p>
+            )}
           </section>
 
-          <section className="avail-section">
-            <h2 className="avail-section-title">Recurring unavailability</h2>
-            <p className="avail-section-sub">Block a day of the week every week (e.g. no lessons on Tuesdays).</p>
+          <section className="avail-card">
+            <div className="avail-card-head">
+              <div>
+                <p className="avail-kicker">Block a date or time</p>
+                <h2 className="avail-section-title">One-off schedule block</h2>
+                <p className="avail-section-sub">Use this for tournaments, travel, lessons from another platform, or a day off.</p>
+              </div>
+            </div>
+            <div className="avail-form">
+              <input
+                className="modal-input avail-date-input"
+                type="date"
+                value={blockDate}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setBlockDate(e.target.value)}
+                aria-label="Date to block"
+              />
+              <select
+                className="modal-select avail-time-select"
+                value={blockTime}
+                onChange={(e) => setBlockTime(e.target.value)}
+                aria-label="Time to block"
+                disabled={blockAllDay || activeTimeSlots.length === 0}
+              >
+                {activeTimeSlots.map((s) => (
+                  <option key={s.id} value={s.display_label}>{s.display_label}</option>
+                ))}
+              </select>
+              <label className="avail-all-day-check">
+                <input
+                  type="checkbox"
+                  checked={blockAllDay}
+                  onChange={(e) => setBlockAllDay(e.target.checked)}
+                />
+                <span>Whole day</span>
+              </label>
+              <button
+                type="button"
+                className="admin-btn avail-block-btn"
+                disabled={!blockDate || blockLoading || (!blockAllDay && !blockTime)}
+                onClick={blockSlot}
+              >
+                {blockLoading ? "Blocking..." : "Block time"}
+              </button>
+            </div>
+            {blockError && <div className="modal-error avail-error">{blockError}</div>}
+          </section>
+
+          <section className="avail-card">
+            <div className="avail-card-head">
+              <div>
+                <p className="avail-kicker">Weekly recurring blocks</p>
+                <h2 className="avail-section-title">Repeat unavailability</h2>
+                <p className="avail-section-sub">Block a day of the week every week, or block the same time each week.</p>
+              </div>
+              <span className="avail-count-pill">{recurringBlocks.length} rule{recurringBlocks.length === 1 ? "" : "s"}</span>
+            </div>
             <div className="avail-form">
               <select
                 className="modal-select avail-time-select"
@@ -609,7 +703,10 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
             {recurringError && <div className="modal-error avail-error">{recurringError}</div>}
             <div className="avail-list">
               {availLoading ? null : recurringBlocks.length === 0 ? (
-                <p className="admin-empty">No recurring blocks.</p>
+                <div className="admin-empty-state compact">
+                  <strong>No weekly blocks.</strong>
+                  <span>Add one when Mario has a normal day or time off.</span>
+                </div>
               ) : (
                 recurringBlocks.map((r) => (
                   <div key={r.id} className="avail-row">
@@ -629,65 +726,42 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
             </div>
           </section>
 
-          <section className="avail-section">
-            <h2 className="avail-section-title">One-off blocks</h2>
-            <p className="avail-section-sub">Block a specific date — a single time or the whole day.</p>
-            <div className="avail-form">
-              <input
-                className="modal-input avail-date-input"
-                type="date"
-                value={blockDate}
-                min={new Date().toISOString().split("T")[0]}
-                onChange={(e) => setBlockDate(e.target.value)}
-                aria-label="Date to block"
-              />
-              <select
-                className="modal-select avail-time-select"
-                value={blockTime}
-                onChange={(e) => setBlockTime(e.target.value)}
-                aria-label="Time to block"
-                disabled={blockAllDay || activeTimeSlots.length === 0}
-              >
-                {activeTimeSlots.map((s) => (
-                  <option key={s.id} value={s.display_label}>{s.display_label}</option>
-                ))}
-              </select>
-              <label className="avail-all-day-check">
-                <input
-                  type="checkbox"
-                  checked={blockAllDay}
-                  onChange={(e) => setBlockAllDay(e.target.checked)}
-                />
-                <span>Whole day</span>
-              </label>
-              <button
-                type="button"
-                className="admin-btn avail-block-btn"
-                disabled={!blockDate || blockLoading || (!blockAllDay && !blockTime)}
-                onClick={blockSlot}
-              >
-                {blockLoading ? "Blocking…" : "Block"}
-              </button>
+          <section className="avail-card">
+            <div className="avail-card-head">
+              <div>
+                <p className="avail-kicker">Currently blocked upcoming times</p>
+                <h2 className="avail-section-title">Manual blocks</h2>
+                <p className="avail-section-sub">Google Calendar blocks stay automatic; these are the blocks Mario added by hand.</p>
+              </div>
+              <span className="avail-count-pill">{blockedSlots.length} block{blockedSlots.length === 1 ? "" : "s"}</span>
             </div>
-            {blockError && <div className="modal-error avail-error">{blockError}</div>}
             <div className="avail-list">
               {availLoading ? (
                 <p className="admin-empty">Loading…</p>
               ) : blockedSlots.length === 0 ? (
-                <p className="admin-empty">No blocked slots.</p>
+                <div className="admin-empty-state compact">
+                  <strong>No manual blocks yet.</strong>
+                  <span>Use the form above when Mario is unavailable.</span>
+                </div>
               ) : (
-                blockedSlots.map((s) => (
-                  <div key={s.id} className="avail-row">
-                    <span className="avail-date">{s.date}</span>
-                    <span className="avail-time">{s.all_day ? "All day" : (s.time ?? "")}</span>
-                    <button
-                      type="button"
-                      className="admin-btn cancel"
-                      disabled={updating === s.id}
-                      onClick={() => unblockSlot(s.id)}
-                    >
-                      Unblock
-                    </button>
+                groupedBlockedSlots.map((group) => (
+                  <div key={group.date} className="blocked-date-group">
+                    <div className="blocked-date-heading">{formatAdminDate(group.date)}</div>
+                    <div className="blocked-date-items">
+                      {group.items.map((s) => (
+                        <div key={s.id} className="avail-row">
+                          <span className="avail-date">{s.all_day ? "Whole day" : (s.time ?? "")}</span>
+                          <button
+                            type="button"
+                            className="admin-btn cancel"
+                            disabled={updating === s.id}
+                            onClick={() => unblockSlot(s.id)}
+                          >
+                            Unblock
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))
               )}

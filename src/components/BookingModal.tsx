@@ -225,6 +225,9 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   if (!isOpen) return null;
 
   const day = days[selectedDay];
+  const lessonName = LESSON_LABELS[form.lessonType].split(" (")[0];
+  const lessonPrice = LESSON_PRICES[form.lessonType];
+  const availableCount = times.filter((t) => !bookedTimes.has(t)).length;
 
   return (
     <div className="modal-backdrop open" onClick={handleBackdropClick}>
@@ -254,7 +257,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
         {step === "form" && (
           <>
             <h3 id="booking-modal-title">Book a lesson</h3>
-            <p className="m-sub">Fill in your details to reserve a spot.</p>
+            <p className="m-sub">Tell us who is coming, then pick the court time that fits.</p>
             <div className="modal-form-group">
               <label htmlFor="bm-name">Your name</label>
               <input
@@ -340,7 +343,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 setStep("picker");
               }}
             >
-              Next — pick a time
+              Continue to available times
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
@@ -350,28 +353,60 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
 
         {step === "picker" && (
           <>
-            <h3 id="booking-modal-title">Book a lesson</h3>
+            <h3 id="booking-modal-title">Choose a time</h3>
             <p className="m-sub">
-              {LESSON_LABELS[form.lessonType]} · {LESSON_LOCATION}
+              {lessonName} · {LESSON_LOCATION}
             </p>
-            <div className="label-tag">Select day</div>
-            <div className="slot-grid slot-grid-scroll">
-              {days.map((s, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={`slot${selectedDay === i ? " selected" : ""}`}
-                  aria-pressed={selectedDay === i ? "true" : "false"}
-                  onClick={() => handleDaySelect(i)}
-                >
-                  <div className="d">{s.d}</div>
-                  <div className="n">{s.n}</div>
-                </button>
-              ))}
+
+            <div className="booking-choice-summary">
+              <div>
+                <span>Lesson</span>
+                <strong>{lessonName}</strong>
+              </div>
+              <div>
+                <span>Price</span>
+                <strong>{lessonPrice}</strong>
+              </div>
+              <div>
+                <span>Timezone</span>
+                <strong>Central Time</strong>
+              </div>
             </div>
-            <div className="label-tag mt">
-              Select time <span className="tz-label">CT</span>
-            </div>
+
+            <section className="booking-picker-panel">
+              <div className="picker-section-head">
+                <div>
+                  <span>Step 1</span>
+                  <h4>Select a day</h4>
+                </div>
+                <p>Showing the next 30 days</p>
+              </div>
+              <div className="slot-grid slot-grid-scroll">
+                {days.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`slot${selectedDay === i ? " selected" : ""}`}
+                    aria-pressed={selectedDay === i ? "true" : "false"}
+                    onClick={() => handleDaySelect(i)}
+                  >
+                    <div className="d">{s.d}</div>
+                    <div className="n">{s.n}</div>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="booking-picker-panel">
+              <div className="picker-section-head">
+                <div>
+                  <span>Step 2</span>
+                  <h4>Select a time <em>CT</em></h4>
+                </div>
+                {!availLoading && times.length > 0 && !availError && !allDay && (
+                  <p>{availableCount} open</p>
+                )}
+              </div>
             {availLoading || !timesLoaded ? (
               <div className="avail-loading">
                 <div className="spinner" />
@@ -415,6 +450,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 })}
               </div>
             )}
+            </section>
             {pickerError && <div className="modal-error">{pickerError}</div>}
             <div className="picker-actions">
               <button
@@ -422,7 +458,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 className="btn btn-ghost picker-back"
                 onClick={() => setStep("form")}
               >
-                ← Back
+                Back
               </button>
               <button
                 type="button"
@@ -430,7 +466,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 disabled={!selectedTime || availLoading}
                 onClick={confirmBooking}
               >
-                Confirm {day.d} {day.n} · {selectedTime || "…"}
+                Reserve {selectedTime || "time"}
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M13 5l7 7-7 7" />
                 </svg>
@@ -465,12 +501,16 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
             </div>
             <h3 id="booking-modal-title">You&apos;re booked.</h3>
             <p className="m-sub">
-              {day.d} {day.n} at {selectedTime} · See you on the court.
+              {day.d} {day.n} at {selectedTime} CT · confirmation email sent.
             </p>
             <div className="booking-summary">
               <div className="booking-summary-row">
+                <span>Date and time</span>
+                <strong>{day.d} {day.n} · {selectedTime}</strong>
+              </div>
+              <div className="booking-summary-row">
                 <span>Lesson</span>
-                <strong>{LESSON_LABELS[form.lessonType].split(" (")[0]}</strong>
+                <strong>{lessonName}</strong>
               </div>
               <div className="booking-summary-row">
                 <span>Coach</span>
@@ -482,7 +522,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
               </div>
               <div className="booking-summary-row">
                 <span>Amount due</span>
-                <strong className="accent">{LESSON_PRICES[form.lessonType]}</strong>
+                <strong className="accent">{lessonPrice}</strong>
               </div>
               {bookingId && (
                 <div className="booking-summary-row">
@@ -491,7 +531,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 </div>
               )}
             </div>
-            <PaymentOptions bookingId={bookingId} amount={LESSON_PRICES[form.lessonType]} />
+            <PaymentOptions bookingId={bookingId} amount={lessonPrice} />
             <button type="button" className="btn btn-ghost btn-full" onClick={onClose}>
               Close
             </button>
