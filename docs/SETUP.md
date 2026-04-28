@@ -75,6 +75,25 @@ They are also in `.env.local` for local development (not committed to git).
 | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth client secret | Google OAuth app secret |
 | `GOOGLE_OAUTH_REFRESH_TOKEN` | OAuth refresh token | Token generated after DeMario authorizes calendar free/busy access |
 
+Launch email and monitoring env vars can be checked and applied with:
+
+```powershell
+npm run launch:env -- -Verify
+```
+
+To set or replace values in Vercel production, place the needed values in the
+current shell and run:
+
+```powershell
+$env:RESEND_API_KEY="re_..."
+$env:SENTRY_DSN="https://..."
+$env:NEXT_PUBLIC_SENTRY_DSN=$env:SENTRY_DSN
+$env:SENTRY_ORG="your-sentry-org"
+$env:SENTRY_PROJECT="your-sentry-project"
+$env:SENTRY_AUTH_TOKEN="sntrys_..."
+npm run launch:env -- -Apply -Verify
+```
+
 ### Adding or updating a variable via CLI
 
 ```bash

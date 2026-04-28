@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "launch:env": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-launch-services.ps1",
     "ci": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
