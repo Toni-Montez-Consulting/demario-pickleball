@@ -1566,22 +1566,34 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
 .avail-time { color: var(--fg-dim); }
 .slot-pill-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 12px;
 }
 .slot-admin-pill {
   display: grid;
-  grid-template-columns: minmax(70px, 1fr) auto auto;
-  gap: 10px;
+  grid-template-columns: minmax(96px, 1fr) max-content max-content;
+  gap: 12px;
   align-items: center;
-  padding: 12px;
+  min-width: 0;
+  padding: 14px;
   background: var(--bg-3);
   border: 1px solid var(--line);
   border-radius: 12px;
+  overflow: hidden;
 }
 .slot-admin-pill > span:first-child {
   color: var(--fg);
   font-weight: 700;
+  min-width: 0;
+  white-space: nowrap;
+}
+.slot-admin-pill .td-actions {
+  justify-content: flex-end;
+  min-width: 132px;
+}
+.slot-admin-pill .admin-btn {
+  min-width: 58px;
+  text-align: center;
 }
 .slot-admin-pill.is-hidden {
   opacity: 0.72;
@@ -1700,10 +1712,16 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
     grid-template-columns: 1fr;
   }
   .slot-admin-pill {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
   .slot-admin-pill .td-actions {
+    grid-column: 1 / -1;
     flex-wrap: wrap;
+    justify-content: stretch;
+    min-width: 0;
+  }
+  .slot-admin-pill .admin-btn {
+    flex: 1 1 120px;
   }
   .avail-form {
     flex-direction: column;
