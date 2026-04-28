@@ -56,6 +56,14 @@ export async function requireAdmin() {
     };
   }
 
+  const { data: aal, error: aalError } = await auth.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aalError || aal?.currentLevel !== "aal2") {
+    return {
+      ok: false as const,
+      response: NextResponse.json({ error: "MFA required" }, { status: 401 }),
+    };
+  }
+
   return {
     ok: true as const,
     user,

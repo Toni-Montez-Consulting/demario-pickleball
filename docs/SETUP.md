@@ -64,6 +64,11 @@ They are also in `.env.local` for local development (not committed to git).
 | `ADMIN_EMAIL` | comma-separated list | Controls who can log into the admin panel |
 | `RESEND_API_KEY` | `re_...` | Resend API key for sending emails |
 | `EMAIL_FROM` | `DeMario Pickleball <bookings@demariomontezpb.com>` | The "from" address on all emails |
+| `NEXT_PUBLIC_SENTRY_DSN` | Sentry DSN | Browser error monitoring |
+| `SENTRY_DSN` | Sentry DSN | Server-side error monitoring |
+| `SENTRY_ORG` | Sentry org slug | Optional source map upload during deploy |
+| `SENTRY_PROJECT` | Sentry project slug | Optional source map upload during deploy |
+| `SENTRY_AUTH_TOKEN` | Sentry token | Optional source map upload during deploy |
 | `GOOGLE_CALENDAR_SYNC_ENABLED` | `true` / `false` | Optional. When true, booking availability also checks DeMario's Google Calendar busy times |
 | `GOOGLE_CALENDAR_ID` | `primary` or calendar ID | Calendar to read for busy blocks |
 | `GOOGLE_OAUTH_CLIENT_ID` | OAuth client ID | Google OAuth app client ID |
@@ -190,7 +195,10 @@ and the public privacy policy disclosure at `/privacy`.
 
 This means two things must be true to access admin:
 - The account email must be in `ADMIN_EMAIL`
-- The account must have MFA enrolled
+- The account must have MFA enrolled and verified in the current session
+
+Admin API routes use the same rule. An allowed email without Supabase `aal2`
+MFA is rejected before private data can be read or changed.
 
 ### Admin accounts
 
@@ -239,8 +247,8 @@ curl -X POST "https://vowwokjesgdjridrikqp.supabase.co/auth/v1/invite" \
 
 | Trigger | Recipient | Contents |
 |---------|-----------|----------|
-| Student books a lesson | Student | Booking confirmation, lesson details, payment link, ICS calendar attachment, Google Calendar button |
-| Student books a lesson | `demariomontez10@gmail.com` | New booking notification with student info and link to admin dashboard |
+| Student books a lesson | Student | Booking confirmation, lesson details, court confirmation note, payment link, ICS calendar attachment, Google Calendar button |
+| Student books a lesson | `demariomontez10@gmail.com` | New booking notification with student phone, court preference, location note, and link to admin dashboard |
 | Admin cancels a booking | Student | Cancellation notice with ICS cancel attachment (removes event from calendar) |
 
 ### ICS calendar attachment
@@ -250,7 +258,9 @@ Every student confirmation email includes an `.ics` file. When the student opens
 - **Gmail desktop** — shows an "Add to Calendar" button
 - **Gmail mobile** — may not render the attachment; use the **"Add to Google Calendar"** button in the email body instead
 
-The ICS file is generated server-side with the correct America/Chicago timezone, lesson duration, location, and booking ID.
+The ICS file is generated server-side with the correct America/Chicago timezone,
+lesson duration, booking ID, and the note that Mario confirms the exact court
+after booking.
 
 ### Setting up Resend (if not done)
 
@@ -385,15 +395,23 @@ ratings instead of hardcoding them.
 ## 7. Booking Flow
 
 1. Student clicks **Book a Lesson** anywhere on the site
-2. Modal opens → Step 1: fill in name, email, phone (optional), lesson type, agree to terms
+2. Modal opens → Step 1: fill in name, email, required phone, lesson type, preferred court setup, optional preferred area/court, and agree to terms
 3. Step 2: pick a date (next 30 days shown), pick a time slot
    - Unavailable times are grayed out (already booked, blocked by admin, or recurring block)
    - If a date is fully blocked by admin, a message shows instead of the time grid
-4. Student clicks **Confirm** → API call to `POST /api/bookings`
+4. Student clicks **Reserve now** → API call to `POST /api/bookings`
 5. Server validates: time slot exists and is active, slot not blocked, slot not already booked
 6. If valid: booking is inserted → confirmation emails sent (student + DeMario)
 7. If slot was just taken by someone else (race condition): student sees "That time was just taken" and the time grid refreshes
-8. After confirmation: student sees booking summary + payment options (Cash App, Zelle, PayPal QR)
+8. After confirmation: student sees booking summary, payment options (Cash App, Zelle, PayPal QR), and a clear note that Mario will confirm the exact court
+9. Mario receives phone and court preference in the admin email/dashboard, then texts the student to confirm exact court, any court fee, and payment
+
+### Location clarity rules
+
+- Default booking paths are Indoor / weather-proof, Outdoor public court, or Help me choose.
+- Outdoor parks are grouped as flexible public-court options instead of forcing the student to pick from a long list.
+- Samuel-Grand and Life Time remain by-request options until venue rules and availability are confirmed.
+- Exact court selection is intentionally deferred to Mario for V1 so he can account for weather, court fees, availability, and venue/platform restrictions.
 
 ---
 
@@ -434,6 +452,7 @@ Requires a `.env.local` file with all variables listed in Section 2.
 - [ ] **Add RESEND_API_KEY** — emails don't send without this (see Section 4)
 - [ ] **Verify domain in Resend** — so emails come from `bookings@demariomontezpb.com` (see Section 4)
 - [ ] **Update EMAIL_FROM** after domain verified (see Section 4)
+- [ ] **Configure Sentry** — add `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` in production, then verify a test event from `POST /api/monitoring-test` while logged in as an MFA-verified admin
 - [ ] **Enroll MFA** for each admin account (see Section 3) — nobody can access the admin panel until their account has MFA set up
   - [ ] `tonio.montez@gmail.com`
   - [ ] `demariomontez10@gmail.com`
@@ -441,6 +460,7 @@ Requires a `.env.local` file with all variables listed in Section 2.
   - [ ] `ericaxholloway@gmail.com`
 - [ ] **Add time slots** — go to Admin → Availability → Time slots → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists
 - [ ] **Confirm venue/platform permission** — get written confirmation that direct bookings through `demariomontezpb.com` are allowed at each place Mario plans to coach from site bookings
+- [ ] **Submit one live booking test** — confirm student/admin emails include phone and court preference, the calendar invite says Mario confirms the exact court, payment links work, and the test booking can be cancelled
 - [ ] **Publish Google OAuth app to production** before leaving Google Calendar blocking enabled long-term (see Google Calendar blocking)
 - [ ] **Generate a fresh DeMario Google OAuth refresh token** after publishing, then update Vercel and redeploy
 

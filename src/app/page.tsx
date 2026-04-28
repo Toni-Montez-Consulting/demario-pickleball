@@ -8,6 +8,7 @@ import Testimonials from "@/components/Testimonials";
 import ImproveGrid from "@/components/ImproveGrid";
 import Philosophy from "@/components/Philosophy";
 import Lessons from "@/components/Lessons";
+import WhereWeTrain from "@/components/WhereWeTrain";
 import About from "@/components/About";
 import FinalCta from "@/components/FinalCta";
 import BookingPlatforms from "@/components/BookingPlatforms";
@@ -32,10 +33,11 @@ export default function Home() {
       <Nav onOpenBooking={() => openBooking()} />
       <Hero onOpenBooking={() => openBooking()} />
       <TrustBar />
-      <Testimonials />
+      <Testimonials onOpenBooking={() => openBooking()} />
       <ImproveGrid />
       <Philosophy />
       <Lessons onOpenBooking={openBooking} />
+      <WhereWeTrain />
       <About />
       <FinalCta onOpenBooking={() => openBooking()} />
       <BookingPlatforms />

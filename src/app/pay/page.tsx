@@ -16,7 +16,8 @@ export default function PayPage() {
         <h1>Pay DeMario</h1>
         <p className="legal-date">
           Already booked a lesson? Use one of the options below. Include your booking ID
-          (shown on your confirmation) in the memo so Mario can match the payment.
+          (shown on your confirmation) in the memo so Mario can match the payment. Any court
+          reservation fee, if needed, is confirmed separately with your exact court plan.
         </p>
 
         <div className="pay-page-wrap">

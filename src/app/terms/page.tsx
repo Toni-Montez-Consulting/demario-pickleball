@@ -11,9 +11,10 @@ export default function TermsPage() {
         <h2>Services</h2>
         <p>
           DeMario Montez Pickleball Coaching provides one-on-one and group pickleball instruction
-          in the Dallas–Fort Worth area. Court location is confirmed after booking
-          unless a specific venue is listed in your confirmation. Lessons are provided
-          as described at the time of booking (Foundations, Strategy Lab, or Group Clinic).
+          in the Dallas–Fort Worth area. Your lesson time is reserved when you book, and
+          Mario confirms the exact court afterward based on your preference, court availability,
+          weather, and any venue rules. Lessons are provided as described at the time of booking
+          (Foundations, Strategy Lab, or Group Clinic).
         </p>
 
         <h2>Pricing</h2>
@@ -22,7 +23,12 @@ export default function TermsPage() {
           <li>Strategy Lab (1-on-1) — $80 per session</li>
           <li>Group Clinic — $50 per player per session</li>
         </ul>
-        <p>Prices are subject to change with reasonable notice.</p>
+        <p>
+          Prices are subject to change with reasonable notice. Lesson prices do not include
+          third-party court reservation fees unless Mario confirms otherwise before the lesson.
+          Public outdoor courts typically have no court fee; indoor or reserved venues may charge
+          a separate court fee.
+        </p>
 
         <h2>Cancellation &amp; Rescheduling</h2>
         <p>
@@ -46,9 +52,9 @@ export default function TermsPage() {
           with participation.
         </p>
         <p>
-          You release and hold harmless DeMario Montez, his affiliates, and Dallas Indoor Pickleball
-          Club from any and all claims, damages, or liability arising from participation in coaching
-          sessions, including claims of negligence, to the maximum extent permitted by law.
+          You release and hold harmless DeMario Montez, his affiliates, host venues, and court
+          providers from any and all claims, damages, or liability arising from participation in
+          coaching sessions, including claims of negligence, to the maximum extent permitted by law.
         </p>
         <p>
           You represent that you are in adequate physical health to participate and that you have

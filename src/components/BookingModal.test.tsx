@@ -29,8 +29,10 @@ describe("BookingModal", () => {
         expect(JSON.parse(String(init?.body))).toMatchObject({
           name: "Jane Student",
           email: "jane@example.com",
+          phone: "(469) 371-9220",
           lesson_type: "beginner",
           lesson_time: "9:00 AM",
+          notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
           waiver_accepted: true,
           company: "",
         });
@@ -51,6 +53,12 @@ describe("BookingModal", () => {
 
     await userEvent.type(screen.getByLabelText(/your name/i), "Jane Student");
     await userEvent.type(screen.getByLabelText(/email/i), "jane@example.com");
+    await userEvent.type(screen.getByLabelText(/phone/i), "(469) 371-9220");
+    await userEvent.selectOptions(
+      screen.getByLabelText(/preferred court setup/i),
+      "Indoor / weather-proof"
+    );
+    await userEvent.type(screen.getByLabelText(/preferred area or court/i), "The Grove");
     expect(screen.getByRole("button", { name: /continue to available times/i })).toBeDisabled();
 
     await userEvent.click(screen.getByRole("checkbox"));
@@ -60,6 +68,7 @@ describe("BookingModal", () => {
 
     await screen.findByText(/you're booked/i);
     expect(screen.getByText(/Lesson 12345678/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mario will confirm the exact court/i)).toBeInTheDocument();
   });
 
   it("shows a clear no-times empty state", async () => {
@@ -74,6 +83,11 @@ describe("BookingModal", () => {
 
     await userEvent.type(screen.getByLabelText(/your name/i), "Jane Student");
     await userEvent.type(screen.getByLabelText(/email/i), "jane@example.com");
+    await userEvent.type(screen.getByLabelText(/phone/i), "(469) 371-9220");
+    await userEvent.selectOptions(
+      screen.getByLabelText(/preferred court setup/i),
+      "Outdoor public court"
+    );
     await userEvent.click(screen.getByRole("checkbox"));
     await userEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
 

@@ -77,6 +77,12 @@ const PHASES: DevRoadmapPhase[] = [
         detail: "The migration exists in docs/supabase-p1-hardening.sql; run it in Supabase and verify the unique index, rate-limit table, and RLS state.",
       },
       {
+        key: "dev-p1-location-clarity",
+        text: "Ship Location Clarity Booking V1 before public launch",
+        detail: "Phone and court setup are required, outdoor courts are grouped, and Mario gets the student handoff details in admin/email.",
+        shipped: true,
+      },
+      {
         key: "dev-p1-e2e",
         text: "Expand Playwright coverage for homepage, booking, payment options, contact, and admin gating",
         detail: "Use mocked API responses by default so CI does not need production credentials.",
@@ -104,7 +110,8 @@ const PHASES: DevRoadmapPhase[] = [
       {
         key: "dev-p2-sentry",
         text: "Add production error monitoring",
-        detail: "Sentry or equivalent should alert on server/client failures before students report them.",
+        detail: "Sentry SDK is wired for server/client errors. Production DSN setup and a verified test event remain release gates.",
+        shipped: true,
       },
       {
         key: "dev-p2-dependency-watch",

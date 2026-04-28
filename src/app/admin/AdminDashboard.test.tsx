@@ -15,6 +15,33 @@ describe("AdminDashboard availability", () => {
     vi.restoreAllMocks();
   });
 
+  it("shows booking phone and court preference in the booking row", () => {
+    render(
+      <AdminDashboard
+        initialBookings={[
+          {
+            id: "booking-1",
+            created_at: "2026-04-27T12:00:00Z",
+            name: "Jane Student",
+            email: "jane@example.com",
+            phone: "(469) 371-9220",
+            lesson_type: "beginner",
+            lesson_date: "2026-05-05",
+            lesson_time: "9:00 AM",
+            status: "pending",
+            notes: "Preferred court setup: Outdoor public court\nPreferred area or court: Lake Highlands",
+            paid_at: null,
+          },
+        ]}
+        initialInquiries={[]}
+      />
+    );
+
+    expect(screen.getByText("(469) 371-9220")).toBeVisible();
+    expect(screen.getByText("Court: Outdoor public court")).toBeVisible();
+    expect(screen.getByText("Area: Lake Highlands")).toBeVisible();
+  });
+
   it("loads the control center and adds a manual block with mocked admin APIs", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {

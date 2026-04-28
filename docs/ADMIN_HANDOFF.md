@@ -7,7 +7,9 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
 ## Daily
 
 - Open `/admin` and review new bookings.
-- Text or email each new student to confirm the lesson details and court plan.
+- Text each new student using the phone number in the booking row.
+- Confirm the exact court, any court reservation fee, and payment expectation.
+- Use the student's preferred court setup and preferred area/court note when choosing the court plan.
 - Check payment memos for the booking ID shown in the confirmation email.
 - Mark paid lessons as paid after Cash App, Zelle, or PayPal is received.
 - Reply to unread inquiries.

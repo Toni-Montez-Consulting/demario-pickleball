@@ -20,9 +20,13 @@ export default function PaymentOptions({ bookingId, amount }: PaymentOptionsProp
       </div>
       {memo && (
         <p className="pay-memo">
-          Include <strong>{memo}</strong> in the memo so Mario can match your payment to this lesson.
+          Pay before your lesson and include <strong>{memo}</strong> in the memo so Mario can
+          match your payment to this lesson.
         </p>
       )}
+      <p className="pay-fee-note">
+        Court reservation fees, if any, are confirmed separately by Mario before the lesson.
+      </p>
 
       <a
         href={CASH_APP_URL}

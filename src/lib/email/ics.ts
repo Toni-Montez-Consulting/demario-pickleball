@@ -8,9 +8,11 @@ export interface IcsBooking {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   lesson_type: string;
   lesson_date: string;
   lesson_time: string;
+  notes?: string | null;
 }
 
 const LESSON_NAMES: Record<string, string> = {
@@ -94,7 +96,7 @@ export function generateGoogleCalendarUrl({
     text: `Pickleball lesson — ${lessonName} with ${organizerName}`,
     dates: `${dtStart}/${dtEnd}`,
     ctz: "America/Chicago",
-    details: `Booking ID: ${booking.id.slice(0, 8).toUpperCase()}\nPay: ${SITE_URL}/pay`,
+    details: `Booking ID: ${booking.id.slice(0, 8).toUpperCase()}\nCourt: Mario will confirm the exact court after booking.\nPay: ${SITE_URL}/pay`,
     location: LESSON_LOCATION,
     sf: "true",
     output: "xml",
@@ -134,7 +136,7 @@ export function generateIcs({
   const description = [
     `Lesson: ${lessonName}`,
     `Coach: ${organizerName}`,
-    `Location: ${LESSON_LOCATION}`,
+    `Court: Mario will confirm the exact court after booking.`,
     ``,
     `Booking ID: ${booking.id.slice(0, 8).toUpperCase()}`,
     `Pay: ${SITE_URL}/pay (include booking ID in memo)`,

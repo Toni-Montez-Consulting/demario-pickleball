@@ -5,7 +5,10 @@ export const COACH_PHONE_TEL = "4693719220";
 
 export const LESSON_LOCATION =
   process.env.NEXT_PUBLIC_LESSON_LOCATION?.trim() ||
-  "Dallas, TX - court location confirmed after booking";
+  "Court confirmed by Mario after booking";
+
+export const COURT_CONFIRMATION_MESSAGE =
+  "Mario will confirm the exact court after booking based on your preference, court availability, weather, and any court fee.";
 
 export const WAIVER_VERSION = "2026-04-24";
 

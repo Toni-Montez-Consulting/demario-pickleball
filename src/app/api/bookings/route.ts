@@ -4,6 +4,7 @@ import { sendBookingCreatedEmails } from "@/lib/email/client";
 import { assertBookableSlot } from "@/lib/availability";
 import { WAIVER_VERSION } from "@/lib/business";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { isCourtSetup, parseBookingNotes } from "@/lib/booking-notes";
 
 const VALID_LESSON_TYPES = ["beginner", "advanced", "clinic"] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,8 +52,14 @@ export async function POST(req: NextRequest) {
   if (typeof lesson_time !== "string") {
     return NextResponse.json({ error: "Invalid time" }, { status: 400 });
   }
-  if (phone && (typeof phone !== "string" || !/^[\d\s\-()+]{7,20}$/.test(phone))) {
+  const trimmedPhone = typeof phone === "string" ? phone.trim() : "";
+  if (!/^[\d\s\-()+]{7,20}$/.test(trimmedPhone) || trimmedPhone.replace(/\D/g, "").length < 7) {
     return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
+  }
+  const trimmedNotes = (typeof notes === "string" && notes.trim()) ? notes.trim().slice(0, 500) : null;
+  const parsedNotes = parseBookingNotes(trimmedNotes);
+  if (!isCourtSetup(parsedNotes.courtSetup)) {
+    return NextResponse.json({ error: "Preferred court setup is required." }, { status: 400 });
   }
   if (waiver_accepted !== true) {
     return NextResponse.json({ error: "You must agree to the coaching terms before booking." }, { status: 400 });
@@ -71,11 +78,11 @@ export async function POST(req: NextRequest) {
     .insert({
       name: name.trim(),
       email: email.trim().toLowerCase(),
-      phone: phone ? String(phone).trim().slice(0, 20) : null,
+      phone: trimmedPhone.slice(0, 20),
       lesson_type,
       lesson_date,
       lesson_time,
-      notes: (typeof notes === "string" && notes.trim()) ? notes.trim().slice(0, 500) : null,
+      notes: trimmedNotes,
       waiver_signed_at: new Date().toISOString(),
       waiver_version: WAIVER_VERSION,
     })
@@ -94,9 +101,11 @@ export async function POST(req: NextRequest) {
     id: data.id,
     name: data.name,
     email: data.email,
+    phone: data.phone,
     lesson_type: data.lesson_type,
     lesson_date: data.lesson_date,
     lesson_time: data.lesson_time,
+    notes: data.notes,
   }).catch((err) => console.error("[bookings POST] email send failed", err));
 
   return NextResponse.json(data, { status: 201 });

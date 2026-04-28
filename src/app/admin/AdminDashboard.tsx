@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { parseBookingNotes } from "@/lib/booking-notes";
 
 interface Booking {
   id: string;
@@ -416,58 +417,69 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                   </tr>
                 </thead>
                 <tbody>
-                  {bookings.map((b) => (
-                    <tr key={b.id}>
-                      <td>{b.lesson_date}</td>
-                      <td>{b.lesson_time}</td>
-                      <td>
-                        <div className="td-name">{b.name}</div>
-                        <div className="td-email-sub">{b.email}</div>
-                      </td>
-                      <td>{LESSON_NAMES[b.lesson_type] ?? b.lesson_type}</td>
-                      <td>
-                        <span className={`status-badge status-${b.status}`}>{b.status}</span>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className={`paid-toggle${b.paid_at ? " paid" : ""}`}
-                          disabled={updating === b.id}
-                          onClick={() => togglePaid(b)}
-                          aria-label={b.paid_at ? "Mark as unpaid" : "Mark as paid"}
-                          title={b.paid_at ? `Paid ${new Date(b.paid_at).toLocaleDateString()}` : "Mark paid"}
-                        >
-                          {b.paid_at ? (
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          ) : (
-                            <span className="paid-toggle-label">Mark paid</span>
+                  {bookings.map((b) => {
+                    const court = parseBookingNotes(b.notes);
+                    return (
+                      <tr key={b.id}>
+                        <td>{b.lesson_date}</td>
+                        <td>{b.lesson_time}</td>
+                        <td>
+                          <div className="td-name">{b.name}</div>
+                          <div className="td-email-sub">{b.email}</div>
+                          {b.phone && <div className="td-phone-sub">{b.phone}</div>}
+                          {(court.courtSetup || court.preferredArea || court.raw) && (
+                            <div className="td-court-note">
+                              {court.courtSetup && <span>Court: {court.courtSetup}</span>}
+                              {court.preferredArea && <span>Area: {court.preferredArea}</span>}
+                              {!court.courtSetup && court.raw && <span>{court.raw}</span>}
+                            </div>
                           )}
-                        </button>
-                      </td>
-                      <td>
-                        <div className="td-actions">
+                        </td>
+                        <td>{LESSON_NAMES[b.lesson_type] ?? b.lesson_type}</td>
+                        <td>
+                          <span className={`status-badge status-${b.status}`}>{b.status}</span>
+                        </td>
+                        <td>
                           <button
                             type="button"
-                            className="admin-btn confirm"
-                            disabled={b.status === "confirmed" || updating === b.id}
-                            onClick={() => updateBookingStatus(b.id, "confirmed")}
+                            className={`paid-toggle${b.paid_at ? " paid" : ""}`}
+                            disabled={updating === b.id}
+                            onClick={() => togglePaid(b)}
+                            aria-label={b.paid_at ? "Mark as unpaid" : "Mark as paid"}
+                            title={b.paid_at ? `Paid ${new Date(b.paid_at).toLocaleDateString()}` : "Mark paid"}
                           >
-                            Confirm
+                            {b.paid_at ? (
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            ) : (
+                              <span className="paid-toggle-label">Mark paid</span>
+                            )}
                           </button>
-                          <button
-                            type="button"
-                            className="admin-btn cancel"
-                            disabled={b.status === "cancelled" || updating === b.id}
-                            onClick={() => updateBookingStatus(b.id, "cancelled")}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td>
+                          <div className="td-actions">
+                            <button
+                              type="button"
+                              className="admin-btn confirm"
+                              disabled={b.status === "confirmed" || updating === b.id}
+                              onClick={() => updateBookingStatus(b.id, "confirmed")}
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn cancel"
+                              disabled={b.status === "cancelled" || updating === b.id}
+                              onClick={() => updateBookingStatus(b.id, "cancelled")}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}

@@ -7,7 +7,10 @@ should stay in `/admin/roadmap`.
 
 - P0 reliability work is shipped.
 - P1 launch-confidence work is shipped in code and CI.
-- The repo is ready for controlled client use after the manual Supabase and live-release checks in `docs/RELEASE_CHECKLIST.md`.
+- Location Clarity Booking V1 is shipped in code: phone is required, court preference is collected, and Mario gets the handoff details.
+- Sentry monitoring is wired in code; public launch still requires production DSN/env setup and a verified test event.
+- Outstanding business and operational launch gates are tracked in `docs/LAUNCH_OUTSTANDING.md`.
+- The repo is ready for controlled client use after the manual Supabase, monitoring, and live-release checks in `docs/RELEASE_CHECKLIST.md`.
 - Broader promotion still depends on business gates: venue/platform direct-booking approval, insurance, waiver/terms review, and final payment/cancellation policy.
 
 ## Shipped
@@ -32,6 +35,9 @@ should stay in `/admin/roadmap`.
 - Added DeMario admin handoff docs.
 - Added dependency advisory tracking docs.
 - Added Google Calendar FreeBusy blocking and admin Availability diagnostics.
+- Added Location Clarity Booking V1: Where We Train homepage section, required phone, required court setup preference, court preference stored in booking notes, and clearer court/payment copy.
+- Hardened admin API routes so allowed admin emails also need Supabase `aal2` MFA.
+- Added Sentry server/client instrumentation and an admin-only monitoring verification endpoint.
 
 ## Remaining Manual Launch Gates
 
@@ -39,6 +45,7 @@ should stay in `/admin/roadmap`.
 - Run `docs/supabase-p1-hardening.sql` in the Supabase SQL Editor.
 - Verify `bookings_unique_active_slot` exists in production Supabase.
 - Verify anon users cannot read or write `bookings`, `inquiries`, or `rate_limit_events`.
+- Configure production Sentry env vars and confirm `POST /api/monitoring-test` creates an event.
 - Run the live manual checks in `docs/RELEASE_CHECKLIST.md`.
 - Generate a fresh production Google refresh token with DeMario and confirm Admin -> Availability reports Google Calendar connected.
 - Review `docs/ADMIN_HANDOFF.md` with DeMario.
@@ -46,7 +53,6 @@ should stay in `/admin/roadmap`.
 
 ## Deferred P2
 
-- Add Sentry or equivalent production error monitoring.
 - Add privacy-conscious analytics after consent/cookie policy is final.
 - Add 24-hour reminder emails and student reschedule links.
 - Add Stripe Checkout only after the pickleball business entity and banking setup exist.

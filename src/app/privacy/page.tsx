@@ -11,8 +11,8 @@ export default function PrivacyPage() {
         <h2>What we collect</h2>
         <p>
           When you book a lesson or send an inquiry, we collect your name, email address,
-          and phone number (optional). We do not collect payment information directly — payments
-          are handled by third-party processors.
+          phone number, preferred court setup, and optional preferred area or court notes. We do
+          not collect payment information directly — payments are handled by third-party processors.
         </p>
 
         <h2>How we use your information</h2>

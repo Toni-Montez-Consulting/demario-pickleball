@@ -41,6 +41,11 @@ async function mockBookingFlow(
   });
   await page.route("**/api/bookings", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
+    const body = route.request().postDataJSON();
+    expect(body).toMatchObject({
+      phone: "(469) 371-9220",
+      notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
+    });
     if (options.bookingStatus === 409) {
       await route.fulfill({
         status: 409,
@@ -70,9 +75,19 @@ async function openBookingPicker(page: Page) {
   const dialog = page.getByRole("dialog", { name: /book a lesson/i });
   await dialog.getByLabel(/your name/i).fill("Jane Student");
   await dialog.getByLabel(/email/i).fill("jane@example.com");
-  await dialog.getByRole("checkbox").check();
-  await dialog.getByRole("button", { name: /continue to available times/i }).click();
-  return page.getByRole("dialog");
+  await dialog.getByLabel(/phone/i).fill("(469) 371-9220");
+  await dialog.getByLabel(/preferred court setup/i).selectOption("Indoor / weather-proof");
+  await dialog.getByLabel(/preferred area or court/i).fill("The Grove");
+  const waiver = dialog.getByRole("checkbox");
+  await waiver.check();
+  await expect(waiver).toBeChecked();
+  const continueButton = dialog.getByRole("button", { name: /continue to available times/i });
+  await expect(continueButton).toBeEnabled();
+  await continueButton.click();
+
+  const pickerDialog = page.getByRole("dialog");
+  await expect(pickerDialog.getByRole("heading", { name: /choose a time/i })).toBeVisible();
+  return pickerDialog;
 }
 
 test("homepage loads and booking modal can reach payment options", async ({ page }) => {
@@ -88,6 +103,7 @@ test("homepage loads and booking modal can reach payment options", async ({ page
 
   const confirmedDialog = page.getByRole("dialog", { name: /you're booked/i });
   await expect(confirmedDialog.getByText(/Lesson 12345678/i)).toBeVisible();
+  await expect(confirmedDialog.getByText(/Mario will confirm the exact court/i)).toBeVisible();
   await expect(confirmedDialog.getByText(/Cash App/i)).toBeVisible();
 });
 

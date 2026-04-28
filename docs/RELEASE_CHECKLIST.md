@@ -2,6 +2,8 @@
 
 Use this before promoting changes to `demariomontezpb.com`.
 
+See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational items that must be confirmed outside the codebase before broad public promotion.
+
 ## Code
 
 - `npm ci`
@@ -11,6 +13,17 @@ Use this before promoting changes to `demariomontezpb.com`.
 - `npm run build`
 - `npm run test:e2e`
 - Confirm the latest GitHub Actions CI run is green.
+
+## Location Clarity V1
+
+- Homepage shows **Where We Train** with three clear paths: Indoor / weather-proof, Outdoor public court, and Help me choose.
+- Outdoor public parks are grouped in compact copy instead of presented as 8 equal booking choices.
+- Samuel-Grand and Life Time are presented as by-request options only.
+- Booking modal requires phone and preferred court setup before the student can continue.
+- Booking modal stores formatted court preference in `bookings.notes`.
+- Confirmation screen says Mario will confirm the exact court after booking.
+- Student email, admin email, ICS, and Google Calendar link all say exact court is confirmed by Mario after booking.
+- Admin bookings view shows phone and court preference so Mario can text the student without digging.
 
 ## Supabase
 
@@ -25,6 +38,22 @@ Use this before promoting changes to `demariomontezpb.com`.
 - Verify active `time_slots` include the current lesson schedule.
 - Verify venue/location copy is correct before accepting live direct bookings.
 - Verify each venue/platform allows direct bookings through `demariomontezpb.com` rather than only through the existing platforms.
+
+## Admin & Security
+
+- Enroll and verify MFA for each admin account.
+- Confirm `/admin` redirects unauthenticated users to login.
+- Confirm each admin reaches `aal2` after MFA verification.
+- Confirm admin API routes reject an allowed admin email that is not currently `aal2`.
+- Confirm `ADMIN_EMAIL` includes only the intended admins before launch.
+
+## Production Monitoring
+
+- Add `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` to Vercel production.
+- Add `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` if source-map upload is enabled for production builds.
+- Redeploy production after adding monitoring env vars.
+- While logged in as an MFA-verified admin, send `POST /api/monitoring-test` in production or preview.
+- Confirm the test event appears in Sentry before public launch.
 
 ## Google Calendar OAuth
 
@@ -44,13 +73,14 @@ Use this before promoting changes to `demariomontezpb.com`.
 ## Live Manual Checks
 
 - Submit a test inquiry.
-- Submit a test booking.
-- Confirm student confirmation email arrives.
-- Confirm admin notification email arrives.
+- Submit a test booking with phone, preferred court setup, and preferred area/court.
+- Confirm student confirmation email arrives and says Mario will confirm the exact court.
+- Confirm admin notification email arrives with student phone and court preference.
 - Cancel the test booking from admin and confirm cancellation email arrives.
 - Check payment links and QR rendering on booking confirmation and `/pay`.
-- Enroll and verify MFA for each admin account.
+- Confirm the calendar invite and Google Calendar link use the court-confirmation wording.
 - Confirm DeMario knows the weekly admin routine: review bookings, inquiries, unpaid lessons, and blocked dates.
+- Confirm Mario's handoff: text each new student to confirm exact court, any court fee, and payment.
 - Review `docs/ADMIN_HANDOFF.md` with DeMario.
 
 ## Business Gates
@@ -67,6 +97,6 @@ Use this before promoting changes to `demariomontezpb.com`.
 ## Broader Promotion Gates
 
 - Rate limiting and honeypot protection are active on public booking and inquiry forms.
-- Production error monitoring is configured.
+- Production error monitoring is configured and a test event has been received.
 - Dependency advisories have been reviewed in `docs/DEPENDENCY_ADVISORIES.md`.
 - Historical audit/planning docs have been reviewed against current docs.

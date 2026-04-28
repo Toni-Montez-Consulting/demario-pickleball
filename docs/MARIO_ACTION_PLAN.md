@@ -81,6 +81,26 @@ Mario does:
 
 Done when: the public booking picker only shows times Mario is willing to teach.
 
+### Confirm Each New Student's Court Plan
+
+Why: the site reserves the lesson time first, then Mario confirms the exact
+court after checking the student's preference, weather, court fees, and court
+availability.
+
+Mario does:
+
+1. Open the new booking in Admin.
+2. Read the student's phone number, preferred court setup, and preferred
+   area/court note.
+3. Text the student the exact court, any court reservation fee, and payment
+   reminder.
+4. If the student chose "Help me choose," recommend the easiest court plan for
+   their location, weather, and lesson type.
+5. Mark the lesson paid only after Cash App, Zelle, or PayPal is received.
+
+Done when: every new booking has a clear text confirmation with exact court,
+court fee expectations, and payment status.
+
 ### Confirm Venue And Platform Permission For Direct Site Bookings
 
 Why: the site should not take direct bookings for a court unless the venue and

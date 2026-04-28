@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { generateDays, type DaySlot } from "@/lib/data";
-import { LESSON_LOCATION } from "@/lib/business";
+import { COURT_CONFIRMATION_MESSAGE, LESSON_LOCATION } from "@/lib/business";
+import { COURT_SETUP_OPTIONS, formatBookingNotes, type CourtSetup } from "@/lib/booking-notes";
 import PaymentOptions from "./PaymentOptions";
 
 type Step = "form" | "picker" | "loading" | "error" | "confirmed";
@@ -12,6 +13,8 @@ interface FormData {
   email: string;
   phone: string;
   lessonType: "beginner" | "advanced" | "clinic";
+  courtSetup: CourtSetup | "";
+  preferredCourt: string;
 }
 
 interface BookingModalProps {
@@ -27,6 +30,7 @@ const LESSON_LABELS: Record<string, string> = {
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[\d\s\-()+]{7,20}$/;
 
 const LESSON_PRICES: Record<string, string> = {
   beginner: "$70.00",
@@ -41,6 +45,8 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     email: "",
     phone: "",
     lessonType: initialLessonType,
+    courtSetup: "",
+    preferredCourt: "",
   });
   const [days, setDays] = useState<DaySlot[]>(() => generateDays());
   const [selectedDay, setSelectedDay] = useState(0);
@@ -100,7 +106,14 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       setDays(freshDays);
       document.body.style.overflow = "hidden";
       setStep("form");
-      setForm({ name: "", email: "", phone: "", lessonType: initialLessonType });
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        lessonType: initialLessonType,
+        courtSetup: "",
+        preferredCourt: "",
+      });
       setSelectedDay(0);
       setBookedTimes(new Set());
       setAllDay(false);
@@ -193,6 +206,12 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
           lesson_type: form.lessonType,
           lesson_date: day.dateStr,
           lesson_time: selectedTime,
+          notes: form.courtSetup
+            ? formatBookingNotes({
+                courtSetup: form.courtSetup,
+                preferredArea: form.preferredCourt,
+              })
+            : undefined,
           waiver_accepted: waiverAgreed,
           company,
         }),
@@ -228,6 +247,14 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   const lessonName = LESSON_LABELS[form.lessonType].split(" (")[0];
   const lessonPrice = LESSON_PRICES[form.lessonType];
   const availableCount = times.filter((t) => !bookedTimes.has(t)).length;
+  const phoneValue = form.phone.trim();
+  const phoneValid = PHONE_RE.test(phoneValue) && phoneValue.replace(/\D/g, "").length >= 7;
+  const canContinue =
+    form.name.trim().length >= 2 &&
+    EMAIL_RE.test(form.email) &&
+    phoneValid &&
+    Boolean(form.courtSetup) &&
+    waiverAgreed;
 
   return (
     <div className="modal-backdrop open" onClick={handleBackdropClick}>
@@ -257,7 +284,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
         {step === "form" && (
           <>
             <h3 id="booking-modal-title">Book a lesson</h3>
-            <p className="m-sub">Tell us who is coming, then pick the court time that fits.</p>
+            <p className="m-sub">Tell us who is coming, where you prefer to train, then pick the time that fits.</p>
             <div className="modal-form-group">
               <label htmlFor="bm-name">Your name</label>
               <input
@@ -284,15 +311,17 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
               />
             </div>
             <div className="modal-form-group">
-              <label htmlFor="bm-phone">Phone (optional)</label>
+              <label htmlFor="bm-phone">Phone</label>
               <input
                 id="bm-phone"
                 className="modal-input"
                 type="tel"
                 placeholder="(555) 000-0000"
                 value={form.phone}
+                maxLength={20}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
               />
+              <p className="field-hint">Used for court confirmation and weather updates.</p>
             </div>
             <div className="modal-form-group">
               <label htmlFor="lesson-type">Lesson type</label>
@@ -308,6 +337,36 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 <option value="advanced">Strategy Lab ($80)</option>
                 <option value="clinic">Group Clinic ($50)</option>
               </select>
+            </div>
+            <div className="modal-form-group">
+              <label htmlFor="court-setup">Preferred court setup</label>
+              <select
+                id="court-setup"
+                className="modal-select"
+                value={form.courtSetup}
+                onChange={(e) =>
+                  setForm({ ...form, courtSetup: e.target.value as FormData["courtSetup"] })
+                }
+              >
+                <option value="">Choose one</option>
+                {COURT_SETUP_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-form-group">
+              <label htmlFor="preferred-court">Preferred area or court (optional)</label>
+              <input
+                id="preferred-court"
+                className="modal-input"
+                type="text"
+                placeholder="Near Lake Highlands, The Grove, Life Time, etc."
+                value={form.preferredCourt}
+                maxLength={160}
+                onChange={(e) => setForm({ ...form, preferredCourt: e.target.value })}
+              />
             </div>
             <label className="waiver-check">
               <input
@@ -337,7 +396,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
             <button
               type="button"
               className="btn btn-primary"
-              disabled={!form.name.trim() || !EMAIL_RE.test(form.email) || !waiverAgreed}
+              disabled={!canContinue}
               onClick={() => {
                 fetchAvailability(days[selectedDay].dateStr, times, form.lessonType);
                 setStep("picker");
@@ -370,6 +429,10 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
               <div>
                 <span>Timezone</span>
                 <strong>Central Time</strong>
+              </div>
+              <div>
+                <span>Court</span>
+                <strong>{form.courtSetup}</strong>
               </div>
             </div>
 
@@ -503,6 +566,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
             <p className="m-sub">
               {day.d} {day.n} at {selectedTime} CT · confirmation email sent.
             </p>
+            <p className="confirm-note">{COURT_CONFIRMATION_MESSAGE}</p>
             <div className="booking-summary">
               <div className="booking-summary-row">
                 <span>Date and time</span>
@@ -517,11 +581,15 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 <strong>DeMario Montez</strong>
               </div>
               <div className="booking-summary-row">
-                <span>Location</span>
+                <span>Court</span>
                 <strong>{LESSON_LOCATION}</strong>
               </div>
               <div className="booking-summary-row">
-                <span>Amount due</span>
+                <span>Preference</span>
+                <strong>{form.courtSetup}</strong>
+              </div>
+              <div className="booking-summary-row">
+                <span>Lesson fee due</span>
                 <strong className="accent">{lessonPrice}</strong>
               </div>
               {bookingId && (

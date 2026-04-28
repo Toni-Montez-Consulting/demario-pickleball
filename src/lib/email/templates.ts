@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/site";
-import { LESSON_LOCATION } from "@/lib/business";
+import { COURT_CONFIRMATION_MESSAGE, LESSON_LOCATION } from "@/lib/business";
+import { parseBookingNotes } from "@/lib/booking-notes";
 import { generateGoogleCalendarUrl, type IcsBooking } from "./ics";
 
 const LESSON_NAMES: Record<string, string> = {
@@ -36,17 +37,20 @@ export function studentRequestedHtml(booking: IcsBooking): string {
   const lesson = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
   const price = LESSON_PRICES[booking.lesson_type] ?? "";
   const shortId = booking.id.slice(0, 8).toUpperCase();
+  const court = parseBookingNotes(booking.notes);
   return wrap(
     `
     <h1 style="font-size:22px;margin:0 0 12px;">You're booked, ${escapeHtml(booking.name.split(" ")[0])}.</h1>
     <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">
-      Mario will confirm shortly. Add this to your calendar using the attached invite.
+      Your lesson time is reserved. Mario will confirm the exact court shortly.
     </p>
     <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
       <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(lesson)}</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_date)}</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Location</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(LESSON_LOCATION)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#777;">Court</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(LESSON_LOCATION)}</strong></td></tr>
+      ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Preference</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(court.courtSetup)}</strong></td></tr>` : ""}
+      ${court.preferredArea ? `<tr><td style="padding:6px 0;color:#777;">Area/court note</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(court.preferredArea)}</strong></td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;"><strong>${shortId}</strong></td></tr>
       ${price ? `<tr><td style="padding:6px 0;color:#777;">Amount</td><td style="padding:6px 0;text-align:right;"><strong>${price}</strong></td></tr>` : ""}
     </table>
@@ -60,7 +64,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
       <a href="${generateGoogleCalendarUrl({ booking })}" style="display:inline-block;padding:10px 16px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">Add to Google Calendar</a>
     </p>
     <p style="font-size:13px;color:#666;line-height:1.5;margin:0;">
-      Include booking ID <strong>${shortId}</strong> in the memo so Mario can match your payment.
+      Include booking ID <strong>${shortId}</strong> in the memo so Mario can match your payment. ${escapeHtml(COURT_CONFIRMATION_MESSAGE)}
     </p>
     `,
     `Booking confirmed — ${booking.lesson_date}`
@@ -70,16 +74,23 @@ export function studentRequestedHtml(booking: IcsBooking): string {
 export function adminNotificationHtml(booking: IcsBooking): string {
   const lesson = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
   const shortId = booking.id.slice(0, 8).toUpperCase();
+  const court = parseBookingNotes(booking.notes);
   return wrap(
     `
     <h1 style="font-size:20px;margin:0 0 12px;">New booking — ${escapeHtml(lesson)}</h1>
     <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;">
       <tr><td style="padding:6px 0;color:#777;">Student</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.name)}</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Email</td><td style="padding:6px 0;text-align:right;"><a href="mailto:${escapeHtml(booking.email)}">${escapeHtml(booking.email)}</a></td></tr>
+      ${booking.phone ? `<tr><td style="padding:6px 0;color:#777;">Phone</td><td style="padding:6px 0;text-align:right;"><a href="tel:${escapeHtml(booking.phone)}">${escapeHtml(booking.phone)}</a></td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;">${escapeHtml(lesson)}</td></tr>
       <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;">${escapeHtml(booking.lesson_date)} · ${escapeHtml(booking.lesson_time)} CT</td></tr>
+      ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Court setup</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.courtSetup)}</td></tr>` : ""}
+      ${court.preferredArea ? `<tr><td style="padding:6px 0;color:#777;">Area/court note</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.preferredArea)}</td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;">${shortId}</td></tr>
     </table>
+    <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">
+      Text the student to confirm the exact court, any court fee, and payment before the lesson.
+    </p>
     <p style="margin:20px 0 0;">
       <a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open admin dashboard</a>
     </p>

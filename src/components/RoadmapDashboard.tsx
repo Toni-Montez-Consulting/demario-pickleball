@@ -138,7 +138,7 @@ const PHASES: RoadmapPhase[] = [
       {
         key: "p2-email-confirm",
         text: "Send yourself one test booking and confirm the emails look right",
-        detail: "Mario task: after Tonio says email is configured, make one test booking with your own email. Confirm the student email, admin email, calendar attachment, payment links, location wording, and price all look right.",
+        detail: "Mario task: after Tonio says email is configured, make one test booking with your own email and phone. Confirm the student email, admin email, calendar attachment, payment links, court preference, location wording, and price all look right.",
       },
       {
         key: "p2-packages",

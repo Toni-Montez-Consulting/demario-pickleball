@@ -34,11 +34,14 @@ roadmap lives at `/admin/roadmap`; the developer roadmap lives at
 - Admin destructive actions now require confirmation and show API error messages where available.
 - Admin handoff and dependency advisory docs were added.
 - Google Calendar FreeBusy blocking was added to availability and booking APIs, with admin diagnostics in Availability.
+- Location Clarity Booking V1 was added: homepage training-location paths, required phone, required court setup preference, court notes in bookings, and clearer student/admin court-confirmation copy.
+- Sentry server/client instrumentation was added with an admin-only monitoring verification endpoint.
 - Mario-facing tasks and the owner action plan were clarified in `/admin/tasks`, `/admin/roadmap`, and `docs/MARIO_ACTION_PLAN.md`.
 
 ## Remaining Manual Launch Work
 
 - Run `docs/supabase-p1-hardening.sql` in Supabase before treating rate limiting as active in production.
+- Configure Sentry production env vars and confirm a monitoring test event is received.
 - Verify production RLS and index state from `docs/RELEASE_CHECKLIST.md`.
 - Generate a fresh production Google refresh token with DeMario and confirm a busy Google Calendar event blocks a public lesson slot.
 - Complete live manual checks: inquiry, booking, emails, cancellation, payment links, QR rendering, MFA, and DeMario handoff.
@@ -75,15 +78,6 @@ Future implementation shape:
 - Student page with available dates/times.
 - API route updates the booking and sends cancellation/new invite emails.
 
-### Production Error Monitoring
-
-Deferred but recommended before broader promotion.
-
-Future implementation shape:
-- Add Sentry or equivalent.
-- Capture server/client errors.
-- Tag errors by route and environment.
-
 ### Analytics
 
 Deferred until consent/cookie policy is settled.
@@ -115,6 +109,5 @@ Future implementation shape:
 3. Confirm Google Calendar blocking with a real busy event.
 4. Use the site with controlled referrals and known students.
 5. Resolve business gates for broader promotion.
-6. Add production monitoring.
-7. Revisit reminders/rescheduling after real booking volume appears.
-8. Revisit Stripe after business entity and banking setup are ready.
+6. Revisit reminders/rescheduling after real booking volume appears.
+7. Revisit Stripe after business entity and banking setup are ready.

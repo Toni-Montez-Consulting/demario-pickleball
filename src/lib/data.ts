@@ -4,6 +4,8 @@ export interface Review {
   name: string;
   meta: string;
   initial: string;
+  tag: string;
+  takeaway: string;
 }
 
 export interface LessonStep {
@@ -30,6 +32,8 @@ export const REVIEWS: Review[] = [
     name: "Rachel K.",
     meta: "Intermediate · 12 lessons",
     initial: "R",
+    tag: "Strategy",
+    takeaway: "Better point construction",
   },
   {
     quote:
@@ -38,6 +42,8 @@ export const REVIEWS: Review[] = [
     name: "Marcus T.",
     meta: "Competitive · 20 lessons",
     initial: "M",
+    tag: "Competitive",
+    takeaway: "Targeted practice plan",
   },
   {
     quote:
@@ -46,6 +52,8 @@ export const REVIEWS: Review[] = [
     name: "Jenna P.",
     meta: "Beginner · 6 lessons",
     initial: "J",
+    tag: "Beginner",
+    takeaway: "First tournament confidence",
   },
 ];
 

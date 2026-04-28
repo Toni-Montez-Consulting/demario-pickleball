@@ -118,6 +118,17 @@ async function postBooking(body: Record<string, unknown>) {
   } as NextRequest);
 }
 
+const VALID_BOOKING_BODY = {
+  name: "Jane Student",
+  email: "jane@example.com",
+  phone: "(469) 371-9220",
+  lesson_type: "beginner",
+  lesson_date: "2026-05-04",
+  lesson_time: "9:00 AM",
+  notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
+  waiver_accepted: true,
+};
+
 describe("POST /api/bookings", () => {
   const inserted: Row[] = [];
 
@@ -141,13 +152,8 @@ describe("POST /api/bookings", () => {
     );
 
     const response = await postBooking({
-      name: "Jane Student",
+      ...VALID_BOOKING_BODY,
       email: "Jane@Example.com",
-      phone: "(469) 371-9220",
-      lesson_type: "beginner",
-      lesson_date: "2026-05-04",
-      lesson_time: "9:00 AM",
-      waiver_accepted: true,
     });
     const data = await response.json();
 
@@ -155,10 +161,18 @@ describe("POST /api/bookings", () => {
     expect(data.id).toBe("12345678-1234-1234-1234-123456789abc");
     expect(inserted[0]).toMatchObject({
       email: "jane@example.com",
+      phone: "(469) 371-9220",
+      notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
       waiver_version: "2026-04-24",
     });
     expect(typeof inserted[0].waiver_signed_at).toBe("string");
     expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledOnce();
+    expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledWith(
+      expect.objectContaining({
+        phone: "(469) 371-9220",
+        notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
+      })
+    );
   });
 
   it("rejects a recurring blocked slot before insert", async () => {
@@ -172,14 +186,7 @@ describe("POST /api/bookings", () => {
       inserted
     );
 
-    const response = await postBooking({
-      name: "Jane Student",
-      email: "jane@example.com",
-      lesson_type: "beginner",
-      lesson_date: "2026-05-04",
-      lesson_time: "9:00 AM",
-      waiver_accepted: true,
-    });
+    const response = await postBooking(VALID_BOOKING_BODY);
 
     expect(response.status).toBe(409);
     expect(inserted).toHaveLength(0);
@@ -190,11 +197,7 @@ describe("POST /api/bookings", () => {
     mocks.serviceClient = createMockClient({}, inserted);
 
     const response = await postBooking({
-      name: "Jane Student",
-      email: "jane@example.com",
-      lesson_type: "beginner",
-      lesson_date: "2026-05-04",
-      lesson_time: "9:00 AM",
+      ...VALID_BOOKING_BODY,
       waiver_accepted: false,
     });
 
@@ -206,12 +209,7 @@ describe("POST /api/bookings", () => {
     mocks.serviceClient = createMockClient({}, inserted);
 
     const response = await postBooking({
-      name: "Jane Student",
-      email: "jane@example.com",
-      lesson_type: "beginner",
-      lesson_date: "2026-05-04",
-      lesson_time: "9:00 AM",
-      waiver_accepted: true,
+      ...VALID_BOOKING_BODY,
       company: "Spam Co",
     });
 
@@ -224,17 +222,38 @@ describe("POST /api/bookings", () => {
     mocks.serviceClient = createMockClient({}, inserted);
     mocks.checkRateLimit.mockResolvedValue({ limited: true, retryAfterSeconds: 3600 });
 
-    const response = await postBooking({
-      name: "Jane Student",
-      email: "jane@example.com",
-      lesson_type: "beginner",
-      lesson_date: "2026-05-04",
-      lesson_time: "9:00 AM",
-      waiver_accepted: true,
-    });
+    const response = await postBooking(VALID_BOOKING_BODY);
 
     expect(response.status).toBe(429);
     expect(response.headers.get("Retry-After")).toBe("3600");
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("requires a valid phone number", async () => {
+    mocks.serviceClient = createMockClient({}, inserted);
+
+    const response = await postBooking({
+      ...VALID_BOOKING_BODY,
+      phone: "",
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Invalid phone number");
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("requires a preferred court setup in notes", async () => {
+    mocks.serviceClient = createMockClient({}, inserted);
+
+    const response = await postBooking({
+      ...VALID_BOOKING_BODY,
+      notes: "Preferred court setup: Something else",
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Preferred court setup is required.");
     expect(inserted).toHaveLength(0);
   });
 });
