@@ -34,14 +34,6 @@ Owner: Mario.
 
 Owner: Mario.
 
-### Production monitoring
-
-- Configure the production monitoring DSN in Vercel before broad launch.
-- Log into admin with MFA and call `POST /api/monitoring-test`.
-- Confirm the test error appears in Sentry or the selected monitoring tool.
-
-Owner: Tonio.
-
 ### Supabase launch hardening
 
 - Apply P0/P1 SQL in Supabase.
@@ -82,6 +74,10 @@ The booking confirmation and payment cards show the lesson fee. Any indoor or re
 
 ## Good Post-Launch Improvements
 
+- Configure Sentry or another production monitoring tool, then verify a test
+  event from `POST /api/monitoring-test` while logged in as an MFA-verified
+  admin. This is recommended for long-term operations, but it is not a current
+  launch blocker if Mario and Tonio accept that risk.
 - Add click-to-text or click-to-call actions in the admin booking row.
 - Add admin filters for upcoming, pending, unpaid, and cancelled bookings.
 - Add structured venue selection once venue/platform rules are fully settled.

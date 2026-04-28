@@ -49,11 +49,12 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 
 ## Production Monitoring
 
-- Add `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` to Vercel production.
+- Sentry is recommended for long-term operations, but it is not a current launch blocker if Mario and Tonio accept that risk.
+- When ready, add `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` to Vercel production.
 - Add `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` if source-map upload is enabled for production builds.
 - Redeploy production after adding monitoring env vars.
 - While logged in as an MFA-verified admin, send `POST /api/monitoring-test` in production or preview.
-- Confirm the test event appears in Sentry before public launch.
+- Confirm the test event appears in Sentry.
 
 ## Google Calendar OAuth
 
@@ -97,6 +98,6 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 ## Broader Promotion Gates
 
 - Rate limiting and honeypot protection are active on public booking and inquiry forms.
-- Production error monitoring is configured and a test event has been received.
+- Production error monitoring is configured and a test event has been received, or Mario and Tonio have explicitly accepted Sentry as a post-launch follow-up.
 - Dependency advisories have been reviewed in `docs/DEPENDENCY_ADVISORIES.md`.
 - Historical audit/planning docs have been reviewed against current docs.
