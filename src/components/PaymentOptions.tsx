@@ -6,7 +6,8 @@ interface PaymentOptionsProps {
 const CASH_APP_URL = "https://cash.app/$DeMarioMontez1";
 const ZELLE_URL =
   "https://enroll.zellepay.com/qr-codes?data=eyJuYW1lIjoiREVNQVJJTyIsImFjdGlvbiI6InBheW1lbnQiLCJ0b2tlbiI6IjQ2OTM3MTkyMjAifQ==";
-const PAYPAL_QR_SRC = "/img/paypal-qr.png";
+const PAYPAL_URL = "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8";
+const PAYPAL_QR_SRC = "/img/paypal-qr-tight.png";
 
 export default function PaymentOptions({ bookingId, amount }: PaymentOptionsProps) {
   const shortId = bookingId ? bookingId.slice(0, 8).toUpperCase() : null;
@@ -72,7 +73,12 @@ export default function PaymentOptions({ bookingId, amount }: PaymentOptionsProp
         </div>
       </a>
 
-      <div className="pay-card pay-paypal">
+      <a
+        href={PAYPAL_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pay-card pay-paypal"
+      >
         <div className="pay-card-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M8.3 21.5H5.4a.6.6 0 0 1-.6-.7L7.5 3.9a.8.8 0 0 1 .8-.7h6.7c3.2 0 5.3 1.6 4.9 4.7-.5 3.5-3.1 5.3-6.5 5.3h-2a.8.8 0 0 0-.8.7l-.8 5a.8.8 0 0 1-.8.6h-.7zM13.8 6H11l-.8 5.2H12c2 0 3.3-1 3.6-2.8.2-1.6-.7-2.4-1.8-2.4z" />
@@ -80,18 +86,31 @@ export default function PaymentOptions({ bookingId, amount }: PaymentOptionsProp
         </div>
         <div className="pay-card-body">
           <div className="pay-card-title">PayPal</div>
-          <div className="pay-card-sub">Scan the QR below</div>
+          <div className="pay-card-sub">Open PayPal app or scan below</div>
         </div>
-      </div>
+        <div className="pay-card-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </div>
+      </a>
       <div className="pay-qr-wrap">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={PAYPAL_QR_SRC}
-          alt="PayPal QR code to pay DeMario Montez"
-          className="pay-qr"
-          loading="lazy"
-        />
-        <p className="pay-qr-caption">Scan to pay DeMario Montez</p>
+        <a
+          href={PAYPAL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pay-qr-link"
+          aria-label="Open PayPal app payment link"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={PAYPAL_QR_SRC}
+            alt="PayPal QR code to pay DeMario Montez"
+            className="pay-qr"
+            loading="lazy"
+          />
+        </a>
+        <p className="pay-qr-caption">Tap to open PayPal on this device, or scan with another device.</p>
       </div>
     </div>
   );

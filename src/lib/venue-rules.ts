@@ -60,6 +60,7 @@ export const PLATFORM_REQUIRED_VENUES: VenueRule[] = [
     waiverOwner: "Life Time",
     summary: "Life Time sessions are for active members and must be booked inside Life Time's own system.",
     studentAction: "Book through your Life Time account, or text Mario if you need help choosing the right path.",
+    ctaLabel: "Use Life Time app",
   },
   {
     name: "TeachMe.To",
@@ -85,6 +86,7 @@ export const HYBRID_BY_REQUEST_VENUES: VenueRule[] = [
     waiverOwner: "Impact / venue plus DeMario's site terms when applicable",
     summary: "Reserve the court through Impact Activities, then coordinate the coaching fee and lesson details with Mario.",
     studentAction: "Reserve through Impact, then text Mario",
+    ctaLabel: "Reserve through Impact",
   },
 ];
 

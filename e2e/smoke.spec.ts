@@ -105,6 +105,10 @@ test("homepage loads and booking modal can reach payment options", async ({ page
   await expect(confirmedDialog.getByText(/Lesson 12345678/i)).toBeVisible();
   await expect(confirmedDialog.getByText(/Mario will confirm the exact court/i)).toBeVisible();
   await expect(confirmedDialog.getByText(/Cash App/i)).toBeVisible();
+  await expect(confirmedDialog.getByRole("link", { name: /open paypal app payment link/i })).toHaveAttribute(
+    "href",
+    "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8"
+  );
 });
 
 test("indoor students are routed to partner booking paths", async ({ page }) => {
@@ -129,6 +133,80 @@ test("indoor students are routed to partner booking paths", async ({ page }) => 
   await expect(routeDialog.getByText("The Grove Pickleball")).toBeVisible();
   await expect(routeDialog.getByText("Life Time Fitness")).toBeVisible();
   await expect(routeDialog.getByText("Samuel-Grand Tennis Center")).toBeVisible();
+  await expect(routeDialog.getByRole("link", { name: /Dallas Indoor Pickleball Club/i })).toHaveAttribute(
+    "href",
+    /dallaspickleclub\.podplay\.app/
+  );
+  await expect(routeDialog.getByRole("link", { name: /The Grove Pickleball/i })).toHaveAttribute(
+    "href",
+    /grove\.podplay\.app/
+  );
+  await expect(routeDialog.getByText("Use Life Time app")).toBeVisible();
+  await expect(routeDialog.getByText("Reserve through Impact")).toBeVisible();
+  const lifeTimeHref = await routeDialog.getByText("Life Time Fitness").evaluate((el) => el.closest("a")?.getAttribute("href") ?? null);
+  const samuelGrandHref = await routeDialog.getByText("Samuel-Grand Tennis Center").evaluate((el) => el.closest("a")?.getAttribute("href") ?? null);
+  expect(lifeTimeHref).toBeNull();
+  expect(samuelGrandHref).toBeNull();
+});
+
+test("booking terms stay in-flow and mobile modal does not overflow or trigger tiny input zoom", async ({ page }) => {
+  await mockBookingFlow(page);
+
+  for (const width of [375, 390, 430]) {
+    await page.setViewportSize({ width, height: 740 });
+    await page.goto("/");
+    await page.getByRole("button", { name: /book a lesson/i }).first().click();
+    const dialog = page.getByRole("dialog", { name: /book a lesson/i });
+
+    await dialog.getByLabel(/your name/i).fill("Jane Student");
+    await dialog.getByLabel(/email/i).fill("jane@example.com");
+    await dialog.getByLabel(/phone/i).fill("(469) 371-9220");
+    await dialog.getByLabel(/preferred court setup/i).selectOption("Outdoor public court");
+    await dialog.getByLabel(/preferred area or court/i).fill("Lake Highlands");
+
+    const metrics = await page.evaluate(() => {
+      const input = document.querySelector<HTMLElement>(".modal-input");
+      const modal = document.querySelector<HTMLElement>('[role="dialog"]');
+      return {
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        inputFontSize: input ? window.getComputedStyle(input).fontSize : "0px",
+        modalWidth: modal?.getBoundingClientRect().width ?? 0,
+        innerWidth: window.innerWidth,
+      };
+    });
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
+    expect(metrics.modalWidth).toBeLessThanOrEqual(metrics.innerWidth);
+    expect(Number.parseFloat(metrics.inputFontSize)).toBeGreaterThanOrEqual(16);
+
+    await dialog.getByRole("button", { name: /coaching agreement/i }).click();
+    const termsDialog = page.getByRole("dialog", { name: /coaching agreement/i });
+    await expect(termsDialog.getByRole("heading", { name: /coaching agreement/i })).toBeVisible();
+    await termsDialog.getByRole("button", { name: /back to booking/i }).click();
+
+    const returnedDialog = page.getByRole("dialog", { name: /book a lesson/i });
+    await expect(returnedDialog.getByLabel(/your name/i)).toHaveValue("Jane Student");
+    await expect(returnedDialog.getByLabel(/email/i)).toHaveValue("jane@example.com");
+    await expect(returnedDialog.getByLabel(/phone/i)).toHaveValue("(469) 371-9220");
+    await expect(returnedDialog.getByLabel(/preferred court setup/i)).toHaveValue("Outdoor public court");
+    await expect(returnedDialog.getByLabel(/preferred area or court/i)).toHaveValue("Lake Highlands");
+  }
+});
+
+test("payment page exposes a tappable PayPal link and QR large enough to scan", async ({ page }) => {
+  await page.goto("/pay");
+
+  await expect(page.getByRole("link", { name: /^PayPal/i })).toHaveAttribute(
+    "href",
+    "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8"
+  );
+  const qrLink = page.getByRole("link", { name: /open paypal app payment link/i });
+  await expect(qrLink).toHaveAttribute("href", "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8");
+  const qrImage = qrLink.getByAltText(/PayPal QR code/i);
+  await expect(qrImage).toBeVisible();
+  const box = await qrImage.boundingBox();
+  expect(box?.width ?? 0).toBeGreaterThanOrEqual(250);
+  expect(box?.height ?? 0).toBeGreaterThanOrEqual(250);
 });
 
 test("booking modal explains when a day is fully unavailable", async ({ page }) => {
