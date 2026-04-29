@@ -107,7 +107,7 @@ test("homepage loads and booking modal can reach payment options", async ({ page
   await expect(confirmedDialog.getByText(/Cash App/i)).toBeVisible();
   await expect(confirmedDialog.getByRole("link", { name: /open paypal app payment link/i })).toHaveAttribute(
     "href",
-    "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8"
+    "https://www.paypal.com/paypalme/DemarioMontez"
   );
 });
 
@@ -198,10 +198,10 @@ test("payment page exposes a tappable PayPal link and QR large enough to scan", 
 
   await expect(page.getByRole("link", { name: /^PayPal/i })).toHaveAttribute(
     "href",
-    "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8"
+    "https://www.paypal.com/paypalme/DemarioMontez"
   );
   const qrLink = page.getByRole("link", { name: /open paypal app payment link/i });
-  await expect(qrLink).toHaveAttribute("href", "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8");
+  await expect(qrLink).toHaveAttribute("href", "https://www.paypal.com/paypalme/DemarioMontez");
   const qrImage = qrLink.getByAltText(/PayPal QR code/i);
   await expect(qrImage).toBeVisible();
   const box = await qrImage.boundingBox();

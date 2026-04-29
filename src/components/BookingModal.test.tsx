@@ -101,11 +101,11 @@ describe("BookingModal", () => {
     expect(screen.getByAltText(/PayPal QR code/i)).toHaveAttribute("src", "/img/paypal-qr-tight.png");
     expect(screen.getByRole("link", { name: /^PayPal/i })).toHaveAttribute(
       "href",
-      "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8"
+      "https://www.paypal.com/paypalme/DemarioMontez"
     );
     expect(screen.getByRole("link", { name: /open paypal app payment link/i })).toHaveAttribute(
       "href",
-      "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8"
+      "https://www.paypal.com/paypalme/DemarioMontez"
     );
   }, 15000);
 

@@ -6,7 +6,7 @@ interface PaymentOptionsProps {
 const CASH_APP_URL = "https://cash.app/$DeMarioMontez1";
 const ZELLE_URL =
   "https://enroll.zellepay.com/qr-codes?data=eyJuYW1lIjoiREVNQVJJTyIsImFjdGlvbiI6InBheW1lbnQiLCJ0b2tlbiI6IjQ2OTM3MTkyMjAifQ==";
-const PAYPAL_URL = "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8";
+const PAYPAL_URL = "https://www.paypal.com/paypalme/DemarioMontez";
 const PAYPAL_QR_SRC = "/img/paypal-qr-tight.png";
 
 export default function PaymentOptions({ bookingId, amount }: PaymentOptionsProps) {
