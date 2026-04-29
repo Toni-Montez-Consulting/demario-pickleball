@@ -38,18 +38,28 @@ const PHASES: RoadmapPhase[] = [
       },
       {
         key: "p0-insurance",
-        text: "Keep coaching liability insurance proof on file",
-        detail: "Mario task: keep the active certificate of insurance somewhere easy to find. Done when Tonio and Mario know where the current coverage proof lives.",
+        text: "Save the active coaching liability insurance certificate",
+        detail: "Mario task: save the active coaching liability insurance certificate in a known folder. Do not rely on the website as the insurance record. Done when Tonio and Mario both know where the current certificate lives.",
       },
       {
         key: "p0-waiver-review",
-        text: "Keep the approved waiver, terms, and payment policy as the launch baseline",
-        detail: "Mario task: do not improvise legal, waiver, cancellation, or payment wording in texts. Use the reviewed site terms and send Tonio any future requested wording changes before the site changes.",
+        text: "Save the reviewed waiver, terms, payment, and cancellation baseline",
+        detail: "Mario task: keep proof that the website Terms, waiver, payment, and cancellation wording are the reviewed launch baseline. Do not improvise legal, waiver, cancellation, or payment wording in texts. Send Tonio any future required wording changes before using them with students.",
+      },
+      {
+        key: "p0-payment-policy",
+        text: "Follow the launch payment rules for every direct booking",
+        detail: "Mario task: students pay through Cash App, Zelle, or PayPal and include the booking ID in the memo. Confirm any court reservation fee separately before the lesson. Mark a lesson paid in Admin only after the payment is actually received.",
+      },
+      {
+        key: "p0-cancellation-policy",
+        text: "Follow the launch cancellation rules",
+        detail: "Mario task: 24+ hours notice means free cancellation or reschedule. Under 24 hours may be charged 50% of the lesson price. No-shows may be charged the full lesson price. If Mario cancels, offer a refund or free reschedule. Use Admin Cancel so the student receives the cancellation email.",
       },
       {
         key: "p0-venue",
-        text: "Follow the venue routing matrix for every booking",
-        detail: "Mario task: public outdoor courts can book through this site. Dallas Indoor and The Grove go through PodPlay, Life Time goes through Life Time, TeachMe.To stays on TeachMe.To, and Samuel-Grand court reservations go through Impact before the coaching fee is coordinated. Done when every student is routed through the correct path.",
+        text: "Keep venue and platform permission proof on file",
+        detail: "Mario task: save any venue or platform permission emails, owner texts, policy pages, or agreements. Public outdoor lessons can book through this site. Dallas Indoor and The Grove go through PodPlay, Life Time goes through Life Time, TeachMe.To stays on TeachMe.To, and Samuel-Grand court reservations go through Impact before the coaching fee is coordinated. Done when every student is routed through the correct path and the proof is easy to find.",
       },
       {
         key: "p0-soft-launch",
@@ -85,8 +95,8 @@ const PHASES: RoadmapPhase[] = [
       },
       {
         key: "p1-instagram",
-        text: "Post to Instagram (@Alexanderiio) 3x/week — drills, tips, court moments",
-        detail: "Mario task: post three simple clips each week: one drill, one student/court moment if allowed, and one quick tip. Add the booking site in bio so every post has somewhere to send people.",
+        text: "Professionalize Instagram, then post 3x/week — drills, tips, court moments",
+        detail: "Mario task: update the Instagram handle, profile photo, bio, and booking-site link so it feels clearly pickleball/coaching related. Then post three simple clips each week: one drill, one student/court moment if allowed, and one quick tip. Send Tonio the final handle before the website social link changes.",
       },
       {
         key: "p1-tiktok",

@@ -28,6 +28,9 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
 - Use the admin Cancel action so the student gets the cancellation email.
 - Text the student as a backup for same-day or urgent changes.
 - If the lesson is moved instead of cancelled, cancel the old booking and create or ask for a new booking at the new time.
+- Keep cancellation language aligned with the launch policy: 24+ hours can cancel
+  or reschedule free, under 24 hours may be charged 50%, no-shows may be charged
+  full price, and coach-cancelled sessions get a refund or free reschedule.
 
 ## Before Broader Promotion
 
@@ -35,8 +38,14 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
   Indoor and The Grove go through PodPlay; Life Time goes through Life Time;
   TeachMe.To stays on TeachMe.To; Samuel-Grand court reservations go through
   Impact before coaching-fee coordination.
-- Keep active insurance proof and reviewed waiver/terms/payment/cancellation
-  wording on file.
+- Keep the active coaching liability insurance certificate in a known folder.
+- Keep proof that the website Terms, waiver, payment, and cancellation wording
+  are the reviewed launch baseline.
+- Keep venue/platform permission emails, owner texts, policy pages, or agreements
+  somewhere Mario can find them.
+- Use the launch payment rules: Cash App, Zelle, or PayPal; booking ID in the
+  memo; court reservation fee confirmed separately; mark paid only after payment
+  is received.
 - Confirm rate limiting is active by running `docs/supabase-p1-hardening.sql`.
 - Confirm Google Calendar blocking is connected in Admin -> Availability.
 - Confirm DUPR automation is still manual until DUPR grants read-only API or partner access.

@@ -38,7 +38,7 @@ export default function Footer() {
           </svg>
         </a>
         <a
-          href="https://facebook.com/DemarioMontez"
+          href="https://facebook.com/demario.montez.9/"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Facebook"

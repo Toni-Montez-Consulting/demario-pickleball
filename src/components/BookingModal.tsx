@@ -11,8 +11,9 @@ import {
   type VenueRule,
 } from "@/lib/venue-rules";
 import PaymentOptions from "./PaymentOptions";
+import TermsContent, { TERMS_EFFECTIVE_DATE } from "./TermsContent";
 
-type Step = "form" | "indoorRouting" | "picker" | "loading" | "error" | "confirmed";
+type Step = "form" | "terms" | "indoorRouting" | "picker" | "loading" | "error" | "confirmed";
 
 interface FormData {
   name: string;
@@ -73,6 +74,7 @@ const TextIcon = () => (
 );
 
 function VenueRouteCard({ venue }: { venue: VenueRule }) {
+  const linked = Boolean(venue.href);
   const content = (
     <>
       <div className="venue-route-copy">
@@ -80,24 +82,26 @@ function VenueRouteCard({ venue }: { venue: VenueRule }) {
         <strong>{venue.name}</strong>
         <p>{venue.summary}</p>
       </div>
-      <div className="venue-route-action">
-        {venue.ctaLabel ?? "Text Mario"}
-        {venue.href ? <RouteArrowIcon /> : <TextIcon />}
+      <div className={`venue-route-action${linked ? "" : " venue-route-action-static"}`}>
+        {venue.ctaLabel ?? (linked ? "Open booking path" : "Use required venue path")}
+        {linked && <RouteArrowIcon />}
       </div>
     </>
   );
 
-  const routeHref = venue.href ?? TEXT_MARIO_HREF;
-
-  return (
+  return venue.href ? (
     <a
-      href={routeHref}
-      target={venue.href ? "_blank" : undefined}
-      rel={venue.href ? "noopener noreferrer" : undefined}
+      href={venue.href}
+      target="_blank"
+      rel="noopener noreferrer"
       className="venue-route-card"
     >
       {content}
     </a>
+  ) : (
+    <div className="venue-route-card venue-route-card-static">
+      {content}
+    </div>
   );
 }
 
@@ -349,7 +353,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       >
         <div className="modal-grip" />
         <div className="sr-only" aria-live="polite" aria-atomic="true">
-          {step === "loading" ? "Confirming your booking" : step === "confirmed" ? "Booking confirmed" : step === "error" ? "There was a booking error" : step === "indoorRouting" ? "Showing indoor booking paths" : ""}
+          {step === "loading" ? "Confirming your booking" : step === "confirmed" ? "Booking confirmed" : step === "error" ? "There was a booking error" : step === "indoorRouting" ? "Showing indoor booking paths" : step === "terms" ? "Showing coaching terms" : ""}
         </div>
         <button
           type="button"
@@ -451,19 +455,24 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 onChange={(e) => setForm({ ...form, preferredCourt: e.target.value })}
               />
             </div>
-            <label className="waiver-check">
+            <div className="waiver-check">
               <input
+                id="bm-waiver"
                 type="checkbox"
                 checked={waiverAgreed}
                 onChange={(e) => setWaiverAgreed(e.target.checked)}
               />
               <span>
-                I have read and agree to the{" "}
-                <a href="/terms" target="_blank" rel="noopener noreferrer">
+                <label htmlFor="bm-waiver">I have read and agree to the </label>
+                <button
+                  type="button"
+                  className="waiver-link"
+                  onClick={() => setStep("terms")}
+                >
                   Coaching Agreement &amp; Terms
-                </a>
+                </button>
               </span>
-            </label>
+            </div>
             <div className="honeypot-field" aria-hidden="true">
               <label htmlFor="bm-company">Company</label>
               <input
@@ -486,6 +495,23 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
+            </button>
+          </>
+        )}
+
+        {step === "terms" && (
+          <>
+            <h3 id="booking-modal-title">Coaching Agreement &amp; Terms</h3>
+            <p className="m-sub">{TERMS_EFFECTIVE_DATE}</p>
+            <div className="modal-legal-copy">
+              <TermsContent />
+            </div>
+            <button
+              type="button"
+              className="btn btn-ghost terms-back"
+              onClick={() => setStep("form")}
+            >
+              Back to booking
             </button>
           </>
         )}

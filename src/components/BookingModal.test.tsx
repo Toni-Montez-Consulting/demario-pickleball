@@ -98,6 +98,15 @@ describe("BookingModal", () => {
     await screen.findByText(/you're booked/i);
     expect(screen.getByText(/Lesson 12345678/i)).toBeInTheDocument();
     expect(screen.getByText(/Mario will confirm the exact court/i)).toBeInTheDocument();
+    expect(screen.getByAltText(/PayPal QR code/i)).toHaveAttribute("src", "/img/paypal-qr-tight.png");
+    expect(screen.getByRole("link", { name: /^PayPal/i })).toHaveAttribute(
+      "href",
+      "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8"
+    );
+    expect(screen.getByRole("link", { name: /open paypal app payment link/i })).toHaveAttribute(
+      "href",
+      "https://www.paypal.com/qrcodes/p2pqrc/72MMJ2R38U3B8"
+    );
   }, 15000);
 
   it("routes indoor students to partner booking paths before showing site times", async () => {
@@ -122,6 +131,51 @@ describe("BookingModal", () => {
     expect(screen.getByText("The Grove Pickleball")).toBeInTheDocument();
     expect(screen.getByText("Life Time Fitness")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /choose a time/i })).not.toBeInTheDocument();
+
+    expect(screen.getByRole("link", { name: /Dallas Indoor Pickleball Club/i })).toHaveAttribute(
+      "href",
+      "https://dallaspickleclub.podplay.app/coach/demario-montez-8l4j"
+    );
+    expect(screen.getByRole("link", { name: /The Grove Pickleball/i })).toHaveAttribute(
+      "href",
+      "https://grove.podplay.app/coach/demario-montez-v0m3"
+    );
+    expect(screen.getByText("Life Time Fitness").closest("a")).toBeNull();
+    expect(screen.getByText("Samuel-Grand Tennis Center").closest("a")).toBeNull();
+    expect(screen.getByRole("link", { name: /text mario/i })).toHaveAttribute(
+      "href",
+      "sms:4693719220"
+    );
+  });
+
+  it("shows terms inside the modal and keeps typed booking details when returning", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/time-slots") return jsonResponse([{ display_label: "9:00 AM" }]);
+      throw new Error(`Unexpected fetch ${url}`);
+    }));
+
+    render(<BookingModal isOpen onClose={() => undefined} />);
+
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane Student" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
+    fireEvent.change(screen.getByLabelText(/lesson type/i), { target: { value: "advanced" } });
+    fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
+    fireEvent.change(screen.getByLabelText(/preferred area or court/i), { target: { value: "Lake Highlands" } });
+
+    fireEvent.click(screen.getByRole("button", { name: /coaching agreement/i }));
+    expect(screen.getByRole("heading", { name: /coaching agreement/i })).toBeInTheDocument();
+    expect(screen.getByText(/Assumption of Risk/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /back to booking/i }));
+
+    expect(screen.getByLabelText(/your name/i)).toHaveValue("Jane Student");
+    expect(screen.getByLabelText(/email/i)).toHaveValue("jane@example.com");
+    expect(screen.getByLabelText(/phone/i)).toHaveValue("(469) 371-9220");
+    expect(screen.getByLabelText(/lesson type/i)).toHaveValue("advanced");
+    expect(screen.getByLabelText(/preferred court setup/i)).toHaveValue("Outdoor public court");
+    expect(screen.getByLabelText(/preferred area or court/i)).toHaveValue("Lake Highlands");
   });
 
   it("shows a clear no-times empty state", async () => {
