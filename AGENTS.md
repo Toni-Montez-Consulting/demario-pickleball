@@ -40,3 +40,32 @@ Be stricter around:
 - Run `npm run test:e2e` for booking, payment, admin, or public-flow changes.
 - For docs-only changes, state that code verification was skipped because no runtime files changed.
 - Before broad promotion, use `docs/RELEASE_CHECKLIST.md`.
+
+## Common Agent Workflows
+
+Use these as starting prompts when opening a Copilot or GitHub agent session on this repo.
+
+### Add or fix a unit test
+> "Add a Vitest unit test for `src/lib/<file>.ts` that covers `<scenario>`. Follow the same style as existing tests in `src/`."
+
+### Add or fix a Playwright smoke test
+> "Add a Playwright test in `e2e/` that covers `<user flow>`. Follow the same style as existing tests in that folder."
+
+### Explain a file or route
+> "Explain what `src/app/api/bookings/route.ts` does, the validation it runs, and which Supabase tables it writes."
+
+### Fix a TypeScript or lint error
+> "Fix the TypeScript error in `<file>`. Do not change any behaviour — only fix the type issue."
+
+### Update docs
+> "Update `docs/DEVELOPER_PLAN.md` to reflect that `<task>` is now complete."
+
+### Safe refactor inside one module
+> "Refactor `src/lib/availability.ts` to `<goal>`. Do not change the exported function signatures. Run `npm run ci` to verify."
+
+### Things to avoid asking the agent to do without Tonio on the call
+- Change Supabase schema, RLS policies, or run migration SQL
+- Edit Google Calendar OAuth or refresh token logic
+- Change payment, pricing, waiver, or cancellation copy
+- Add, remove, or update environment variables in Vercel
+- Enable or change Stripe, DUPR automation, or analytics before they are ready
