@@ -125,7 +125,7 @@ const VALID_BOOKING_BODY = {
   lesson_type: "beginner",
   lesson_date: "2026-05-04",
   lesson_time: "9:00 AM",
-  notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
+  notes: "Preferred court setup: Outdoor public court\nPreferred area or court: Lake Highlands",
   waiver_accepted: true,
 };
 
@@ -162,7 +162,7 @@ describe("POST /api/bookings", () => {
     expect(inserted[0]).toMatchObject({
       email: "jane@example.com",
       phone: "(469) 371-9220",
-      notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
+      notes: "Preferred court setup: Outdoor public court\nPreferred area or court: Lake Highlands",
       waiver_version: "2026-04-24",
     });
     expect(typeof inserted[0].waiver_signed_at).toBe("string");
@@ -170,7 +170,7 @@ describe("POST /api/bookings", () => {
     expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledWith(
       expect.objectContaining({
         phone: "(469) 371-9220",
-        notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
+        notes: "Preferred court setup: Outdoor public court\nPreferred area or court: Lake Highlands",
       })
     );
   });
@@ -254,6 +254,20 @@ describe("POST /api/bookings", () => {
 
     expect(response.status).toBe(400);
     expect(data.error).toBe("Preferred court setup is required.");
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("rejects direct API bookings for indoor partner-platform courts", async () => {
+    mocks.serviceClient = createMockClient({}, inserted);
+
+    const response = await postBooking({
+      ...VALID_BOOKING_BODY,
+      notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Indoor and reserved courts must be booked through the required venue path first.");
     expect(inserted).toHaveLength(0);
   });
 });

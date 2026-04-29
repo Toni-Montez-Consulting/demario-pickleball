@@ -83,8 +83,6 @@ The booking confirmation and payment cards show the lesson fee. Any indoor or re
   event from `POST /api/monitoring-test` while logged in as an MFA-verified
   admin. This is recommended for long-term operations, but it is not a current
   launch blocker if Mario and Tonio accept that risk.
-- Add click-to-text or click-to-call actions in the admin booking row.
-- Add admin filters for upcoming, pending, unpaid, and cancelled bookings.
 - Add structured venue selection only after the court expansion checklist proves
   it will help students more than it clutters booking.
 - Add a short availability debounce/cache if public traffic increases.

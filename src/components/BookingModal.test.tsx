@@ -14,6 +14,38 @@ describe("BookingModal", () => {
     vi.restoreAllMocks();
   });
 
+  it("defers availability loading until a student continues to site-bookable times", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/time-slots") {
+        return jsonResponse([{ display_label: "9:00 AM" }]);
+      }
+      if (url.startsWith("/api/availability")) {
+        return jsonResponse({ allDay: false, unavailable: [] });
+      }
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<BookingModal isOpen onClose={() => undefined} />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/api/time-slots");
+    });
+    expect(fetchMock.mock.calls.some(([input]) => String(input).startsWith("/api/availability"))).toBe(false);
+
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane Student" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
+    fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
+
+    await waitFor(() => {
+      expect(fetchMock.mock.calls.some(([input]) => String(input).startsWith("/api/availability"))).toBe(true);
+    });
+  });
+
   it("requires waiver agreement and submits direct public-court bookings to the booking API", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -55,10 +87,11 @@ describe("BookingModal", () => {
     fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
     fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
     fireEvent.change(screen.getByLabelText(/preferred area or court/i), { target: { value: "Lake Highlands" } });
-    expect(screen.getByRole("button", { name: /continue to available times/i })).toBeDisabled();
+    const continueButton = await screen.findByRole("button", { name: /continue to available times/i });
+    expect(continueButton).toBeDisabled();
 
     fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
+    fireEvent.click(continueButton);
 
     fireEvent.click(await screen.findByRole("button", { name: /reserve/i }));
 
@@ -106,7 +139,7 @@ describe("BookingModal", () => {
     fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
     fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
     fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /continue to available times/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/No lesson times available yet/i)).toBeInTheDocument();
@@ -129,7 +162,7 @@ describe("BookingModal", () => {
     fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Help me choose" } });
     expect(screen.getByText("Book a time here and Mario will recommend the cleanest public-court or partner-platform path.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /continue to available times/i }));
 
     expect(await screen.findByRole("heading", { name: /choose a time/i })).toBeInTheDocument();
   });

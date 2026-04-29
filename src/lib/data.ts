@@ -1,3 +1,5 @@
+import { addDays } from "@/lib/time";
+
 export interface Review {
   quote: string;
   accentWord: string | null;
@@ -104,17 +106,30 @@ export interface DaySlot {
   dateStr: string;
 }
 
-export function generateDays(): DaySlot[] {
+const BOOKING_TIME_ZONE = "America/Chicago";
+
+function dateStringInTimeZone(date: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+export function generateDays(now = new Date(), timeZone = BOOKING_TIME_ZONE): DaySlot[] {
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const result: DaySlot[] = [];
-  const today = new Date();
+  const today = dateStringInTimeZone(now, timeZone);
   for (let i = 1; i <= 30; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() + i);
+    const dateStr = addDays(today, i);
+    const date = new Date(`${dateStr}T00:00:00Z`);
     result.push({
-      d: days[date.getDay()],
-      n: date.getDate(),
-      dateStr: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
+      d: days[date.getUTCDay()],
+      n: date.getUTCDate(),
+      dateStr,
     });
   }
   return result;
