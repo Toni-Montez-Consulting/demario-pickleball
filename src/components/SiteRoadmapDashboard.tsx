@@ -135,6 +135,11 @@ const PHASES: DevRoadmapPhase[] = [
         detail: "Scheduled job plus reminder_sent_at tracking after the core booking system is stable.",
       },
       {
+        key: "dev-p2-student-cancel-reschedule",
+        text: "Add secure student cancellation and reschedule links",
+        detail: "Send private token links in confirmation/reminder emails so students can cancel or request a reschedule without calling Mario. Enforce the 24-hour policy in the UI/API, keep admin cancellation as the fallback, notify Mario and the student, send ICS cancel/update files, and leave refunds/payment adjustments manual until Stripe exists.",
+      },
+      {
         key: "dev-p2-stripe",
         text: "Add Stripe Checkout after the pickleball business entity is ready",
         detail: "Backburner until business banking/entity setup exists. Keep manual Cash App/Zelle/PayPal flow for now.",

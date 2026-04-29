@@ -69,14 +69,16 @@ Future implementation shape:
 - Query confirmed bookings for tomorrow where `reminder_sent_at is null`.
 - Send reminder email and persist `reminder_sent_at`.
 
-### Student Self-Reschedule Link
+### Student Self-Cancel / Reschedule Links
 
 Deferred until after the core booking workflow has real usage.
 
 Future implementation shape:
-- Signed expiring token in the confirmation email.
-- Student page with available dates/times.
-- API route updates the booking and sends cancellation/new invite emails.
+- Signed expiring token links in confirmation and reminder emails.
+- Student page can cancel outright or request/select a new available date/time.
+- UI and API explain/enforce the 24-hour cancellation policy without charging automatically.
+- API route updates the booking status or time, notifies Mario and the student, and sends ICS CANCEL or updated invite attachments.
+- Admin cancellation remains the fallback path, and refunds/payment adjustments stay manual until Stripe exists.
 
 ### Analytics
 

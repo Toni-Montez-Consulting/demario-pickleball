@@ -58,7 +58,8 @@ should stay in `/admin/roadmap`.
 ## Deferred P2
 
 - Add privacy-conscious analytics after consent/cookie policy is final.
-- Add 24-hour reminder emails and student reschedule links.
+- Add 24-hour reminder emails.
+- Add secure student cancellation/reschedule links using private email tokens, policy-aware UI/API checks, student/admin notifications, ICS cancel/update files, and manual payment/refund handling until Stripe exists.
 - Add Stripe Checkout only after the pickleball business entity and banking setup exist.
 - Add automated DUPR rating sync only after Mario receives official read-only API or partner access from DUPR.
 - Move GitHub Actions to the Node 24 runner default before GitHub's June 2, 2026 default change.
