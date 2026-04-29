@@ -381,7 +381,7 @@ A private business checklist covering:
 - Phase 1: Digital Presence (Google Business, DUPR API/partner access, Instagram, TikTok, email list)
 - Phase 2: Booking & Payments (Stripe, packages, cancellation policy)
 - Phase 3: Revenue Diversification (clinics, content, referrals, gift cards)
-- Phase 4: Systems & Business Health (P&L review, quarterly taxes, second coach)
+- Phase 4: Systems & Business Health (P&L review, quarterly taxes, court expansion, ops support)
 - Phase 5: Long-term Growth (video course, sponsorship, coaching team)
 
 This is Mario's nontechnical business checklist. Each item should explain what
@@ -393,12 +393,12 @@ Short-term work belongs in `/admin/tasks`; long-term business development belong
 in `/admin/roadmap`; developer/code work belongs in `/admin/site-roadmap`.
 The plain-language owner checklist is also written in `docs/MARIO_ACTION_PLAN.md`.
 
-Before direct bookings are promoted, Mario needs written confirmation from each
-venue/platform he coaches through that booking lessons on `demariomontezpb.com`
-is allowed. This includes checking TeachMe.To, Grove/Podplay, Dallas Pickle
-Club/Podplay, venue policies, contractor agreements, exclusivity language,
-referral fees, court fees, insurance rules, cancellation rules, and waiver
-requirements.
+Venue routing is captured in `docs/VENUE_RULES.md`. Public outdoor courts can
+schedule through `demariomontezpb.com`. Dallas Indoor and The Grove route to
+PodPlay, Life Time routes through Life Time, TeachMe.To stays on TeachMe.To, and
+Samuel-Grand uses Impact Activities for the court reservation before
+coaching-fee coordination. Use the add-a-court checklist before adding a new
+venue or platform to the public experience.
 
 The DUPR API item is a manual access step first. DUPR's public API docs show
 public endpoints that require external read-only tokens, while broader
@@ -415,21 +415,25 @@ ratings instead of hardcoding them.
 
 1. Student clicks **Book a Lesson** anywhere on the site
 2. Modal opens → Step 1: fill in name, email, required phone, lesson type, preferred court setup, optional preferred area/court, and agree to terms
-3. Step 2: pick a date (next 30 days shown), pick a time slot
+3. If the student chooses Indoor / weather-proof, the modal shows partner
+   booking paths before site times
+4. If the student chooses Outdoor public court or Help me choose, Step 2 lets
+   them pick a date (next 30 days shown), then a time slot
    - Unavailable times are grayed out (already booked, blocked by admin, or recurring block)
    - If a date is fully blocked by admin, a message shows instead of the time grid
-4. Student clicks **Reserve now** → API call to `POST /api/bookings`
-5. Server validates: time slot exists and is active, slot not blocked, slot not already booked
-6. If valid: booking is inserted → confirmation emails sent (student + DeMario)
-7. If slot was just taken by someone else (race condition): student sees "That time was just taken" and the time grid refreshes
-8. After confirmation: student sees booking summary, payment options (Cash App, Zelle, PayPal QR), and a clear note that Mario will confirm the exact court
-9. Mario receives phone and court preference in the admin email/dashboard, then texts the student to confirm exact court, any court fee, and payment
+5. Student clicks **Reserve now** -> API call to `POST /api/bookings`
+6. Server validates: time slot exists and is active, slot not blocked, slot not already booked
+7. If valid: booking is inserted -> confirmation emails sent (student + DeMario)
+8. If slot was just taken by someone else (race condition): student sees "That time was just taken" and the time grid refreshes
+9. After confirmation: student sees booking summary, payment options (Cash App, Zelle, PayPal QR), and a clear note that Mario will confirm the exact court
+10. Mario receives phone and court preference in the admin email/dashboard, then texts the student to confirm exact court, any court fee, and payment
 
 ### Location clarity rules
 
 - Default booking paths are Indoor / weather-proof, Outdoor public court, or Help me choose.
 - Outdoor parks are grouped as flexible public-court options instead of forcing the student to pick from a long list.
-- Samuel-Grand and Life Time remain by-request options until venue rules and availability are confirmed.
+- Indoor / weather-proof routes students to the required platform path first.
+- Dallas Indoor and The Grove use PodPlay; Life Time uses its member booking system; TeachMe.To stays on TeachMe.To; Samuel-Grand court reservations go through Impact Activities.
 - Exact court selection is intentionally deferred to Mario for V1 so he can account for weather, court fees, availability, and venue/platform restrictions.
 
 ---
@@ -478,7 +482,7 @@ Requires a `.env.local` file with all variables listed in Section 2.
   - [ ] `tony.montez@gmail.com`
   - [ ] `ericaxholloway@gmail.com`
 - [ ] **Add time slots** — go to Admin → Availability → Time slots → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists
-- [ ] **Confirm venue/platform permission** — get written confirmation that direct bookings through `demariomontezpb.com` are allowed at each place Mario plans to coach from site bookings
+- [ ] **Confirm venue routing copy** — verify public courts book through the site and platform-required venues match `docs/VENUE_RULES.md`
 - [ ] **Submit one live booking test** — confirm student/admin emails include phone and court preference, the calendar invite says Mario confirms the exact court, payment links work, and the test booking can be cancelled
 - [ ] **Publish Google OAuth app to production** before leaving Google Calendar blocking enabled long-term (see Google Calendar blocking)
 - [ ] **Generate a fresh DeMario Google OAuth refresh token** after publishing, then update Vercel and redeploy

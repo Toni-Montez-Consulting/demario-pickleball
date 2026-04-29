@@ -1,22 +1,5 @@
 import RevealWrapper from "./RevealWrapper";
-
-const PLATFORMS = [
-  {
-    name: "TeachMe.To",
-    desc: "Book a private lesson through the TeachMe.To coaching marketplace.",
-    href: "https://teachme.to/listings/pickleball/pickleball-with-demario-montez?latitude=32.92651&longitude=-96.89612",
-  },
-  {
-    name: "Grove",
-    desc: "Book at Grove through the Podplay platform.",
-    href: "https://grove.podplay.app/coach/demario-montez-v0m3",
-  },
-  {
-    name: "Dallas Pickle Club",
-    desc: "Book at Dallas Indoor Pickleball Club through Podplay.",
-    href: "https://dallaspickleclub.podplay.app/coach/demario-montez-8l4j",
-  },
-];
+import { REQUIRED_BOOKING_PATHS } from "@/lib/venue-rules";
 
 const ExternalIcon = () => (
   <svg
@@ -53,33 +36,45 @@ export default function BookingPlatforms() {
     <section className="book-platforms">
       <RevealWrapper>
         <div className="bp-header">
-          <div className="eyebrow">More Ways to Book</div>
+          <div className="eyebrow">Choose Your Path</div>
           <p className="bp-sub">
-            Not ready to book online? DeMario is also bookable through these
-            partner platforms — or just shoot him a text.
+            Public-court lessons can be scheduled here. Some clubs and coaching
+            platforms require their own reservation, payment, and waiver flow.
           </p>
         </div>
         <div className="bp-list">
-          {PLATFORMS.map((p) => (
-            <a
-              key={p.name}
-              href={p.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bp-card"
-            >
-              <div className="bp-card-text">
-                <div className="bp-name">{p.name}</div>
-                <div className="bp-desc">{p.desc}</div>
+          {REQUIRED_BOOKING_PATHS.map((p) => {
+            const content = (
+              <>
+                <div className="bp-card-text">
+                  <div className="bp-name">{p.name}</div>
+                  <div className="bp-desc">{p.summary}</div>
+                </div>
+                {p.href ? <ExternalIcon /> : <span className="bp-tag">By request</span>}
+              </>
+            );
+
+            return p.href ? (
+              <a
+                key={p.name}
+                href={p.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bp-card"
+              >
+                {content}
+              </a>
+            ) : (
+              <div key={p.name} className="bp-card bp-card-static">
+                {content}
               </div>
-              <ExternalIcon />
-            </a>
-          ))}
+            );
+          })}
           <a href="sms:4693719220" className="bp-card bp-card-phone">
             <div className="bp-card-text">
               <div className="bp-name">Text or Call</div>
               <div className="bp-desc">
-                DeMario books over the phone too — text{" "}
+                Not sure which route applies? Text{" "}
                 <strong>(469) 371-9220</strong> to check availability or ask
                 questions.
               </div>

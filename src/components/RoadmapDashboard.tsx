@@ -38,23 +38,23 @@ const PHASES: RoadmapPhase[] = [
       },
       {
         key: "p0-insurance",
-        text: "Buy coaching liability insurance and save proof of coverage",
-        detail: "Mario task: get a general liability policy that covers pickleball coaching. Ask the carrier if they require specific waiver language. Done when you have a certificate of insurance PDF and the policy is active.",
+        text: "Keep coaching liability insurance proof on file",
+        detail: "Mario task: keep the active certificate of insurance somewhere easy to find. Done when Tonio and Mario know where the current coverage proof lives.",
       },
       {
         key: "p0-waiver-review",
-        text: "Have a Texas sports/recreation attorney review the coaching waiver and terms",
-        detail: "Mario task: send the site Terms page to a Texas sports/recreation attorney and your insurance carrier or broker. Ask: 'Is this okay before I take direct bookings?' Done when they approve it or send requested wording changes to Tonio.",
+        text: "Keep the approved waiver, terms, and payment policy as the launch baseline",
+        detail: "Mario task: do not improvise legal, waiver, cancellation, or payment wording in texts. Use the reviewed site terms and send Tonio any future requested wording changes before the site changes.",
       },
       {
         key: "p0-venue",
-        text: "Confirm venue and platform permission before taking direct site bookings",
-        detail: "Mario task: list every place/platform you coach through, including TeachMe.To, Grove/Podplay, Dallas Pickle Club/Podplay, and any other venue. Ask each one if you can book lessons there through demariomontezpb.com instead of only through their platform. Confirm any contract, exclusivity, referral fee, court fee, cancellation, insurance, or waiver rules. Send the written yes or restrictions to Tonio.",
+        text: "Follow the venue routing matrix for every booking",
+        detail: "Mario task: public outdoor courts can book through this site. Dallas Indoor and The Grove go through PodPlay, Life Time goes through Life Time, TeachMe.To stays on TeachMe.To, and Samuel-Grand court reservations go through Impact before the coaching fee is coordinated. Done when every student is routed through the correct path.",
       },
       {
         key: "p0-soft-launch",
         text: "Start with a controlled soft launch for known students and referrals",
-        detail: "Mario task: pick 5-10 trusted students or referrals to book through the site first. Personally text each one after they book. Do not promote publicly until venue, insurance, waiver review, and calendar blocking are confirmed.",
+        detail: "Mario task: pick 5-10 trusted students or referrals to book through the site first. Personally text each one after they book. Use this to confirm the new venue-routing copy, calendar blocking, payment links, and admin handoff all feel clean.",
       },
       {
         key: "p0-taxes",
@@ -148,7 +148,7 @@ const PHASES: RoadmapPhase[] = [
       {
         key: "p2-cancel-policy",
         text: "Text every new student your 24-hour cancellation policy before their first session",
-        detail: "Mario task: use one saved text for every new student: 'Quick reminder: 24-hour cancellation policy. Under 24 hours may be charged.' Adjust wording after legal/insurance review if needed.",
+        detail: "Mario task: use one saved text for every new student: 'Quick reminder: 24-hour cancellation policy. Under 24 hours may be charged.' Keep the wording aligned with the reviewed launch policy.",
       },
       {
         key: "p2-weekly-admin-review",
@@ -224,6 +224,21 @@ const PHASES: RoadmapPhase[] = [
         text: "Start a simple student CRM — name, level, goals, last session notes (Notion or a spreadsheet)",
         detail: "Mario task: keep one row per student: name, phone/email, level, goals, last lesson date, next focus, and payment/package status. Update it after each lesson.",
       },
+      {
+        key: "p4-court-pipeline",
+        text: "Build the court expansion pipeline before adding more venue choices",
+        detail: "Mario task: before Tonio adds a new club, park, or platform to the site, capture the venue name, booking owner, payment owner, waiver/insurance owner, court fees, cancellation rules, required link, and whether direct site scheduling is allowed. This keeps booking simple as the court list grows.",
+      },
+      {
+        key: "p4-solopreneur-support",
+        text: "Review CPA, Collective, or S-corp support once revenue justifies it",
+        detail: "Mario task: after coaching revenue is steady, ask a CPA whether an S-corp election or a solopreneur back-office service like Collective would save enough on taxes and admin work to be worth the cost.",
+      },
+      {
+        key: "p4-ai-ops-assistant",
+        text: "Pilot an AI-native ops assistant for reminders and back-office follow-up",
+        detail: "Mario task: once weekly admin habits are stable, test a lightweight assistant that reminds you about unpaid lessons, follow-up texts, student notes, court-routing tasks, monthly P&L, taxes, and admin chores.",
+      },
     ],
   },
   {
@@ -249,7 +264,7 @@ const PHASES: RoadmapPhase[] = [
       {
         key: "p5-coach-team",
         text: "Build a team of coaches under the DeMario Montez brand",
-        detail: "Mario task: wait until your own booking/payment/legal systems are stable. Then create coach standards, pay rules, insurance requirements, and a review process before adding anyone.",
+        detail: "Mario task: wait until your own booking, payment, insurance, and admin systems are stable. Then create coach standards, pay rules, insurance requirements, and a review process before adding anyone.",
       },
       {
         key: "p5-speaking",

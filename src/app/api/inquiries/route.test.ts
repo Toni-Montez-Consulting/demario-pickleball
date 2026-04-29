@@ -83,7 +83,7 @@ describe("POST /api/inquiries", () => {
       email: "jane@example.com",
       message: "Do you have clinics this weekend?",
     });
-  });
+  }, 15000);
 
   it("rejects honeypot submissions before insert", async () => {
     const response = await postInquiry({

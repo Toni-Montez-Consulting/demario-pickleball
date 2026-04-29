@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import BookingModal from "./BookingModal";
 
@@ -15,7 +14,7 @@ describe("BookingModal", () => {
     vi.restoreAllMocks();
   });
 
-  it("requires waiver agreement and submits it to the booking API", async () => {
+  it("requires waiver agreement and submits direct public-court bookings to the booking API", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url === "/api/time-slots") {
@@ -32,7 +31,7 @@ describe("BookingModal", () => {
           phone: "(469) 371-9220",
           lesson_type: "beginner",
           lesson_time: "9:00 AM",
-          notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
+          notes: "Preferred court setup: Outdoor public court\nPreferred area or court: Lake Highlands",
           waiver_accepted: true,
           company: "",
         });
@@ -51,24 +50,45 @@ describe("BookingModal", () => {
 
     render(<BookingModal isOpen onClose={() => undefined} />);
 
-    await userEvent.type(screen.getByLabelText(/your name/i), "Jane Student");
-    await userEvent.type(screen.getByLabelText(/email/i), "jane@example.com");
-    await userEvent.type(screen.getByLabelText(/phone/i), "(469) 371-9220");
-    await userEvent.selectOptions(
-      screen.getByLabelText(/preferred court setup/i),
-      "Indoor / weather-proof"
-    );
-    await userEvent.type(screen.getByLabelText(/preferred area or court/i), "The Grove");
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane Student" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
+    fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
+    fireEvent.change(screen.getByLabelText(/preferred area or court/i), { target: { value: "Lake Highlands" } });
     expect(screen.getByRole("button", { name: /continue to available times/i })).toBeDisabled();
 
-    await userEvent.click(screen.getByRole("checkbox"));
-    await userEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
 
-    await userEvent.click(screen.getByRole("button", { name: /reserve/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /reserve/i }));
 
     await screen.findByText(/you're booked/i);
     expect(screen.getByText(/Lesson 12345678/i)).toBeInTheDocument();
     expect(screen.getByText(/Mario will confirm the exact court/i)).toBeInTheDocument();
+  }, 15000);
+
+  it("routes indoor students to partner booking paths before showing site times", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/time-slots") return jsonResponse([{ display_label: "9:00 AM" }]);
+      if (url.startsWith("/api/availability")) return jsonResponse({ allDay: false, unavailable: [] });
+      throw new Error(`Unexpected fetch ${url}`);
+    }));
+
+    render(<BookingModal isOpen onClose={() => undefined} />);
+
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane Student" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
+    fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Indoor / weather-proof" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /see indoor booking paths/i }));
+
+    expect(await screen.findByText(/Indoor courts use partner booking/i)).toBeInTheDocument();
+    expect(screen.getByText("Dallas Indoor Pickleball Club")).toBeInTheDocument();
+    expect(screen.getByText("The Grove Pickleball")).toBeInTheDocument();
+    expect(screen.getByText("Life Time Fitness")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /choose a time/i })).not.toBeInTheDocument();
   });
 
   it("shows a clear no-times empty state", async () => {
@@ -81,18 +101,36 @@ describe("BookingModal", () => {
 
     render(<BookingModal isOpen onClose={() => undefined} />);
 
-    await userEvent.type(screen.getByLabelText(/your name/i), "Jane Student");
-    await userEvent.type(screen.getByLabelText(/email/i), "jane@example.com");
-    await userEvent.type(screen.getByLabelText(/phone/i), "(469) 371-9220");
-    await userEvent.selectOptions(
-      screen.getByLabelText(/preferred court setup/i),
-      "Outdoor public court"
-    );
-    await userEvent.click(screen.getByRole("checkbox"));
-    await userEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane Student" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
+    fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/No lesson times available yet/i)).toBeInTheDocument();
     });
+  });
+
+  it("lets help-me-choose students continue to available times", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/time-slots") return jsonResponse([{ display_label: "9:00 AM" }]);
+      if (url.startsWith("/api/availability")) return jsonResponse({ allDay: false, unavailable: [] });
+      throw new Error(`Unexpected fetch ${url}`);
+    }));
+
+    render(<BookingModal isOpen onClose={() => undefined} />);
+
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane Student" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
+    fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Help me choose" } });
+    expect(screen.getByText("Book a time here and Mario will recommend the cleanest public-court or partner-platform path.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
+
+    expect(await screen.findByRole("heading", { name: /choose a time/i })).toBeInTheDocument();
   });
 });

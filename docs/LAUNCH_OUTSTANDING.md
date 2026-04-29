@@ -17,20 +17,25 @@ Owner: Mario, with Tonio updating copy if needed.
 
 Acceptable proof: Google Business Profile, TeachMe.To profile, another public review source, or direct written permission from the student for private testimonials.
 
-### Venue and platform permission
+### Venue and platform routing
 
-- Confirm where Mario can accept direct bookings from `demariomontezpb.com`.
-- Confirm venue/platform rules for Dallas Indoor Pickleball Club, The Grove, Samuel-Grand, Life Time, TeachMe.To, PodPlay, and any other platform or venue Mario uses.
-- Confirm court fee, reservation, cancellation, insurance, coaching permission, and exclusivity rules.
-- Keep written confirmation or written restrictions somewhere Mario can reference.
+- The launch workflow is now reflected in `docs/VENUE_RULES.md` and the site:
+  public outdoor courts can schedule through `demariomontezpb.com`; Dallas
+  Indoor and The Grove route to PodPlay; Life Time routes through Life Time;
+  TeachMe.To stays on TeachMe.To; Samuel-Grand uses Impact Activities for the
+  court reservation before coaching-fee coordination.
+- Keep written venue/platform restrictions somewhere Mario can reference.
+- Use the court expansion checklist before adding any new venue or platform to
+  the public experience.
 
 Owner: Mario.
 
-### Insurance, waiver, and policy review
+### Insurance, waiver, and policy proof
 
-- Confirm coaching insurance is active.
-- Confirm waiver, terms, cancellation policy, and payment expectations have been reviewed by the insurance carrier, broker, or a Texas sports/recreation attorney.
-- If Mario chooses to launch before legal review, record that as an accepted business risk.
+- Legal, insurance, waiver, cancellation, and payment policy review are treated
+  as sorted for launch.
+- Keep the active insurance certificate and reviewed wording/proof on file.
+- Send Tonio any future required wording changes before site copy changes.
 
 Owner: Mario.
 
@@ -80,6 +85,7 @@ The booking confirmation and payment cards show the lesson fee. Any indoor or re
   launch blocker if Mario and Tonio accept that risk.
 - Add click-to-text or click-to-call actions in the admin booking row.
 - Add admin filters for upcoming, pending, unpaid, and cancelled bookings.
-- Add structured venue selection once venue/platform rules are fully settled.
+- Add structured venue selection only after the court expansion checklist proves
+  it will help students more than it clutters booking.
 - Add a short availability debounce/cache if public traffic increases.
 - Replace static review claims with linked review-source badges when Mario's review profiles are ready.

@@ -923,6 +923,91 @@ footer .contact-line a:hover { color: var(--fg); }
   font-size: 12px;
   line-height: 1.4;
 }
+.venue-route-list {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+.venue-route-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-3);
+  color: var(--fg);
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.venue-route-card:hover {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 8%, var(--bg-3));
+}
+.venue-route-card-static {
+  cursor: default;
+}
+.venue-route-card-static:hover {
+  border-color: var(--line);
+  background: var(--bg-3);
+}
+.venue-route-copy {
+  min-width: 0;
+}
+.venue-route-copy span,
+.venue-route-help span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--fg-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.venue-route-copy strong,
+.venue-route-help strong {
+  display: block;
+  color: var(--fg);
+  font-size: 14px;
+  line-height: 1.25;
+}
+.venue-route-copy p {
+  margin: 5px 0 0;
+  color: var(--fg-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.venue-route-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.venue-route-action svg,
+.venue-route-text svg {
+  width: 15px;
+  height: 15px;
+}
+.venue-route-help {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 10px;
+  padding: 14px;
+  border: 1px dashed color-mix(in oklab, var(--accent) 45%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+}
+.venue-route-text,
+.venue-route-back {
+  text-decoration: none;
+}
+.venue-route-back {
+  margin-top: 8px;
+}
 .modal-select {
   width: 100%;
   padding: 12px 14px;
@@ -1291,11 +1376,23 @@ footer .contact-line a:hover { color: var(--fg); }
   transition: border-color 0.15s, background 0.15s;
 }
 .bp-card:hover { border-color: var(--accent); background: var(--bg-3); }
+.bp-card-static { cursor: default; }
+.bp-card-static:hover { border-color: var(--line); background: var(--bg-2); }
 .bp-card-phone { border-style: dashed; }
 .bp-card-text { flex: 1; min-width: 0; }
 .bp-name { font-weight: 600; font-size: 15px; margin-bottom: 3px; }
 .bp-desc { font-size: 13px; color: var(--fg-muted); line-height: 1.5; }
 .bp-arrow { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent); }
+.bp-tag {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
 
 /* ====== DESKTOP RESPONSIVE ====== */
 @media (min-width: 768px) {
@@ -2022,6 +2119,14 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
   }
   .booking-summary-row strong {
     text-align: left;
+  }
+  .venue-route-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .venue-route-action {
+    justify-content: space-between;
+    width: 100%;
   }
 }
 

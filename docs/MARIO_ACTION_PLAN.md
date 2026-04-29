@@ -101,43 +101,41 @@ Mario does:
 Done when: every new booking has a clear text confirmation with exact court,
 court fee expectations, and payment status.
 
-### Confirm Venue And Platform Permission For Direct Site Bookings
+### Follow The Venue Routing Matrix
 
-Why: the site should not take direct bookings for a court unless the venue and
-any existing booking platform agreement allow it.
-
-Mario does:
-
-1. Make a list of every place/platform he currently coaches through, including
-   TeachMe.To, Grove/Podplay, Dallas Pickle Club/Podplay, and any other venue.
-2. For each one, ask: "Am I allowed to book lessons at this location through my
-   own website, demariomontezpb.com, instead of only through your platform?"
-3. Ask whether any coach agreement, contractor agreement, exclusivity rule,
-   referral fee, or venue policy limits direct bookings.
-4. Confirm court fees, cancellation rules, insurance requirements, and whether
-   the venue requires its own waiver.
-5. Save the answer as a text, email, screenshot, or signed agreement.
-6. Send the written yes or restrictions to Tonio.
-
-Done when: every location Mario wants to use for direct site bookings has a
-written yes or clear restrictions, and the site location copy/availability match
-those rules.
-
-### Confirm Insurance And Waiver Review
-
-Why: pickleball coaching is a physical activity, so insurance and waiver review
-matter before broad promotion.
+Why: students should always use the correct court reservation path without
+guessing or bypassing a venue platform.
 
 Mario does:
 
-1. Buy or confirm active coaching liability insurance.
-2. Save the certificate of insurance.
-3. Send the site Terms page to a Texas sports/recreation attorney.
-4. Ask the insurance carrier or broker whether they require specific waiver
-   wording.
-5. Send requested wording changes to Tonio.
+1. Use this site for public outdoor court lesson times.
+2. Send Dallas Indoor Pickleball Club students through PodPlay.
+3. Send The Grove Pickleball students through PodPlay.
+4. Send Life Time students through Life Time's member booking system.
+5. Send TeachMe.To students through TeachMe.To.
+6. For Samuel-Grand, have the student reserve the court through Impact
+   Activities, then coordinate the coaching fee separately.
+7. If a new venue comes up, use `docs/VENUE_RULES.md` before asking Tonio to add
+   it to the site.
 
-Done when: insurance is active and the waiver/terms wording has been reviewed.
+Done when: every student is routed through the correct public-court, venue, or
+platform path.
+
+### Keep Insurance And Waiver Proof On File
+
+Why: legal/insurance work is sorted for launch, but Mario should keep the proof
+easy to find.
+
+Mario does:
+
+1. Save the active coaching liability insurance certificate.
+2. Keep the reviewed waiver, terms, payment, and cancellation wording as the
+   launch baseline.
+3. Do not improvise legal, payment, cancellation, or waiver wording in student
+   texts.
+4. Send Tonio any future required wording changes before the site changes.
+
+Done when: Mario knows where the current proof and reviewed wording live.
 
 ## Tonio Tasks After Mario Finishes
 

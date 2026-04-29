@@ -11,7 +11,7 @@ should stay in `/admin/roadmap`.
 - Sentry monitoring is wired in code; production DSN/env setup and a verified test event are tracked as post-launch ops unless Tonio and Mario decide to make monitoring mandatory.
 - Outstanding business and operational launch gates are tracked in `docs/LAUNCH_OUTSTANDING.md`.
 - The repo is ready for controlled client use after the manual Supabase and live-release checks in `docs/RELEASE_CHECKLIST.md`.
-- Broader promotion still depends on business gates: venue/platform direct-booking approval, insurance, waiver/terms review, and final payment/cancellation policy.
+- Broader promotion now depends on final live checks and following the venue-routing matrix; legal, insurance, waiver, cancellation, and payment policy work is treated as sorted for launch with proof kept outside the repo.
 
 ## Shipped
 
@@ -38,6 +38,7 @@ should stay in `/admin/roadmap`.
 - Added Location Clarity Booking V1: Where We Train homepage section, required phone, required court setup preference, court preference stored in booking notes, and clearer court/payment copy.
 - Hardened admin API routes so allowed admin emails also need Supabase `aal2` MFA.
 - Added Sentry server/client instrumentation and an admin-only monitoring verification endpoint.
+- Added guided indoor routing: public courts stay direct-bookable through the site, while indoor/platform-required paths route to PodPlay, Life Time, TeachMe.To, or Impact/Samuel-Grand instructions before showing site times.
 
 ## Remaining Manual Launch Gates
 
@@ -49,6 +50,7 @@ should stay in `/admin/roadmap`.
 - Generate a fresh production Google refresh token with DeMario and confirm Admin -> Availability reports Google Calendar connected.
 - Review `docs/ADMIN_HANDOFF.md` with DeMario.
 - Have Mario review `docs/MARIO_ACTION_PLAN.md` and complete the live Tasks list.
+- Keep the external proof for insurance, waiver/terms, cancellation, payment policy, and venue rules available outside the repo.
 
 ## Deferred P2
 
@@ -61,8 +63,8 @@ should stay in `/admin/roadmap`.
 
 ## Long-Term Reference
 
-- Keep the Business roadmap focused on DeMario's operating tasks: venue/platform direct-booking approval, insurance, legal review, payments, follow-ups, and growth.
+- Keep the Business roadmap focused on DeMario's operating tasks: venue routing, proof-on-file, payments, follow-ups, and growth.
 - Keep `docs/MARIO_ACTION_PLAN.md`, `/admin/tasks`, and `/admin/roadmap` nontechnical enough for Mario to complete without understanding code or infrastructure.
 - Keep the Developer roadmap focused on Tonio's code/ops tasks: CI, tests, monitoring, database constraints, dependency upgrades, and stale documentation.
-- Before broader promotion or paid ads, complete the manual launch gates, production monitoring, and business gates.
+- Before broader promotion or paid ads, complete the manual launch gates, route students according to `docs/VENUE_RULES.md`, and keep production monitoring either verified or explicitly accepted as post-launch.
 - DUPR automation should wait for official DUPR API/partner access. The business roadmap tracks DeMario's request step: he should ask DUPR for an external read-only token or partner integration for `demariomontezpb.com` and send Tonio the approval email, token instructions, or partner contact. Once credentials exist, add a server-side sync for verified singles/doubles ratings.

@@ -18,8 +18,14 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 
 - Homepage shows **Where We Train** with three clear paths: Indoor / weather-proof, Outdoor public court, and Help me choose.
 - Outdoor public parks are grouped in compact copy instead of presented as 8 equal booking choices.
-- Samuel-Grand and Life Time are presented as by-request options only.
+- Indoor / weather-proof explains that partner-platform courts use their own booking systems.
+- Dallas Indoor Pickleball Club and The Grove route to PodPlay.
+- Life Time is presented as member booking through Life Time.
+- TeachMe.To routes to TeachMe.To for packages, payment, waivers, and insurance.
+- Samuel-Grand is presented as hybrid: court reservation through Impact Activities, coaching fee coordinated with Mario.
 - Booking modal requires phone and preferred court setup before the student can continue.
+- Booking modal sends Indoor / weather-proof students to guided venue routing before showing site times.
+- Booking modal lets Outdoor public court and Help me choose continue to available site times.
 - Booking modal stores formatted court preference in `bookings.notes`.
 - Confirmation screen says Mario will confirm the exact court after booking.
 - Student email, admin email, ICS, and Google Calendar link all say exact court is confirmed by Mario after booking.
@@ -36,8 +42,8 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 - Verify `rate_limit_events` has RLS enabled and no public policies.
 - Verify the `bookings_unique_active_slot` partial unique index exists.
 - Verify active `time_slots` include the current lesson schedule.
-- Verify venue/location copy is correct before accepting live direct bookings.
-- Verify each venue/platform allows direct bookings through `demariomontezpb.com` rather than only through the existing platforms.
+- Verify venue/location copy matches `docs/VENUE_RULES.md` before accepting live bookings.
+- Verify public courts are the only direct site-booking court path unless a future venue rule explicitly allows direct scheduling.
 
 ## Admin & Security
 
@@ -86,10 +92,10 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 
 ## Business Gates
 
-- Direct-booking venue/platform permission is confirmed in writing for every place Mario plans to coach from site bookings.
-- Any TeachMe.To, Grove/Podplay, Dallas Pickle Club/Podplay, venue, contractor, exclusivity, referral fee, court fee, insurance, cancellation, and waiver restrictions are reflected in the site workflow.
+- The launch venue routing matrix is reflected in the site workflow and `docs/VENUE_RULES.md`.
+- Any future TeachMe.To, Grove/PodPlay, Dallas Indoor/PodPlay, Life Time, Impact, venue, contractor, exclusivity, referral fee, court fee, insurance, cancellation, and waiver restrictions are captured before adding a new booking path.
 - Insurance is active.
-- Waiver/terms are reviewed by a Texas sports/recreation attorney and insurance carrier or broker.
+- Waiver/terms review and payment/cancellation policy are treated as sorted for launch, with proof kept on file.
 - Cancellation/payment policy is final.
 - Mario has reviewed `docs/MARIO_ACTION_PLAN.md`.
 - `/admin/tasks` contains only real, current Mario tasks; no test tasks or developer-only work.

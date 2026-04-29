@@ -44,7 +44,7 @@ async function mockBookingFlow(
     const body = route.request().postDataJSON();
     expect(body).toMatchObject({
       phone: "(469) 371-9220",
-      notes: "Preferred court setup: Indoor / weather-proof\nPreferred area or court: The Grove",
+      notes: "Preferred court setup: Outdoor public court\nPreferred area or court: Lake Highlands",
     });
     if (options.bookingStatus === 409) {
       await route.fulfill({
@@ -76,8 +76,8 @@ async function openBookingPicker(page: Page) {
   await dialog.getByLabel(/your name/i).fill("Jane Student");
   await dialog.getByLabel(/email/i).fill("jane@example.com");
   await dialog.getByLabel(/phone/i).fill("(469) 371-9220");
-  await dialog.getByLabel(/preferred court setup/i).selectOption("Indoor / weather-proof");
-  await dialog.getByLabel(/preferred area or court/i).fill("The Grove");
+  await dialog.getByLabel(/preferred court setup/i).selectOption("Outdoor public court");
+  await dialog.getByLabel(/preferred area or court/i).fill("Lake Highlands");
   const waiver = dialog.getByRole("checkbox");
   await waiver.check();
   await expect(waiver).toBeChecked();
@@ -105,6 +105,30 @@ test("homepage loads and booking modal can reach payment options", async ({ page
   await expect(confirmedDialog.getByText(/Lesson 12345678/i)).toBeVisible();
   await expect(confirmedDialog.getByText(/Mario will confirm the exact court/i)).toBeVisible();
   await expect(confirmedDialog.getByText(/Cash App/i)).toBeVisible();
+});
+
+test("indoor students are routed to partner booking paths", async ({ page }) => {
+  await mockBookingFlow(page);
+
+  await page.goto("/");
+  await page.getByRole("button", { name: /book a lesson/i }).first().click();
+  const dialog = page.getByRole("dialog", { name: /book a lesson/i });
+  await dialog.getByLabel(/your name/i).fill("Jane Student");
+  await dialog.getByLabel(/email/i).fill("jane@example.com");
+  await dialog.getByLabel(/phone/i).fill("(469) 371-9220");
+  await dialog.getByLabel(/preferred court setup/i).selectOption("Indoor / weather-proof");
+  await dialog.getByRole("checkbox").check();
+
+  const routeButton = dialog.getByRole("button", { name: /see indoor booking paths/i });
+  await expect(routeButton).toBeEnabled();
+  await routeButton.click();
+
+  const routeDialog = page.getByRole("dialog", { name: /indoor courts use partner booking/i });
+  await expect(routeDialog.getByRole("heading", { name: /indoor courts use partner booking/i })).toBeVisible();
+  await expect(routeDialog.getByText("Dallas Indoor Pickleball Club")).toBeVisible();
+  await expect(routeDialog.getByText("The Grove Pickleball")).toBeVisible();
+  await expect(routeDialog.getByText("Life Time Fitness")).toBeVisible();
+  await expect(routeDialog.getByText("Samuel-Grand Tennis Center")).toBeVisible();
 });
 
 test("booking modal explains when a day is fully unavailable", async ({ page }) => {

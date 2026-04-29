@@ -3,20 +3,20 @@ import RevealWrapper from "./RevealWrapper";
 const TRAINING_PATHS = [
   {
     label: "Indoor",
-    title: "Weather-proof courts",
-    body: "Dallas Indoor Pickleball Club or The Grove when you want a controlled court and no weather guessing.",
-    meta: "Court reservation fees may apply",
+    title: "Partner-platform courts",
+    body: "Dallas Indoor, The Grove, Life Time, TeachMe.To, and Samuel-Grand each keep their required booking path.",
+    meta: "We route you to the right system",
   },
   {
     label: "Outdoor",
-    title: "Public courts, no court fee",
-    body: "Free public courts across DFW are available when weather, court traffic, and location line up.",
-    meta: "Exact court confirmed after booking",
+    title: "Public courts, direct booking",
+    body: "Free public courts across DFW are the simplest path when weather, court traffic, and location line up.",
+    meta: "Schedule the lesson time here",
   },
   {
     label: "Flexible",
     title: "Mario helps you choose",
-    body: "Not sure where to train? Pick a lesson time and Mario will recommend the best court for your goals.",
+    body: "Not sure where to train? Pick a lesson time and Mario will recommend the cleanest court or platform path.",
     meta: "Best for first-time students",
   },
 ];
@@ -30,7 +30,8 @@ export default function WhereWeTrain() {
           Pick the <span className="italic">court setup.</span>
         </h2>
         <p className="section-sub">
-          Reserve the lesson time first. Mario confirms the exact court after booking based on your preference, court availability, weather, and any court fee.
+          Choose the route that fits your court. Public courts book here; indoor
+          clubs and marketplaces stay inside their required reservation systems.
         </p>
       </RevealWrapper>
       <RevealWrapper delay={100}>
@@ -49,7 +50,9 @@ export default function WhereWeTrain() {
             Outdoor sessions are available across public courts including W.J. Thomas, Churchill, Euless Family Life Center, Lochwood, Casa Linda, Lake Highlands North, Campbell Green, and Davidson Park.
           </p>
           <p>
-            Samuel-Grand and Life Time are handled by request when reservation, membership, and venue rules line up.
+            Dallas Indoor and The Grove use PodPlay, Life Time uses its member
+            booking system, TeachMe.To stays on TeachMe.To, and Samuel-Grand
+            court reservations go through Impact Activities.
           </p>
         </div>
       </RevealWrapper>

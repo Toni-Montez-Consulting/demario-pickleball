@@ -4,9 +4,15 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { generateDays, type DaySlot } from "@/lib/data";
 import { COURT_CONFIRMATION_MESSAGE, LESSON_LOCATION } from "@/lib/business";
 import { COURT_SETUP_OPTIONS, formatBookingNotes, type CourtSetup } from "@/lib/booking-notes";
+import {
+  COURT_SETUP_HINTS,
+  INDOOR_ROUTING_OPTIONS,
+  TEXT_MARIO_HREF,
+  type VenueRule,
+} from "@/lib/venue-rules";
 import PaymentOptions from "./PaymentOptions";
 
-type Step = "form" | "picker" | "loading" | "error" | "confirmed";
+type Step = "form" | "indoorRouting" | "picker" | "loading" | "error" | "confirmed";
 
 interface FormData {
   name: string;
@@ -37,6 +43,63 @@ const LESSON_PRICES: Record<string, string> = {
   advanced: "$80.00",
   clinic: "$50.00",
 };
+
+const RouteArrowIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M7 17L17 7M7 7h10v10" />
+  </svg>
+);
+
+const TextIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+  </svg>
+);
+
+function VenueRouteCard({ venue }: { venue: VenueRule }) {
+  const content = (
+    <>
+      <div className="venue-route-copy">
+        <span>{venue.bookingOwner}</span>
+        <strong>{venue.name}</strong>
+        <p>{venue.summary}</p>
+      </div>
+      <div className="venue-route-action">
+        {venue.ctaLabel ?? "Text Mario"}
+        {venue.href ? <RouteArrowIcon /> : <TextIcon />}
+      </div>
+    </>
+  );
+
+  const routeHref = venue.href ?? TEXT_MARIO_HREF;
+
+  return (
+    <a
+      href={routeHref}
+      target={venue.href ? "_blank" : undefined}
+      rel={venue.href ? "noopener noreferrer" : undefined}
+      className="venue-route-card"
+    >
+      {content}
+    </a>
+  );
+}
 
 export default function BookingModal({ isOpen, onClose, initialLessonType = "beginner" }: BookingModalProps) {
   const [step, setStep] = useState<Step>("form");
@@ -237,6 +300,16 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     }
   }
 
+  function handleContinue() {
+    if (form.courtSetup === "Indoor / weather-proof") {
+      setPickerError("");
+      setStep("indoorRouting");
+      return;
+    }
+    fetchAvailability(days[selectedDay].dateStr, times, form.lessonType);
+    setStep("picker");
+  }
+
   function handleBackdropClick(e: React.MouseEvent<HTMLDivElement>) {
     if (e.target === e.currentTarget) onClose();
   }
@@ -249,6 +322,10 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   const availableCount = times.filter((t) => !bookedTimes.has(t)).length;
   const phoneValue = form.phone.trim();
   const phoneValid = PHONE_RE.test(phoneValue) && phoneValue.replace(/\D/g, "").length >= 7;
+  const courtSetupHint = form.courtSetup ? COURT_SETUP_HINTS[form.courtSetup] : "";
+  const continueLabel = form.courtSetup === "Indoor / weather-proof"
+    ? "See indoor booking paths"
+    : "Continue to available times";
   const canContinue =
     form.name.trim().length >= 2 &&
     EMAIL_RE.test(form.email) &&
@@ -267,7 +344,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       >
         <div className="modal-grip" />
         <div className="sr-only" aria-live="polite" aria-atomic="true">
-          {step === "loading" ? "Confirming your booking" : step === "confirmed" ? "Booking confirmed" : step === "error" ? "There was a booking error" : ""}
+          {step === "loading" ? "Confirming your booking" : step === "confirmed" ? "Booking confirmed" : step === "error" ? "There was a booking error" : step === "indoorRouting" ? "Showing indoor booking paths" : ""}
         </div>
         <button
           type="button"
@@ -355,6 +432,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                   </option>
                 ))}
               </select>
+              {courtSetupHint && <p className="field-hint">{courtSetupHint}</p>}
             </div>
             <div className="modal-form-group">
               <label htmlFor="preferred-court">Preferred area or court (optional)</label>
@@ -397,15 +475,47 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
               type="button"
               className="btn btn-primary"
               disabled={!canContinue}
-              onClick={() => {
-                fetchAvailability(days[selectedDay].dateStr, times, form.lessonType);
-                setStep("picker");
-              }}
+              onClick={handleContinue}
             >
-              Continue to available times
+              {continueLabel}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
+            </button>
+          </>
+        )}
+
+        {step === "indoorRouting" && (
+          <>
+            <h3 id="booking-modal-title">Indoor courts use partner booking</h3>
+            <p className="m-sub">
+              Pick the venue path first so the court reservation, payment,
+              waiver, and membership rules stay in the right system.
+            </p>
+
+            <div className="venue-route-list">
+              {INDOOR_ROUTING_OPTIONS.map((venue) => (
+                <VenueRouteCard key={venue.name} venue={venue} />
+              ))}
+            </div>
+
+            <div className="venue-route-help">
+              <div>
+                <span>Not sure which one fits?</span>
+                <strong>Mario can route it for you.</strong>
+              </div>
+              <a href={TEXT_MARIO_HREF} className="btn btn-primary venue-route-text">
+                Text Mario
+                <TextIcon />
+              </a>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-ghost venue-route-back"
+              onClick={() => setStep("form")}
+            >
+              Back to court setup
             </button>
           </>
         )}
