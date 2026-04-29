@@ -178,6 +178,8 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
         preferredCourt: "",
       });
       setSelectedDay(0);
+      setTimes([]);
+      setTimesLoaded(false);
       setBookedTimes(new Set());
       setAllDay(false);
       setSelectedTime("");
@@ -194,7 +196,6 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
           const loaded = data.map((d) => d.display_label);
           setTimes(loaded);
           setTimesLoaded(true);
-          fetchAvailability(freshDays[0].dateStr, loaded, initialLessonType);
         })
         .catch(() => {
           setTimesLoaded(true);
@@ -207,7 +208,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       document.body.style.overflow = "";
       previouslyFocusedRef.current?.focus();
     };
-  }, [isOpen, fetchAvailability, initialLessonType]);
+  }, [isOpen, initialLessonType]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -323,7 +324,10 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   const phoneValue = form.phone.trim();
   const phoneValid = PHONE_RE.test(phoneValue) && phoneValue.replace(/\D/g, "").length >= 7;
   const courtSetupHint = form.courtSetup ? COURT_SETUP_HINTS[form.courtSetup] : "";
-  const continueLabel = form.courtSetup === "Indoor / weather-proof"
+  const needsSiteTimes = form.courtSetup !== "Indoor / weather-proof";
+  const continueLabel = needsSiteTimes && !timesLoaded
+    ? "Loading lesson times..."
+    : form.courtSetup === "Indoor / weather-proof"
     ? "See indoor booking paths"
     : "Continue to available times";
   const canContinue =
@@ -331,7 +335,8 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     EMAIL_RE.test(form.email) &&
     phoneValid &&
     Boolean(form.courtSetup) &&
-    waiverAgreed;
+    waiverAgreed &&
+    (!needsSiteTimes || timesLoaded);
 
   return (
     <div className="modal-backdrop open" onClick={handleBackdropClick}>

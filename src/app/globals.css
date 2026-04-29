@@ -1179,6 +1179,46 @@ footer .contact-line a:hover { color: var(--fg); }
 .admin-tabs { display: flex; gap: 4px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
 .admin-tab { flex: 1; padding: 9px 8px; text-align: center; font-size: 12px; font-weight: 600; color: var(--fg-muted); border-radius: 6px; cursor: pointer; transition: background .2s, color .2s; }
 .admin-tab.active { background: var(--bg-3); color: var(--fg); }
+.booking-filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.booking-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-2);
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.booking-filter strong {
+  min-width: 20px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  color: var(--fg-dim);
+  font-size: 11px;
+  text-align: center;
+}
+.booking-filter.active {
+  border-color: color-mix(in oklab, var(--accent) 45%, transparent);
+  color: var(--fg);
+  background: color-mix(in oklab, var(--accent) 10%, var(--bg-2));
+}
+.booking-filter.active strong {
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .admin-table th { text-align: left; padding: 10px 12px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-muted); font-weight: 600; border-bottom: 1px solid var(--line); }
 .admin-table td { padding: 12px; border-bottom: 1px solid color-mix(in oklab, var(--line) 50%, transparent); color: var(--fg-dim); vertical-align: middle; }
@@ -1287,6 +1327,24 @@ footer .contact-line a:hover { color: var(--fg); }
 .td-name { font-weight: 600; color: var(--fg); }
 .td-email-sub { font-size: 11px; color: var(--fg-muted); }
 .td-phone-sub { font-size: 11px; color: var(--fg-dim); margin-top: 2px; }
+.td-contact-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.td-contact-actions a {
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg-3);
+  color: var(--fg-dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+.td-contact-actions a:hover {
+  color: var(--fg);
+  border-color: var(--fg-dim);
+}
 .td-court-note {
   display: flex;
   flex-direction: column;

@@ -137,6 +137,48 @@ Mario does:
 
 Done when: Mario knows where the current proof and reviewed wording live.
 
+## Later Growth Ideas Already Captured
+
+These are not launch tasks. They belong in Admin -> Business after the booking
+flow is stable and coaching revenue is consistent.
+
+### Review Solopreneur Back-Office Support
+
+Why: once coaching income reaches the right threshold, a CPA or solopreneur
+service may save more in taxes and admin time than it costs.
+
+Mario does:
+
+1. Track monthly coaching revenue and profit first.
+2. Ask a CPA when it makes sense to consider an S-corp election.
+3. Compare CPA support with a service like Collective for taxes, payroll,
+   bookkeeping, and back-office help.
+4. Do not convert the business structure just because it sounds advanced; do it
+   when the savings and admin support clearly justify the cost.
+
+Done when: Mario has a CPA-backed recommendation on whether to stay simple,
+form/use an LLC, elect S-corp taxation, or use a solopreneur support service.
+
+### Pilot An AI-Native Ops Assistant
+
+Why: before hiring a human assistant, a lightweight assistant could help Mario
+stay on top of reminders, admin chores, student follow-ups, and business
+maintenance.
+
+Mario does:
+
+1. Keep using Admin -> Bookings, Tasks, and Business until the weekly routine is
+   stable.
+2. List the repetitive chores that slow him down: unpaid lessons, follow-up
+   texts, student notes, court-routing checks, monthly P&L, tax reminders, and
+   admin cleanup.
+3. Have Tonio prototype a simple assistant only after those chores are clear.
+4. Start with reminders and checklists before trusting it with customer-facing
+   communication.
+
+Done when: the assistant reliably flags boring back-office to-dos without making
+the business feel more complicated.
+
 ## Tonio Tasks After Mario Finishes
 
 - Add the fresh Google refresh token to Vercel and redeploy.

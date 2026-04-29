@@ -39,6 +39,9 @@ should stay in `/admin/roadmap`.
 - Hardened admin API routes so allowed admin emails also need Supabase `aal2` MFA.
 - Added Sentry server/client instrumentation and an admin-only monitoring verification endpoint.
 - Added guided indoor routing: public courts stay direct-bookable through the site, while indoor/platform-required paths route to PodPlay, Life Time, TeachMe.To, or Impact/Samuel-Grand instructions before showing site times.
+- Hardened the booking API so direct POSTs cannot bypass indoor/platform-required routing.
+- Deferred availability/Google Calendar checks until students continue to site-bookable times.
+- Added first-week admin booking filters plus one-tap text/call actions from booking rows.
 
 ## Remaining Manual Launch Gates
 

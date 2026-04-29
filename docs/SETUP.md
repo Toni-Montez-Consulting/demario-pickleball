@@ -381,7 +381,7 @@ A private business checklist covering:
 - Phase 1: Digital Presence (Google Business, DUPR API/partner access, Instagram, TikTok, email list)
 - Phase 2: Booking & Payments (Stripe, packages, cancellation policy)
 - Phase 3: Revenue Diversification (clinics, content, referrals, gift cards)
-- Phase 4: Systems & Business Health (P&L review, quarterly taxes, court expansion, ops support)
+- Phase 4: Systems & Business Health (P&L review, quarterly taxes, court expansion, CPA/Collective/S-corp review, AI-native ops assistant)
 - Phase 5: Long-term Growth (video course, sponsorship, coaching team)
 
 This is Mario's nontechnical business checklist. Each item should explain what

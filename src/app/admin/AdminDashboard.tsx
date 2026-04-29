@@ -63,6 +63,8 @@ interface Props {
   initialInquiries: Inquiry[];
 }
 
+type BookingFilter = "all" | "upcoming" | "pending" | "unpaid" | "cancelled";
+
 const LESSON_NAMES: Record<string, string> = {
   beginner: "Foundations",
   advanced: "Strategy Lab",
@@ -70,6 +72,14 @@ const LESSON_NAMES: Record<string, string> = {
 };
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const BOOKING_TIME_ZONE = "America/Chicago";
+const BOOKING_FILTERS: Array<{ value: BookingFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "upcoming", label: "Upcoming" },
+  { value: "pending", label: "Pending" },
+  { value: "unpaid", label: "Unpaid" },
+  { value: "cancelled", label: "Cancelled" },
+];
 
 function formatAdminDate(date: string): string {
   return new Intl.DateTimeFormat("en-US", {
@@ -97,8 +107,26 @@ async function responseError(res: Response, fallback: string): Promise<string> {
   return typeof data?.error === "string" ? data.error : fallback;
 }
 
+function todayDateString(): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: BOOKING_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+function contactHref(phone: string | null, scheme: "sms" | "tel"): string | null {
+  const digits = phone?.replace(/\D/g, "") ?? "";
+  if (digits.length < 7) return null;
+  return `${scheme}:${digits}`;
+}
+
 export default function AdminDashboard({ initialBookings, initialInquiries }: Props) {
   const [tab, setTab] = useState<"bookings" | "inquiries" | "availability">("bookings");
+  const [bookingFilter, setBookingFilter] = useState<BookingFilter>("all");
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [inquiries, setInquiries] = useState<Inquiry[]>(initialInquiries);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -128,6 +156,22 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   const activeTimeSlots = timeSlots.filter((s) => s.active);
   const hiddenTimeSlots = timeSlots.filter((s) => !s.active);
   const groupedBlockedSlots = groupBlockedSlots(blockedSlots);
+  const today = todayDateString();
+  const bookingFilterCount = (filter: BookingFilter) =>
+    bookings.filter((booking) => {
+      if (filter === "all") return true;
+      if (filter === "upcoming") return booking.lesson_date >= today && booking.status !== "cancelled";
+      if (filter === "pending") return booking.status === "pending";
+      if (filter === "unpaid") return !booking.paid_at && booking.status !== "cancelled";
+      return booking.status === "cancelled";
+    }).length;
+  const visibleBookings = bookings.filter((booking) => {
+    if (bookingFilter === "all") return true;
+    if (bookingFilter === "upcoming") return booking.lesson_date >= today && booking.status !== "cancelled";
+    if (bookingFilter === "pending") return booking.status === "pending";
+    if (bookingFilter === "unpaid") return !booking.paid_at && booking.status !== "cancelled";
+    return booking.status === "cancelled";
+  });
   const calendarStatusLabel = calendarSync
     ? calendarSync.enabled
       ? calendarSync.configured
@@ -400,9 +444,25 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
       {tab === "bookings" && (
         <>
           {updateError && <div className="modal-error">{updateError}</div>}
+          <div className="booking-filter-bar" aria-label="Booking filters">
+            {BOOKING_FILTERS.map((filter) => (
+              <button
+                key={filter.value}
+                type="button"
+                className={`booking-filter${bookingFilter === filter.value ? " active" : ""}`}
+                onClick={() => setBookingFilter(filter.value)}
+                aria-label={`${filter.label} bookings (${bookingFilterCount(filter.value)})`}
+              >
+                <span>{filter.label}</span>
+                <strong>{bookingFilterCount(filter.value)}</strong>
+              </button>
+            ))}
+          </div>
           <div className="admin-table-scroll">
-            {bookings.length === 0 ? (
-              <p className="admin-empty">No bookings yet.</p>
+            {visibleBookings.length === 0 ? (
+              <p className="admin-empty">
+                {bookings.length === 0 ? "No bookings yet." : "No bookings match this filter."}
+              </p>
             ) : (
               <table className="admin-table">
                 <thead>
@@ -417,8 +477,10 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                   </tr>
                 </thead>
                 <tbody>
-                  {bookings.map((b) => {
+                  {visibleBookings.map((b) => {
                     const court = parseBookingNotes(b.notes);
+                    const smsHref = contactHref(b.phone, "sms");
+                    const telHref = contactHref(b.phone, "tel");
                     return (
                       <tr key={b.id}>
                         <td>{b.lesson_date}</td>
@@ -427,6 +489,12 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                           <div className="td-name">{b.name}</div>
                           <div className="td-email-sub">{b.email}</div>
                           {b.phone && <div className="td-phone-sub">{b.phone}</div>}
+                          {(smsHref || telHref) && (
+                            <div className="td-contact-actions">
+                              {smsHref && <a href={smsHref} aria-label={`Text ${b.name}`}>Text</a>}
+                              {telHref && <a href={telHref} aria-label={`Call ${b.name}`}>Call</a>}
+                            </div>
+                          )}
                           {(court.courtSetup || court.preferredArea || court.raw) && (
                             <div className="td-court-note">
                               {court.courtSetup && <span>Court: {court.courtSetup}</span>}

@@ -61,6 +61,12 @@ export async function POST(req: NextRequest) {
   if (!isCourtSetup(parsedNotes.courtSetup)) {
     return NextResponse.json({ error: "Preferred court setup is required." }, { status: 400 });
   }
+  if (parsedNotes.courtSetup === "Indoor / weather-proof") {
+    return NextResponse.json(
+      { error: "Indoor and reserved courts must be booked through the required venue path first." },
+      { status: 400 }
+    );
+  }
   if (waiver_accepted !== true) {
     return NextResponse.json({ error: "You must agree to the coaching terms before booking." }, { status: 400 });
   }

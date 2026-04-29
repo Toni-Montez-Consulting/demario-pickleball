@@ -25,11 +25,12 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 - Samuel-Grand is presented as hybrid: court reservation through Impact Activities, coaching fee coordinated with Mario.
 - Booking modal requires phone and preferred court setup before the student can continue.
 - Booking modal sends Indoor / weather-proof students to guided venue routing before showing site times.
+- Booking API rejects direct POST attempts for Indoor / weather-proof bookings.
 - Booking modal lets Outdoor public court and Help me choose continue to available site times.
 - Booking modal stores formatted court preference in `bookings.notes`.
 - Confirmation screen says Mario will confirm the exact court after booking.
 - Student email, admin email, ICS, and Google Calendar link all say exact court is confirmed by Mario after booking.
-- Admin bookings view shows phone and court preference so Mario can text the student without digging.
+- Admin bookings view shows phone, text/call actions, court preference, and booking filters so Mario can act without digging.
 
 ## Supabase
 

@@ -38,8 +38,72 @@ describe("AdminDashboard availability", () => {
     );
 
     expect(screen.getByText("(469) 371-9220")).toBeVisible();
+    expect(screen.getByRole("link", { name: /text jane student/i })).toHaveAttribute("href", "sms:4693719220");
+    expect(screen.getByRole("link", { name: /call jane student/i })).toHaveAttribute("href", "tel:4693719220");
     expect(screen.getByText("Court: Outdoor public court")).toBeVisible();
     expect(screen.getByText("Area: Lake Highlands")).toBeVisible();
+  });
+
+  it("filters bookings by operational status", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdminDashboard
+        initialBookings={[
+          {
+            id: "booking-1",
+            created_at: "2026-04-27T12:00:00Z",
+            name: "Pending Student",
+            email: "pending@example.com",
+            phone: "(469) 371-9220",
+            lesson_type: "beginner",
+            lesson_date: "2099-05-05",
+            lesson_time: "9:00 AM",
+            status: "pending",
+            notes: "Preferred court setup: Outdoor public court",
+            paid_at: null,
+          },
+          {
+            id: "booking-2",
+            created_at: "2026-04-27T12:00:00Z",
+            name: "Paid Student",
+            email: "paid@example.com",
+            phone: "(469) 000-0000",
+            lesson_type: "advanced",
+            lesson_date: "2099-05-06",
+            lesson_time: "10:00 AM",
+            status: "confirmed",
+            notes: "Preferred court setup: Help me choose",
+            paid_at: "2026-04-27T13:00:00Z",
+          },
+          {
+            id: "booking-3",
+            created_at: "2026-04-27T12:00:00Z",
+            name: "Cancelled Student",
+            email: "cancelled@example.com",
+            phone: null,
+            lesson_type: "clinic",
+            lesson_date: "2099-05-07",
+            lesson_time: "11:00 AM",
+            status: "cancelled",
+            notes: null,
+            paid_at: null,
+          },
+        ]}
+        initialInquiries={[]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /unpaid bookings \(1\)/i }));
+
+    expect(screen.getByText("Pending Student")).toBeVisible();
+    expect(screen.queryByText("Paid Student")).not.toBeInTheDocument();
+    expect(screen.queryByText("Cancelled Student")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /cancelled bookings \(1\)/i }));
+
+    expect(screen.queryByText("Pending Student")).not.toBeInTheDocument();
+    expect(screen.getByText("Cancelled Student")).toBeVisible();
   });
 
   it("does not allow a cancelled booking to be confirmed again", () => {
