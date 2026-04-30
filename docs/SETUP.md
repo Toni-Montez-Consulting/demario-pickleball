@@ -1,7 +1,7 @@
 # DeMario Montez Pickleball — Setup & Operations Guide
 
 **Site:** https://demariomontezpb.com  
-**Repo:** https://github.com/toniomon96/demario-pickleball  
+**Repo:** https://github.com/Toni-Montez-Consulting/demario-pickleball
 **Stack:** Next.js 16 · React 19 · TypeScript · Supabase · Vercel · Resend
 
 ---
