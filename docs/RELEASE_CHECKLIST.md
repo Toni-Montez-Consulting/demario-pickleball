@@ -49,6 +49,8 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 ## Admin & Security
 
 - Enroll and verify MFA for each admin account.
+- Confirm Leah and Erica can both reach the admin dashboard with MFA before
+  relying on them for live booking operations.
 - Confirm `/admin` redirects unauthenticated users to login.
 - Confirm each admin reaches `aal2` after MFA verification.
 - Confirm admin API routes reject an allowed admin email that is not currently `aal2`.
