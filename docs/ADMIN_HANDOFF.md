@@ -4,6 +4,18 @@ Use this when showing DeMario how to operate the site.
 
 For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
 
+## New Admin Setup
+
+- Add the new admin email to production `ADMIN_EMAIL`, redeploy, and send a
+  Supabase invite.
+- Create an `/admin/tasks` item in the `Admin onboarding` category with the
+  invite, MFA, bookings, inquiries, availability, payment, and cancellation
+  steps.
+- The new admin should accept the invite, set a password, then enroll 2-factor
+  auth from `/admin/mfa-setup` before handling private booking data.
+- For Leah, the live onboarding task is titled
+  `Leah admin onboarding: accept invite, set up MFA, and learn the daily flow`.
+
 ## Daily
 
 - Open `/admin` and review new bookings.

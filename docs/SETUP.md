@@ -227,6 +227,7 @@ MFA is rejected before private data can be read or changed.
 | `tonio.montez@gmail.com` | Developer access |
 | `tony.montez@gmail.com` | Additional access |
 | `ericaxholloway@gmail.com` | Additional access |
+| `leahmontez@hotmail.com` | Additional access |
 
 ### MFA enrollment (one-time per account)
 
@@ -240,12 +241,31 @@ Each person does this once on their own device:
 6. Type the 6-digit code from the app into the site and confirm
 7. Done — every future login requires the 6-digit code
 
+### New admin onboarding
+
+When a family/admin helper is added, create a short task in `/admin/tasks`
+with the first-login steps and the daily admin routine. Use the category
+`Admin onboarding` so DeMario, Erica, Leah, and Tonio can find it quickly.
+
+The task should tell the new admin to:
+
+1. Accept the Supabase invite email and set their password.
+2. Open `https://demariomontezpb.com/admin/login`.
+3. Enroll 2-factor auth from `/admin/mfa-setup`.
+4. Check **Bookings** first, then **Inquiries**, then **Availability** only
+   when the schedule needs a block or slot change.
+5. Text new students from the booking row, confirm the exact court, mention
+   any court fee, and confirm payment.
+6. Mark paid only after Cash App, Zelle, or PayPal is received.
+7. Use the admin **Cancel** action for cancellations so the student receives
+   the cancellation email.
+
 ### Adding a new admin account
 
 ```bash
 # 1. Add their email to the ADMIN_EMAIL list in Vercel
 npx vercel env rm ADMIN_EMAIL production --yes
-echo "demariomontez10@gmail.com,tonio.montez@gmail.com,newperson@email.com" | npx vercel env add ADMIN_EMAIL production
+echo "demariomontez10@gmail.com,tonio.montez@gmail.com,tony.montez@gmail.com,ericaxholloway@gmail.com,leahmontez@hotmail.com,newperson@email.com" | npx vercel env add ADMIN_EMAIL production
 npx vercel --prod
 
 # 2. Create their Supabase Auth account via the API
@@ -481,6 +501,7 @@ Requires a `.env.local` file with all variables listed in Section 2.
   - [ ] `demariomontez10@gmail.com`
   - [ ] `tony.montez@gmail.com`
   - [ ] `ericaxholloway@gmail.com`
+  - [ ] `leahmontez@hotmail.com`
 - [ ] **Add time slots** — go to Admin → Availability → Time slots → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists
 - [ ] **Confirm venue routing copy** — verify public courts book through the site and platform-required venues match `docs/VENUE_RULES.md`
 - [ ] **Submit one live booking test** — confirm student/admin emails include phone and court preference, the calendar invite says Mario confirms the exact court, payment links work, and the test booking can be cancelled
