@@ -100,11 +100,11 @@ npm run launch:env -- -Apply -Verify
 cd "c:\Users\tonimontez\demario-pickleball-1"
 
 # Add a new variable
-echo "your-value-here" | npx vercel env add VARIABLE_NAME production
+printf "%s" "your-value-here" | npx vercel env add VARIABLE_NAME production
 
 # Remove and re-add to update a variable
 npx vercel env rm VARIABLE_NAME production --yes
-echo "new-value" | npx vercel env add VARIABLE_NAME production
+printf "%s" "new-value" | npx vercel env add VARIABLE_NAME production
 
 # Trigger a redeploy to pick up changes
 npx vercel --prod
@@ -265,7 +265,7 @@ The task should tell the new admin to:
 ```bash
 # 1. Add their email to the ADMIN_EMAIL list in Vercel
 npx vercel env rm ADMIN_EMAIL production --yes
-echo "demariomontez10@gmail.com,tonio.montez@gmail.com,tony.montez@gmail.com,ericaxholloway@gmail.com,leahmontez@hotmail.com,newperson@email.com" | npx vercel env add ADMIN_EMAIL production
+printf "%s" "demariomontez10@gmail.com,tonio.montez@gmail.com,tony.montez@gmail.com,ericaxholloway@gmail.com,leahmontez@hotmail.com,newperson@email.com" | npx vercel env add ADMIN_EMAIL production
 npx vercel --prod
 
 # 2. Create their Supabase Auth account via the API
@@ -309,7 +309,7 @@ after booking.
 3. Copy the key (starts with `re_` — only shown once)
 4. Run:
 ```bash
-echo "re_YOUR_KEY_HERE" | npx vercel env add RESEND_API_KEY production
+printf "%s" "re_YOUR_KEY_HERE" | npx vercel env add RESEND_API_KEY production
 npx vercel --prod
 ```
 
@@ -327,7 +327,7 @@ npx vercel --prod
 4. Once verified, update `EMAIL_FROM`:
 ```bash
 npx vercel env rm EMAIL_FROM production --yes
-echo "DeMario Pickleball <bookings@demariomontezpb.com>" | npx vercel env add EMAIL_FROM production
+printf "%s" "DeMario Pickleball <bookings@demariomontezpb.com>" | npx vercel env add EMAIL_FROM production
 npx vercel --prod
 ```
 
@@ -532,7 +532,7 @@ Update `ADMIN_EMAIL` in Vercel (comma-separated list), redeploy, and create/remo
 2. Run:
 ```bash
 npx vercel env rm RESEND_API_KEY production --yes
-echo "re_NEW_KEY" | npx vercel env add RESEND_API_KEY production
+printf "%s" "re_NEW_KEY" | npx vercel env add RESEND_API_KEY production
 npx vercel --prod
 ```
 3. Delete the old key in Resend dashboard
