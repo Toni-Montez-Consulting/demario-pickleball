@@ -39,7 +39,12 @@ function daysInMonth(year: number, month: number): number {
 }
 
 function todayString(): string {
-  return new Date().toISOString().split("T")[0];
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date());
+  const v = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${v("year")}-${v("month")}-${v("day")}`;
 }
 
 function formatDisplayDate(dateStr: string): string {

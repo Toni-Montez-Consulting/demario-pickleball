@@ -25,6 +25,7 @@ export default function QuickAddTask({ category, hint }: Props) {
       });
       if (res.ok) {
         setTitle("");
+        setError("");
         setSaved(true);
         setTimeout(() => setSaved(false), 3500);
       } else {

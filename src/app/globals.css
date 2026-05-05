@@ -1225,7 +1225,7 @@ footer .contact-line a:hover { color: var(--fg); }
   color: var(--accent);
 }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.admin-table th { text-align: left; padding: 10px 12px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-muted); font-weight: 600; border-bottom: 1px solid var(--line); }
+.admin-table th { text-align: left; padding: 10px 12px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-muted); font-weight: 600; border-bottom: 1px solid var(--line); }
 .admin-table td { padding: 12px; border-bottom: 1px solid color-mix(in oklab, var(--line) 50%, transparent); color: var(--fg-dim); vertical-align: middle; }
 .admin-table tr:last-child td { border-bottom: none; }
 .status-badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; }
@@ -1328,6 +1328,7 @@ footer .contact-line a:hover { color: var(--fg); }
 .admin-signout { padding: 8px 14px; font-size: 13px; }
 .topnav-actions { display: flex; align-items: center; gap: 8px; }
 .admin-feedback-btn { padding: 8px 14px; font-size: 13px; }
+@media (max-width: 480px) { .admin-feedback-btn { display: none; } }
 
 /* Nav overdue badge */
 .nav-overdue-badge {
@@ -1998,6 +1999,7 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
 }
 .weekly-template-day { font-size: 13px; font-weight: 600; min-width: 72px; padding-top: 2px; }
 .weekly-template-slots { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 500px) { .weekly-template-row { flex-wrap: wrap; } .weekly-template-day { min-width: unset; width: 100%; margin-bottom: 4px; } }
 .weekly-template-check { display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; }
 .weekly-template-check input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; }
 .weekly-template-check input:disabled { cursor: default; opacity: 0.4; }

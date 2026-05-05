@@ -74,7 +74,6 @@ export default function WeeklyTemplateEditor({ timeSlots, recurringBlocks, onSav
   }
 
   async function handleSave() {
-    const hasChanges = true; // Always confirm since it's a replace-all operation
     if (!window.confirm("This will replace all current recurring rules with this template. Continue?")) return;
 
     const blocks: Array<{ day_of_week: number; time: string | null }> = [];
@@ -83,7 +82,6 @@ export default function WeeklyTemplateEditor({ timeSlots, recurringBlocks, onSav
         blocks.push({ day_of_week: dow, time });
       }
     }
-    void hasChanges;
     await onSave(blocks);
   }
 
