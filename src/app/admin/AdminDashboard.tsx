@@ -629,11 +629,8 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
 
           <div className="availability-hero">
             <div>
-              <p className="avail-kicker">Availability control center</p>
-              <h2>Keep Mario bookable without double-booking.</h2>
-              <p>
-                Manage lesson times, one-off blocks, weekly rules, and Google Calendar protection from one place.
-              </p>
+              <h2>DeMario&apos;s schedule</h2>
+              <p>Click any day on the calendar to block or unblock it. Use the weekly schedule to set days Mario is always unavailable.</p>
             </div>
             <div className={`calendar-status-card${calendarSync?.ok ? " is-good" : ""}`}>
               <span className="status-dot" />
@@ -650,85 +647,16 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
             </div>
           </div>
 
-          <section className="avail-card">
-            <div className="avail-card-head">
-              <div>
-                <p className="avail-kicker">Lesson times students can book</p>
-                <h2 className="avail-section-title">Public lesson schedule</h2>
-                <p className="avail-section-sub">Active times appear in the booking modal immediately.</p>
-              </div>
-              <span className="avail-count-pill">{activeTimeSlots.length} active</span>
-            </div>
-            <div className="avail-form">
-              <input
-                className="modal-input avail-slot-input"
-                type="text"
-                placeholder="e.g. 10:00 AM"
-                value={newSlotLabel}
-                onChange={(e) => setNewSlotLabel(e.target.value)}
-                aria-label="New time slot"
-              />
-              <button
-                type="button"
-                className="admin-btn avail-block-btn"
-                disabled={!newSlotLabel.trim() || slotLoading}
-                onClick={addTimeSlot}
-              >
-                {slotLoading ? "Adding…" : "Add slot"}
-              </button>
-            </div>
-            {slotError && <div className="modal-error avail-error">{slotError}</div>}
-            <div className="slot-pill-list">
-              {availLoading ? (
-                <p className="admin-empty">Loading…</p>
-              ) : timeSlots.length === 0 ? (
-                <div className="admin-empty-state">
-                  <strong>No lesson times yet.</strong>
-                  <span>Add the first time above so students can book.</span>
-                </div>
-              ) : (
-                timeSlots.map((slot) => (
-                  <div key={slot.id} className={`slot-admin-pill${slot.active ? "" : " is-hidden"}`}>
-                    <span>{slot.display_label}</span>
-                    <span className={`status-badge ${slot.active ? "status-confirmed" : "status-cancelled"}`}>
-                      {slot.active ? "active" : "hidden"}
-                    </span>
-                    <div className="td-actions">
-                      <button
-                        type="button"
-                        className="admin-btn"
-                        disabled={updating === slot.id}
-                        onClick={() => toggleSlotActive(slot)}
-                      >
-                        {slot.active ? "Hide" : "Show"}
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-btn cancel"
-                        disabled={updating === slot.id}
-                        onClick={() => deleteTimeSlot(slot.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            {hiddenTimeSlots.length > 0 && (
-              <p className="avail-section-sub muted-note">
-                Hidden times stay saved for later, but students cannot book them.
-              </p>
-            )}
-          </section>
-
-          {!availLoading && hasLoadedAvail && (
+          {availLoading ? (
+            <section className="avail-card">
+              <p className="admin-empty">Loading calendar…</p>
+            </section>
+          ) : hasLoadedAvail ? (
             <section className="avail-card">
               <div className="avail-card-head">
                 <div>
-                  <p className="avail-kicker">Visual calendar overview</p>
-                  <h2 className="avail-section-title">Monthly view</h2>
-                  <p className="avail-section-sub">Click any day to manage blocks for that date. Green = open, yellow = some blocked, red = fully blocked, blue = has a booking.</p>
+                  <h2 className="avail-section-title">Monthly calendar</h2>
+                  <p className="avail-section-sub">Click any day to block or unblock times. Green = open, yellow = some blocked, red = fully blocked, blue = has a booking.</p>
                 </div>
               </div>
               <AvailabilityCalendar
@@ -753,14 +681,13 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                 }}
               />
             </section>
-          )}
+          ) : null}
 
           <section className="avail-card">
             <div className="avail-card-head">
               <div>
-                <p className="avail-kicker">Block a date or time</p>
-                <h2 className="avail-section-title">One-off schedule block</h2>
-                <p className="avail-section-sub">Use this for tournaments, travel, lessons from another platform, or a day off.</p>
+                <h2 className="avail-section-title">Block a specific date</h2>
+                <p className="avail-section-sub">Use this to block a single day or time — for a tournament, travel, or a day off.</p>
               </div>
             </div>
             <div className="avail-form">
@@ -797,7 +724,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                 disabled={!blockDate || blockLoading || (!blockAllDay && !blockTime)}
                 onClick={blockSlot}
               >
-                {blockLoading ? "Blocking..." : "Block time"}
+                {blockLoading ? "Blocking…" : "Block time"}
               </button>
             </div>
             {blockError && <div className="modal-error avail-error">{blockError}</div>}
@@ -806,9 +733,8 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
           <section className="avail-card">
             <div className="avail-card-head">
               <div>
-                <p className="avail-kicker">Weekly recurring blocks</p>
                 <h2 className="avail-section-title">Weekly schedule</h2>
-                <p className="avail-section-sub">Set which days or times are unavailable every week.</p>
+                <p className="avail-section-sub">Set the days and times Mario is unavailable every week. Check a box to mark it unavailable, then save.</p>
               </div>
               <span className="avail-count-pill">{recurringBlocks.length} rule{recurringBlocks.length === 1 ? "" : "s"}</span>
             </div>
@@ -822,113 +748,186 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
             )}
             <details className="avail-advanced-toggle">
               <summary>Advanced: add or remove individual rules</summary>
-            <div className="avail-form">
-              <select
-                className="modal-select avail-time-select"
-                value={recurringDay}
-                onChange={(e) => setRecurringDay(parseInt(e.target.value, 10))}
-                aria-label="Day of week"
-              >
-                {DAY_NAMES.map((d, i) => (
-                  <option key={i} value={i}>{d}</option>
-                ))}
-              </select>
-              <select
-                className="modal-select avail-time-select"
-                value={recurringTime}
-                onChange={(e) => setRecurringTime(e.target.value)}
-                aria-label="Time"
-                disabled={activeTimeSlots.length === 0}
-              >
-                {activeTimeSlots.map((s) => (
-                  <option key={s.id} value={s.display_label}>{s.display_label}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="admin-btn avail-block-btn"
-                disabled={!recurringTime || recurringLoading}
-                onClick={() => addRecurringBlock(false)}
-              >
-                Block this time
-              </button>
-              <button
-                type="button"
-                className="admin-btn avail-block-btn"
-                disabled={recurringLoading}
-                onClick={() => addRecurringBlock(true)}
-              >
-                Block whole day
-              </button>
-            </div>
-            {recurringError && <div className="modal-error avail-error">{recurringError}</div>}
-            <div className="avail-list">
-              {availLoading ? null : recurringBlocks.length === 0 ? (
-                <div className="admin-empty-state compact">
-                  <strong>No weekly blocks.</strong>
-                  <span>Add one when Mario has a normal day or time off.</span>
-                </div>
-              ) : (
-                recurringBlocks.map((r) => (
-                  <div key={r.id} className="avail-row">
-                    <span className="avail-date">Every {DAY_NAMES[r.day_of_week]}</span>
-                    <span className="avail-time">{r.time ?? "All day"}</span>
-                    <button
-                      type="button"
-                      className="admin-btn cancel"
-                      disabled={updating === r.id}
-                      onClick={() => deleteRecurring(r.id)}
-                    >
-                      Remove
-                    </button>
+              <div className="avail-form">
+                <select
+                  className="modal-select avail-time-select"
+                  value={recurringDay}
+                  onChange={(e) => setRecurringDay(parseInt(e.target.value, 10))}
+                  aria-label="Day of week"
+                >
+                  {DAY_NAMES.map((d, i) => (
+                    <option key={i} value={i}>{d}</option>
+                  ))}
+                </select>
+                <select
+                  className="modal-select avail-time-select"
+                  value={recurringTime}
+                  onChange={(e) => setRecurringTime(e.target.value)}
+                  aria-label="Time"
+                  disabled={activeTimeSlots.length === 0}
+                >
+                  {activeTimeSlots.map((s) => (
+                    <option key={s.id} value={s.display_label}>{s.display_label}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="admin-btn avail-block-btn"
+                  disabled={!recurringTime || recurringLoading}
+                  onClick={() => addRecurringBlock(false)}
+                >
+                  Block this time
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn avail-block-btn"
+                  disabled={recurringLoading}
+                  onClick={() => addRecurringBlock(true)}
+                >
+                  Block whole day
+                </button>
+              </div>
+              {recurringError && <div className="modal-error avail-error">{recurringError}</div>}
+              <div className="avail-list">
+                {availLoading ? null : recurringBlocks.length === 0 ? (
+                  <div className="admin-empty-state compact">
+                    <strong>No weekly blocks.</strong>
+                    <span>Add one when Mario has a normal day or time off.</span>
                   </div>
-                ))
-              )}
-            </div>
+                ) : (
+                  recurringBlocks.map((r) => (
+                    <div key={r.id} className="avail-row">
+                      <span className="avail-date">Every {DAY_NAMES[r.day_of_week]}</span>
+                      <span className="avail-time">{r.time ?? "All day"}</span>
+                      <button
+                        type="button"
+                        className="admin-btn cancel"
+                        disabled={updating === r.id}
+                        onClick={() => deleteRecurring(r.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
             </details>
           </section>
 
-          <section className="avail-card">
-            <div className="avail-card-head">
-              <div>
-                <p className="avail-kicker">Currently blocked upcoming times</p>
-                <h2 className="avail-section-title">Manual blocks</h2>
-                <p className="avail-section-sub">Google Calendar blocks stay automatic; these are the blocks Mario added by hand.</p>
-              </div>
-              <span className="avail-count-pill">{blockedSlots.length} block{blockedSlots.length === 1 ? "" : "s"}</span>
-            </div>
-            <div className="avail-list">
-              {availLoading ? (
-                <p className="admin-empty">Loading…</p>
-              ) : blockedSlots.length === 0 ? (
-                <div className="admin-empty-state compact">
-                  <strong>No manual blocks yet.</strong>
-                  <span>Use the form above when Mario is unavailable.</span>
+          <details className="avail-advanced-toggle avail-settings-toggle">
+            <summary>Settings: lesson times &amp; blocked dates list</summary>
+            <section className="avail-card avail-card-inset">
+              <div className="avail-card-head">
+                <div>
+                  <h2 className="avail-section-title">Lesson times students can book</h2>
+                  <p className="avail-section-sub">Active times appear in the booking form immediately. Add or hide times here.</p>
                 </div>
-              ) : (
-                groupedBlockedSlots.map((group) => (
-                  <div key={group.date} className="blocked-date-group">
-                    <div className="blocked-date-heading">{formatAdminDate(group.date)}</div>
-                    <div className="blocked-date-items">
-                      {group.items.map((s) => (
-                        <div key={s.id} className="avail-row">
-                          <span className="avail-date">{s.all_day ? "Whole day" : (s.time ?? "")}</span>
-                          <button
-                            type="button"
-                            className="admin-btn cancel"
-                            disabled={updating === s.id}
-                            onClick={() => unblockSlot(s.id)}
-                          >
-                            Unblock
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                <span className="avail-count-pill">{activeTimeSlots.length} active</span>
+              </div>
+              <div className="avail-form">
+                <input
+                  className="modal-input avail-slot-input"
+                  type="text"
+                  placeholder="e.g. 10:00 AM"
+                  value={newSlotLabel}
+                  onChange={(e) => setNewSlotLabel(e.target.value)}
+                  aria-label="New time slot"
+                />
+                <button
+                  type="button"
+                  className="admin-btn avail-block-btn"
+                  disabled={!newSlotLabel.trim() || slotLoading}
+                  onClick={addTimeSlot}
+                >
+                  {slotLoading ? "Adding…" : "Add slot"}
+                </button>
+              </div>
+              {slotError && <div className="modal-error avail-error">{slotError}</div>}
+              <div className="slot-pill-list">
+                {availLoading ? (
+                  <p className="admin-empty">Loading…</p>
+                ) : timeSlots.length === 0 ? (
+                  <div className="admin-empty-state">
+                    <strong>No lesson times yet.</strong>
+                    <span>Add the first time above so students can book.</span>
                   </div>
-                ))
+                ) : (
+                  timeSlots.map((slot) => (
+                    <div key={slot.id} className={`slot-admin-pill${slot.active ? "" : " is-hidden"}`}>
+                      <span>{slot.display_label}</span>
+                      <span className={`status-badge ${slot.active ? "status-confirmed" : "status-cancelled"}`}>
+                        {slot.active ? "active" : "hidden"}
+                      </span>
+                      <div className="td-actions">
+                        <button
+                          type="button"
+                          className="admin-btn"
+                          disabled={updating === slot.id}
+                          onClick={() => toggleSlotActive(slot)}
+                        >
+                          {slot.active ? "Hide" : "Show"}
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-btn cancel"
+                          disabled={updating === slot.id}
+                          onClick={() => deleteTimeSlot(slot.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              {hiddenTimeSlots.length > 0 && (
+                <p className="avail-section-sub muted-note">
+                  Hidden times stay saved for later, but students cannot book them.
+                </p>
               )}
-            </div>
-          </section>
+            </section>
+
+            <section className="avail-card avail-card-inset">
+              <div className="avail-card-head">
+                <div>
+                  <h2 className="avail-section-title">All blocked dates</h2>
+                  <p className="avail-section-sub">All one-off blocks Mario has added. Use the calendar above to unblock a day.</p>
+                </div>
+                <span className="avail-count-pill">{blockedSlots.length} block{blockedSlots.length === 1 ? "" : "s"}</span>
+              </div>
+              <div className="avail-list">
+                {availLoading ? (
+                  <p className="admin-empty">Loading…</p>
+                ) : blockedSlots.length === 0 ? (
+                  <div className="admin-empty-state compact">
+                    <strong>No manual blocks yet.</strong>
+                    <span>Block a date using the calendar or the form above.</span>
+                  </div>
+                ) : (
+                  groupedBlockedSlots.map((group) => (
+                    <div key={group.date} className="blocked-date-group">
+                      <div className="blocked-date-heading">{formatAdminDate(group.date)}</div>
+                      <div className="blocked-date-items">
+                        {group.items.map((s) => (
+                          <div key={s.id} className="avail-row">
+                            <span className="avail-date">{s.all_day ? "Whole day" : (s.time ?? "")}</span>
+                            <button
+                              type="button"
+                              className="admin-btn cancel"
+                              disabled={updating === s.id}
+                              onClick={() => unblockSlot(s.id)}
+                            >
+                              Unblock
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          </details>
         </div>
       )}
     </div>

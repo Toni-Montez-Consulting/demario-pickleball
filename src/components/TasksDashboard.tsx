@@ -68,7 +68,7 @@ const EMPTY_DRAFT = {
 
 export default function TasksDashboard({ initialTasks }: Props) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(initialTasks.length === 0);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");

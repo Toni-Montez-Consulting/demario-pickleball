@@ -8,8 +8,10 @@ import FeedbackModal from "@/components/FeedbackModal";
 
 export default function AdminShell({
   children,
+  overdueCount = 0,
 }: {
   children: React.ReactNode;
+  overdueCount?: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -61,7 +63,12 @@ export default function AdminShell({
       <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       <div className="admin-nav">
         <Link href="/admin" className={`admin-nav-link${pathname === "/admin" ? " active" : ""}`}>Dashboard</Link>
-        <Link href="/admin/tasks" className={`admin-nav-link${pathname === "/admin/tasks" ? " active" : ""}`}>Tasks</Link>
+        <Link href="/admin/tasks" className={`admin-nav-link${pathname === "/admin/tasks" ? " active" : ""}`}>
+          Tasks
+          {overdueCount > 0 && pathname !== "/admin/tasks" && (
+            <span className="nav-overdue-badge" aria-label={`${overdueCount} overdue`}>{overdueCount}</span>
+          )}
+        </Link>
         <Link href="/admin/roadmap" className={`admin-nav-link${pathname === "/admin/roadmap" ? " active" : ""}`}>Business</Link>
         <Link href="/admin/site-roadmap" className={`admin-nav-link${pathname === "/admin/site-roadmap" ? " active" : ""}`}>Site Tracker</Link>
       </div>

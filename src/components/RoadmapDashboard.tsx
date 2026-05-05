@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import QuickAddTask from "@/components/QuickAddTask";
 
 interface RoadmapItem {
   key: string;
@@ -341,6 +342,11 @@ export default function RoadmapDashboard({ initialChecked }: { initialChecked: s
           <div className="overall-fill" style={{ width: `${overallPct}%` }} />
         </div>
       </div>
+
+      <QuickAddTask
+        category="Business"
+        hint="Need to add something for Mario or the team? Type it here and it will appear in the Tasks list."
+      />
 
       {PHASES.map((phase) => {
         const phaseDone = phase.items.filter((it) => checked.has(it.key)).length;

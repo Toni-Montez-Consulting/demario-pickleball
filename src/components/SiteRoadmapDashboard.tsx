@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import QuickAddTask from "@/components/QuickAddTask";
 
 interface DevRoadmapItem {
   key: string;
@@ -208,6 +209,11 @@ export default function SiteRoadmapDashboard({ initialChecked }: { initialChecke
         </div>
       </div>
 
+      <QuickAddTask
+        category="Site Tracker"
+        hint="Something needs Toni's attention? Add it here and it will appear in the Tasks list."
+      />
+
       {PHASES.map((phase) => {
         const shippedCount = phase.items.filter((i) => i.shipped).length;
         const checkable = phase.items.filter((i) => !i.shipped);
@@ -232,25 +238,9 @@ export default function SiteRoadmapDashboard({ initialChecked }: { initialChecke
               {phase.items.map((item) => {
                 const isShipped = !!item.shipped;
                 const isChecked = isShipped || checked.has(item.key);
-                const interactive = !isShipped;
-                const saving = interactive && pendingKeys.has(item.key);
-                return (
-                  <div
-                    key={item.key}
-                    role={interactive ? "checkbox" : undefined}
-                    aria-checked={interactive ? isChecked : undefined}
-                    tabIndex={interactive ? 0 : undefined}
-                    aria-disabled={isShipped ? "true" : undefined}
-                    className={`roadmap-item${isChecked ? " done" : ""}${isShipped ? " shipped" : ""}${saving ? " saving" : ""}`}
-                    onClick={interactive ? () => toggle(item.key) : undefined}
-                    onKeyDown={(e) => {
-                      if (!interactive) return;
-                      if (e.key === " " || e.key === "Enter") {
-                        e.preventDefault();
-                        toggle(item.key);
-                      }
-                    }}
-                  >
+                const saving = !isShipped && pendingKeys.has(item.key);
+                const itemContent = (
+                  <>
                     <div className="item-check" aria-hidden="true">
                       <svg viewBox="0 0 12 10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="1 5 4.5 8.5 11 1" />
@@ -263,6 +253,31 @@ export default function SiteRoadmapDashboard({ initialChecked }: { initialChecke
                       </div>
                       {item.detail && <div className="item-detail">{item.detail}</div>}
                     </div>
+                  </>
+                );
+                if (isShipped) {
+                  return (
+                    <div key={item.key} className="roadmap-item done shipped">
+                      {itemContent}
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={item.key}
+                    role="checkbox"
+                    aria-checked={isChecked === true}
+                    tabIndex={0}
+                    className={`roadmap-item${isChecked ? " done" : ""}${saving ? " saving" : ""}`}
+                    onClick={() => toggle(item.key)}
+                    onKeyDown={(e) => {
+                      if (e.key === " " || e.key === "Enter") {
+                        e.preventDefault();
+                        toggle(item.key);
+                      }
+                    }}
+                  >
+                    {itemContent}
                   </div>
                 );
               })}

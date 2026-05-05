@@ -1,6 +1,17 @@
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient, isAdminEmail } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createServiceRoleClient, isAdminEmail } from "@/lib/supabase/server";
 import AdminShell from "../AdminShell";
+
+function todayInChicago(): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const v = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${v("year")}-${v("month")}-${v("day")}`;
+}
 
 export default async function ProtectedAdminLayout({
   children,
@@ -22,5 +33,12 @@ export default async function ProtectedAdminLayout({
     redirect("/admin/login");
   }
 
-  return <AdminShell>{children}</AdminShell>;
+  const service = createServiceRoleClient();
+  const { count: overdueCount } = await service
+    .from("admin_tasks")
+    .select("id", { count: "exact", head: true })
+    .lt("due_date", todayInChicago())
+    .is("completed_at", null);
+
+  return <AdminShell overdueCount={overdueCount ?? 0}>{children}</AdminShell>;
 }

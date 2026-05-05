@@ -1329,6 +1329,42 @@ footer .contact-line a:hover { color: var(--fg); }
 .topnav-actions { display: flex; align-items: center; gap: 8px; }
 .admin-feedback-btn { padding: 8px 14px; font-size: 13px; }
 
+/* Nav overdue badge */
+.nav-overdue-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  background: var(--danger); color: #fff;
+  border-radius: 999px; font-size: 11px; font-weight: 700;
+  margin-left: 6px; vertical-align: middle; line-height: 1;
+}
+
+/* Quick add task strip */
+.quick-add-task {
+  background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 12px; padding: 16px 20px;
+  margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;
+}
+.quick-add-label { font-size: 13px; color: var(--fg-muted); margin: 0; line-height: 1.5; }
+.quick-add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.quick-add-input { flex: 1; min-width: 200px; }
+.quick-add-btn { white-space: nowrap; }
+.quick-add-success { font-size: 13px; color: var(--accent); margin: 0; font-weight: 500; }
+.quick-add-error { font-size: 13px; color: var(--danger); margin: 0; }
+
+/* Availability settings toggle (lesson times + blocked list) */
+.avail-settings-toggle { margin-top: 0; }
+.avail-settings-toggle > summary {
+  font-size: 13px; color: var(--fg-muted); cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+  list-style: none; display: flex; align-items: center; gap: 6px;
+  padding: 12px 20px; border-top: 1px solid var(--line);
+}
+.avail-settings-toggle > summary::-webkit-details-marker { display: none; }
+.avail-settings-toggle > summary::before { content: "▶"; font-size: 10px; }
+.avail-settings-toggle[open] > summary::before { content: "▼"; }
+.avail-card-inset { margin-top: 0; border-top: none; border-radius: 0; }
+.avail-card-inset:first-of-type { border-top: 1px solid var(--line); }
+
 /* ====== FEEDBACK MODAL ====== */
 .feedback-modal { max-width: min(520px, calc(100vw - 28px)); }
 .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
