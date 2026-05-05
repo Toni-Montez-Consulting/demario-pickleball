@@ -63,6 +63,9 @@ export async function PATCH(
     }
     update.recurrence = body.recurrence;
   }
+  if (body.priority !== undefined) {
+    update.priority = body.priority === "high" ? "high" : "normal";
+  }
 
   let spawnNextInstance = false;
   if (body.completed !== undefined) {
@@ -104,6 +107,7 @@ export async function PATCH(
           category: existing.category,
           due_date: nextDate,
           recurrence: existing.recurrence,
+          priority: existing.priority ?? "normal",
         })
         .select()
         .single();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 interface DevRoadmapItem {
   key: string;
@@ -157,11 +157,11 @@ const CHECKABLE_ITEMS = PHASES.flatMap((p) => p.items).filter((i) => !i.shipped)
 
 export default function SiteRoadmapDashboard({ initialChecked }: { initialChecked: string[] }) {
   const [checked, setChecked] = useState<Set<string>>(new Set(initialChecked));
-  const pendingRef = useRef(new Set<string>());
+  const [pendingKeys, setPendingKeys] = useState<Set<string>>(new Set());
 
   async function toggle(key: string) {
-    if (pendingRef.current.has(key)) return;
-    pendingRef.current.add(key);
+    if (pendingKeys.has(key)) return;
+    setPendingKeys((prev) => new Set(prev).add(key));
     const next = !checked.has(key);
     setChecked((prev) => {
       const s = new Set(prev);
@@ -184,7 +184,7 @@ export default function SiteRoadmapDashboard({ initialChecked }: { initialChecke
         });
       }
     } finally {
-      pendingRef.current.delete(key);
+      setPendingKeys((prev) => { const s = new Set(prev); s.delete(key); return s; });
     }
   }
 
@@ -196,11 +196,11 @@ export default function SiteRoadmapDashboard({ initialChecked }: { initialChecke
     <div className="admin-wrap roadmap-wrap">
       <div className="roadmap-header">
         <div className="admin-header">
-          <h1>Developer Roadmap</h1>
+          <h1>Site Tracker</h1>
           <span className="admin-count">{totalDone} / {totalCheckable} complete</span>
         </div>
         <p className="roadmap-sub">
-          Implementation tracker for Tonio. Mario&apos;s nontechnical operating tasks
+          Website development progress — Toni&apos;s reference. Mario&apos;s operating tasks
           live under Tasks and Business.
         </p>
         <div className="overall-bar">
@@ -233,14 +233,15 @@ export default function SiteRoadmapDashboard({ initialChecked }: { initialChecke
                 const isShipped = !!item.shipped;
                 const isChecked = isShipped || checked.has(item.key);
                 const interactive = !isShipped;
+                const saving = interactive && pendingKeys.has(item.key);
                 return (
                   <div
                     key={item.key}
                     role={interactive ? "checkbox" : undefined}
-                    aria-checked={interactive ? (isChecked ? "true" : "false") : undefined}
+                    aria-checked={interactive ? isChecked : undefined}
                     tabIndex={interactive ? 0 : undefined}
                     aria-disabled={isShipped ? "true" : undefined}
-                    className={`roadmap-item${isChecked ? " done" : ""}${isShipped ? " shipped" : ""}`}
+                    className={`roadmap-item${isChecked ? " done" : ""}${isShipped ? " shipped" : ""}${saving ? " saving" : ""}`}
                     onClick={interactive ? () => toggle(item.key) : undefined}
                     onKeyDown={(e) => {
                       if (!interactive) return;

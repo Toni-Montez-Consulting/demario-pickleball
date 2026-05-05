@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { parseBookingNotes } from "@/lib/booking-notes";
+import AvailabilityCalendar from "@/components/AvailabilityCalendar";
+import WeeklyTemplateEditor from "@/components/WeeklyTemplateEditor";
 
 interface Booking {
   id: string;
@@ -125,7 +127,13 @@ function contactHref(phone: string | null, scheme: "sms" | "tel"): string | null
 }
 
 export default function AdminDashboard({ initialBookings, initialInquiries }: Props) {
-  const [tab, setTab] = useState<"bookings" | "inquiries" | "availability">("bookings");
+  const [tab, setTab] = useState<"bookings" | "inquiries" | "availability">(() => {
+    if (typeof window === "undefined") return "bookings";
+    const saved = localStorage.getItem("admin-dashboard-tab");
+    return (["bookings", "inquiries", "availability"] as const).includes(saved as "bookings")
+      ? (saved as "bookings" | "inquiries" | "availability")
+      : "bookings";
+  });
   const [bookingFilter, setBookingFilter] = useState<BookingFilter>("all");
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [inquiries, setInquiries] = useState<Inquiry[]>(initialInquiries);
@@ -148,10 +156,11 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   const [recurringTime, setRecurringTime] = useState("");
   const [recurringError, setRecurringError] = useState("");
   const [recurringLoading, setRecurringLoading] = useState(false);
+  const [weeklyTemplateSaving, setWeeklyTemplateSaving] = useState(false);
   const [availLoading, setAvailLoading] = useState(false);
   const [availFetchError, setAvailFetchError] = useState("");
   const [calendarSync, setCalendarSync] = useState<CalendarSyncStatus | null>(null);
-  const hasLoadedAvailRef = useRef(false);
+  const [hasLoadedAvail, setHasLoadedAvail] = useState(false);
 
   const activeTimeSlots = timeSlots.filter((s) => s.active);
   const hiddenTimeSlots = timeSlots.filter((s) => !s.active);
@@ -185,7 +194,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   const unread = inquiries.filter((i) => !i.read).length;
 
   useEffect(() => {
-    if (tab !== "availability" || hasLoadedAvailRef.current) return;
+    if (tab !== "availability" || hasLoadedAvail) return;
     setAvailLoading(true);
     setAvailFetchError("");
     Promise.all([
@@ -204,11 +213,11 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
           setBlockTime((prev) => prev || firstActive.display_label);
           setRecurringTime((prev) => prev || firstActive.display_label);
         }
-        hasLoadedAvailRef.current = true;
+        setHasLoadedAvail(true);
       })
       .catch(() => setAvailFetchError("Failed to load availability. Please refresh the page."))
       .finally(() => setAvailLoading(false));
-  }, [tab]);
+  }, [tab, hasLoadedAvail]);
 
   async function updateBookingStatus(id: string, status: "confirmed" | "cancelled") {
     if (status === "cancelled" && !window.confirm("Cancel this booking and email the student?")) {
@@ -417,6 +426,35 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
     }
   }
 
+  async function saveWeeklyTemplate(blocks: Array<{ day_of_week: number; time: string | null }>) {
+    setWeeklyTemplateSaving(true);
+    setRecurringError("");
+    try {
+      // Delete all existing recurring blocks
+      for (const r of recurringBlocks) {
+        await fetch(`/api/recurring-blocks/${r.id}`, { method: "DELETE" });
+      }
+      // Insert new ones
+      const created = [];
+      for (const b of blocks) {
+        const res = await fetch("/api/recurring-blocks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ day_of_week: b.day_of_week, time: b.time }),
+        });
+        if (res.ok) created.push(await res.json());
+      }
+      setRecurringBlocks(created.sort((a, b) => a.day_of_week - b.day_of_week || (a.time ?? "").localeCompare(b.time ?? "")));
+    } catch {
+      // On partial failure, refetch to restore consistency
+      const res = await fetch("/api/recurring-blocks");
+      if (res.ok) setRecurringBlocks(await res.json());
+      setRecurringError("Some rules could not be saved. Please check the list below.");
+    } finally {
+      setWeeklyTemplateSaving(false);
+    }
+  }
+
   return (
     <div className="admin-wrap">
       <div className="admin-header">
@@ -427,14 +465,14 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
       </div>
 
       <div className="admin-tabs">
-        <button type="button" className={`admin-tab${tab === "bookings" ? " active" : ""}`} onClick={() => setTab("bookings")}>
+        <button type="button" className={`admin-tab${tab === "bookings" ? " active" : ""}`} onClick={() => { setTab("bookings"); localStorage.setItem("admin-dashboard-tab", "bookings"); }}>
           Bookings
         </button>
-        <button type="button" className={`admin-tab${tab === "inquiries" ? " active" : ""}`} onClick={() => setTab("inquiries")}>
+        <button type="button" className={`admin-tab${tab === "inquiries" ? " active" : ""}`} onClick={() => { setTab("inquiries"); localStorage.setItem("admin-dashboard-tab", "inquiries"); }}>
           Inquiries
           {unread > 0 && <span className="unread-dot" />}
         </button>
-        <button type="button" className={`admin-tab${tab === "availability" ? " active" : ""}`} onClick={() => setTab("availability")}>
+        <button type="button" className={`admin-tab${tab === "availability" ? " active" : ""}`} onClick={() => { setTab("availability"); localStorage.setItem("admin-dashboard-tab", "availability"); }}>
           Availability
         </button>
       </div>
@@ -684,6 +722,39 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
             )}
           </section>
 
+          {!availLoading && hasLoadedAvail && (
+            <section className="avail-card">
+              <div className="avail-card-head">
+                <div>
+                  <p className="avail-kicker">Visual calendar overview</p>
+                  <h2 className="avail-section-title">Monthly view</h2>
+                  <p className="avail-section-sub">Click any day to manage blocks for that date. Green = open, yellow = some blocked, red = fully blocked, blue = has a booking.</p>
+                </div>
+              </div>
+              <AvailabilityCalendar
+                blockedSlots={blockedSlots}
+                timeSlots={timeSlots}
+                onBlockSlot={async (date, time, allDay) => {
+                  const payload = allDay ? { date, all_day: true } : { date, time };
+                  const res = await fetch("/api/blocked-slots", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setBlockedSlots((prev) => [...prev, data].sort((a, b) => a.date.localeCompare(b.date) || (a.time ?? "").localeCompare(b.time ?? "")));
+                  }
+                }}
+                onUnblockSlot={async (id) => {
+                  if (!window.confirm("Unblock this date or time?")) return;
+                  const res = await fetch(`/api/blocked-slots/${id}`, { method: "DELETE" });
+                  if (res.ok) setBlockedSlots((prev) => prev.filter((s) => s.id !== id));
+                }}
+              />
+            </section>
+          )}
+
           <section className="avail-card">
             <div className="avail-card-head">
               <div>
@@ -736,11 +807,21 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
             <div className="avail-card-head">
               <div>
                 <p className="avail-kicker">Weekly recurring blocks</p>
-                <h2 className="avail-section-title">Repeat unavailability</h2>
-                <p className="avail-section-sub">Block a day of the week every week, or block the same time each week.</p>
+                <h2 className="avail-section-title">Weekly schedule</h2>
+                <p className="avail-section-sub">Set which days or times are unavailable every week.</p>
               </div>
               <span className="avail-count-pill">{recurringBlocks.length} rule{recurringBlocks.length === 1 ? "" : "s"}</span>
             </div>
+            {!availLoading && hasLoadedAvail && (
+              <WeeklyTemplateEditor
+                timeSlots={timeSlots}
+                recurringBlocks={recurringBlocks}
+                onSave={saveWeeklyTemplate}
+                saving={weeklyTemplateSaving}
+              />
+            )}
+            <details className="avail-advanced-toggle">
+              <summary>Advanced: add or remove individual rules</summary>
             <div className="avail-form">
               <select
                 className="modal-select avail-time-select"
@@ -804,6 +885,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                 ))
               )}
             </div>
+            </details>
           </section>
 
           <section className="avail-card">

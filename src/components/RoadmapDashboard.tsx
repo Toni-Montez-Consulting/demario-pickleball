@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 interface RoadmapItem {
   key: string;
@@ -292,11 +292,11 @@ export default function RoadmapDashboard({ initialChecked }: { initialChecked: s
   const [checked, setChecked] = useState<Set<string>>(
     new Set(initialChecked.filter((key) => VALID_KEYS.has(key)))
   );
-  const pendingRef = useRef(new Set<string>());
+  const [pendingKeys, setPendingKeys] = useState<Set<string>>(new Set());
 
   async function toggle(key: string) {
-    if (pendingRef.current.has(key)) return;
-    pendingRef.current.add(key);
+    if (pendingKeys.has(key)) return;
+    setPendingKeys((prev) => new Set(prev).add(key));
     const next = !checked.has(key);
     setChecked((prev) => {
       const s = new Set(prev);
@@ -319,7 +319,7 @@ export default function RoadmapDashboard({ initialChecked }: { initialChecked: s
         });
       }
     } finally {
-      pendingRef.current.delete(key);
+      setPendingKeys((prev) => { const s = new Set(prev); s.delete(key); return s; });
     }
   }
 
@@ -363,13 +363,14 @@ export default function RoadmapDashboard({ initialChecked }: { initialChecked: s
             <div className="roadmap-items" role="group">
               {phase.items.map((item) => {
                 const done = checked.has(item.key);
+                const saving = pendingKeys.has(item.key);
                 return (
                   <div
                     key={item.key}
                     role="checkbox"
-                    aria-checked={done ? "true" : "false"}
+                    aria-checked={done}
                     tabIndex={0}
-                    className={`roadmap-item${done ? " done" : ""}`}
+                    className={`roadmap-item${done ? " done" : ""}${saving ? " saving" : ""}`}
                     onClick={() => toggle(item.key)}
                     onKeyDown={(e) => {
                       if (e.key === " " || e.key === "Enter") {

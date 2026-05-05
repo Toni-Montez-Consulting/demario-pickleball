@@ -50,9 +50,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Recurring tasks need a due date." }, { status: 400 });
   }
 
+  const priority = body.priority === "high" ? "high" : "normal";
+
   const { data, error } = await admin.supabase
     .from("admin_tasks")
-    .insert({ title, notes, category, due_date, recurrence })
+    .insert({ title, notes, category, due_date, recurrence, priority })
     .select()
     .single();
 

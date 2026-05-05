@@ -127,3 +127,30 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
+
+export function feedbackNotificationHtml({
+  type,
+  title,
+  description,
+  submitter,
+}: {
+  type: string;
+  title: string;
+  description: string;
+  submitter: string;
+}): string {
+  return wrap(
+    `
+    <h1 style="font-size:20px;margin:0 0 8px;">Admin feedback: ${escapeHtml(type)}</h1>
+    <p style="font-size:13px;color:#888;margin:0 0 20px;">Submitted by ${escapeHtml(submitter)} via the admin portal</p>
+    <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
+      <tr><td style="padding:6px 0;color:#777;vertical-align:top;">Type</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(type)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#777;vertical-align:top;">Title</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(title)}</strong></td></tr>
+    </table>
+    <p style="font-size:13px;color:#777;margin:0 0 6px;">Description</p>
+    <div style="background:#f5f5f5;border-radius:8px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(description)}</div>
+    <p style="font-size:13px;color:#888;margin:20px 0 0;">This was automatically added to the Tasks list in the admin portal.</p>
+    `,
+    `Admin Feedback: ${type}`
+  );
+}

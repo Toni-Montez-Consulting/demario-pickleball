@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { RECURRENCE_VALUES, RECURRENCE_LABELS, todayDateString, type Recurrence } from "@/lib/tasks";
 
+type Priority = "high" | "normal";
+
 interface Task {
   id: string;
   title: string;
@@ -10,6 +12,7 @@ interface Task {
   category: string | null;
   due_date: string | null;
   recurrence: Recurrence;
+  priority: Priority;
   completed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -54,25 +57,29 @@ function formatDate(dateStr: string): string {
   return dt.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
+const EMPTY_DRAFT = {
+  title: "",
+  category: "",
+  due_date: "",
+  recurrence: "none" as Recurrence,
+  notes: "",
+  priority: "normal" as Priority,
+};
+
 export default function TasksDashboard({ initialTasks }: Props) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [draft, setDraft] = useState({
-    title: "",
-    category: "",
-    due_date: "",
-    recurrence: "none" as Recurrence,
-    notes: "",
-  });
+  const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
   const [actingId, setActingId] = useState<string | null>(null);
   const [actError, setActError] = useState("");
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDraft, setEditDraft] = useState<{ title: string; category: string; due_date: string; recurrence: Recurrence; notes: string }>({
-    title: "", category: "", due_date: "", recurrence: "none", notes: "",
-  });
+  const [editDraft, setEditDraft] = useState<{
+    title: string; category: string; due_date: string; recurrence: Recurrence; notes: string; priority: Priority;
+  }>({ title: "", category: "", due_date: "", recurrence: "none", notes: "", priority: "normal" });
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { active, completed, categories } = useMemo(() => {
     const active: Task[] = [];
@@ -84,6 +91,8 @@ export default function TasksDashboard({ initialTasks }: Props) {
       else active.push(t);
     }
     active.sort((a, b) => {
+      // High priority before normal within the same due-date group
+      if (a.priority !== b.priority) return a.priority === "high" ? -1 : 1;
       if (a.due_date && !b.due_date) return -1;
       if (!a.due_date && b.due_date) return 1;
       if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
@@ -93,9 +102,25 @@ export default function TasksDashboard({ initialTasks }: Props) {
     return { active, completed, categories: Array.from(categorySet).sort() };
   }, [tasks]);
 
+  const filteredActive = useMemo(() => {
+    if (!searchQuery.trim()) return active;
+    const q = searchQuery.toLowerCase();
+    return active.filter(
+      (t) => t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q)
+    );
+  }, [active, searchQuery]);
+
+  const filteredCompleted = useMemo(() => {
+    if (!searchQuery.trim()) return completed;
+    const q = searchQuery.toLowerCase();
+    return completed.filter(
+      (t) => t.title.toLowerCase().includes(q) || (t.notes ?? "").toLowerCase().includes(q)
+    );
+  }, [completed, searchQuery]);
+
   const activeByCategory = useMemo(() => {
     const map = new Map<string, Task[]>();
-    for (const t of active) {
+    for (const t of filteredActive) {
       const key = t.category ?? UNCATEGORIZED;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(t);
@@ -105,7 +130,7 @@ export default function TasksDashboard({ initialTasks }: Props) {
       if (b[0] === UNCATEGORIZED) return -1;
       return a[0].localeCompare(b[0]);
     });
-  }, [active]);
+  }, [filteredActive]);
 
   const overdueCount = active.filter((t) => t.due_date && t.due_date < todayDateString()).length;
   const dueTodayCount = active.filter((t) => t.due_date === todayDateString()).length;
@@ -124,6 +149,7 @@ export default function TasksDashboard({ initialTasks }: Props) {
           due_date: draft.due_date || undefined,
           recurrence: draft.recurrence,
           notes: draft.notes || undefined,
+          priority: draft.priority,
         }),
       });
       const data = await res.json();
@@ -132,7 +158,7 @@ export default function TasksDashboard({ initialTasks }: Props) {
         return;
       }
       setTasks((prev) => [data, ...prev]);
-      setDraft({ title: "", category: "", due_date: "", recurrence: "none", notes: "" });
+      setDraft(EMPTY_DRAFT);
       setShowAddForm(false);
     } finally {
       setCreating(false);
@@ -187,6 +213,7 @@ export default function TasksDashboard({ initialTasks }: Props) {
       due_date: task.due_date ?? "",
       recurrence: task.recurrence,
       notes: task.notes ?? "",
+      priority: task.priority ?? "normal",
     });
   }
 
@@ -203,6 +230,7 @@ export default function TasksDashboard({ initialTasks }: Props) {
           due_date: editDraft.due_date,
           recurrence: editDraft.recurrence,
           notes: editDraft.notes,
+          priority: editDraft.priority,
         }),
       });
       const data = await res.json();
@@ -216,6 +244,9 @@ export default function TasksDashboard({ initialTasks }: Props) {
       setActingId(null);
     }
   }
+
+  const isEmpty = active.length === 0 && completed.length === 0;
+  const noSearchResults = !isEmpty && searchQuery.trim() && filteredActive.length === 0 && filteredCompleted.length === 0;
 
   return (
     <div className="admin-wrap tasks-wrap">
@@ -274,6 +305,23 @@ export default function TasksDashboard({ initialTasks }: Props) {
                 ))}
               </select>
             </div>
+            <div className="tasks-priority-row">
+              <span className="tasks-priority-label">Priority</span>
+              <button
+                type="button"
+                className={`tasks-priority-pill${draft.priority === "normal" ? " active" : ""}`}
+                onClick={() => setDraft({ ...draft, priority: "normal" })}
+              >
+                Normal
+              </button>
+              <button
+                type="button"
+                className={`tasks-priority-pill high${draft.priority === "high" ? " active" : ""}`}
+                onClick={() => setDraft({ ...draft, priority: "high" })}
+              >
+                High
+              </button>
+            </div>
             <textarea
               className="modal-input tasks-notes"
               placeholder="Notes (optional)"
@@ -287,7 +335,7 @@ export default function TasksDashboard({ initialTasks }: Props) {
             </datalist>
             {createError && <div className="modal-error">{createError}</div>}
             <div className="tasks-form-actions">
-              <button type="button" className="btn btn-ghost" onClick={() => { setShowAddForm(false); setCreateError(""); }}>
+              <button type="button" className="btn btn-ghost" onClick={() => { setShowAddForm(false); setCreateError(""); setDraft(EMPTY_DRAFT); }}>
                 Cancel
               </button>
               <button
@@ -303,53 +351,44 @@ export default function TasksDashboard({ initialTasks }: Props) {
         )}
       </div>
 
-      {active.length === 0 && completed.length === 0 ? (
+      {isEmpty ? (
         <div className="tasks-empty">
           <p>No tasks yet.</p>
           <p className="tasks-empty-sub">Add things like &ldquo;follow up with Rachel about Thursday payment&rdquo; or &ldquo;order new balls&rdquo;. Recurring tasks (weekly, monthly) will auto-regenerate when you check them off.</p>
         </div>
       ) : (
-        <div className="tasks-list">
-          {activeByCategory.map(([cat, list]) => (
-            <div key={cat} className="tasks-category">
-              <h3 className="tasks-category-title">{cat}</h3>
-              {list.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  acting={actingId === task.id}
-                  editing={editingId === task.id}
-                  editDraft={editDraft}
-                  setEditDraft={setEditDraft}
-                  categories={categories}
-                  onToggle={() => toggleComplete(task)}
-                  onEdit={() => startEdit(task)}
-                  onDelete={() => deleteTask(task.id)}
-                  onCancelEdit={() => setEditingId(null)}
-                  onSave={() => saveEdit(task.id)}
-                />
-              ))}
-            </div>
-          ))}
-
-          {completed.length > 0 && (
-            <div className="tasks-completed-section">
-              <button
-                type="button"
-                className="tasks-completed-toggle"
-                onClick={() => setShowCompleted((v) => !v)}
-                aria-expanded={showCompleted}
-              >
-                {showCompleted ? "▼" : "▶"} {completed.length} completed
+        <>
+          <div className="tasks-search-wrap">
+            <input
+              className="modal-input tasks-search"
+              type="search"
+              placeholder="Search tasks…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search tasks"
+            />
+            {searchQuery && (
+              <button type="button" className="tasks-search-clear" onClick={() => setSearchQuery("")} aria-label="Clear search">
+                ×
               </button>
-              {showCompleted && (
-                <div className="tasks-completed-list">
-                  {completed.slice(0, 50).map((task) => (
+            )}
+          </div>
+
+          {noSearchResults ? (
+            <div className="tasks-empty">
+              <p>No tasks match &ldquo;{searchQuery}&rdquo;</p>
+            </div>
+          ) : (
+            <div className="tasks-list">
+              {activeByCategory.map(([cat, list]) => (
+                <div key={cat} className="tasks-category">
+                  <h3 className="tasks-category-title">{cat}</h3>
+                  {list.map((task) => (
                     <TaskRow
                       key={task.id}
                       task={task}
                       acting={actingId === task.id}
-                      editing={false}
+                      editing={editingId === task.id}
                       editDraft={editDraft}
                       setEditDraft={setEditDraft}
                       categories={categories}
@@ -361,10 +400,42 @@ export default function TasksDashboard({ initialTasks }: Props) {
                     />
                   ))}
                 </div>
+              ))}
+
+              {filteredCompleted.length > 0 && (
+                <div className="tasks-completed-section">
+                  <button
+                    type="button"
+                    className="tasks-completed-toggle"
+                    onClick={() => setShowCompleted((v) => !v)}
+                  >
+                    {showCompleted ? "▼" : "▶"} {filteredCompleted.length} completed
+                  </button>
+                  {showCompleted && (
+                    <div className="tasks-completed-list">
+                      {filteredCompleted.map((task) => (
+                        <TaskRow
+                          key={task.id}
+                          task={task}
+                          acting={actingId === task.id}
+                          editing={false}
+                          editDraft={editDraft}
+                          setEditDraft={setEditDraft}
+                          categories={categories}
+                          onToggle={() => toggleComplete(task)}
+                          onEdit={() => startEdit(task)}
+                          onDelete={() => deleteTask(task.id)}
+                          onCancelEdit={() => setEditingId(null)}
+                          onSave={() => saveEdit(task.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
@@ -374,8 +445,8 @@ interface TaskRowProps {
   task: Task;
   acting: boolean;
   editing: boolean;
-  editDraft: { title: string; category: string; due_date: string; recurrence: Recurrence; notes: string };
-  setEditDraft: (d: { title: string; category: string; due_date: string; recurrence: Recurrence; notes: string }) => void;
+  editDraft: { title: string; category: string; due_date: string; recurrence: Recurrence; notes: string; priority: Priority };
+  setEditDraft: (d: { title: string; category: string; due_date: string; recurrence: Recurrence; notes: string; priority: Priority }) => void;
   categories: string[];
   onToggle: () => void;
   onEdit: () => void;
@@ -411,11 +482,13 @@ function TaskRow({ task, acting, editing, editDraft, setEditDraft, categories, o
           <input
             className="modal-input"
             type="date"
+            aria-label="Due date"
             value={editDraft.due_date}
             onChange={(e) => setEditDraft({ ...editDraft, due_date: e.target.value })}
           />
           <select
             className="modal-select"
+            aria-label="Repeat"
             value={editDraft.recurrence}
             onChange={(e) => setEditDraft({ ...editDraft, recurrence: e.target.value as Recurrence })}
           >
@@ -423,6 +496,23 @@ function TaskRow({ task, acting, editing, editDraft, setEditDraft, categories, o
               <option key={r} value={r}>{RECURRENCE_LABELS[r]}</option>
             ))}
           </select>
+        </div>
+        <div className="tasks-priority-row">
+          <span className="tasks-priority-label">Priority</span>
+          <button
+            type="button"
+            className={`tasks-priority-pill${editDraft.priority === "normal" ? " active" : ""}`}
+            onClick={() => setEditDraft({ ...editDraft, priority: "normal" })}
+          >
+            Normal
+          </button>
+          <button
+            type="button"
+            className={`tasks-priority-pill high${editDraft.priority === "high" ? " active" : ""}`}
+            onClick={() => setEditDraft({ ...editDraft, priority: "high" })}
+          >
+            High
+          </button>
         </div>
         <textarea
           className="modal-input tasks-notes"
@@ -462,6 +552,9 @@ function TaskRow({ task, acting, editing, editDraft, setEditDraft, categories, o
       </button>
       <div className="task-body">
         <div className="task-title">
+          {task.priority === "high" && !completed && (
+            <span className="task-priority-badge">High</span>
+          )}
           {task.title}
           {task.recurrence !== "none" && (
             <span className="task-recur" title={RECURRENCE_LABELS[task.recurrence]}>↻ {RECURRENCE_LABELS[task.recurrence]}</span>
