@@ -350,7 +350,9 @@ npx vercel --prod
 | `blocked_slots` | One-off date/time blocks — e.g. "block Nov 15 all day" |
 | `recurring_blocks` | Weekly recurring blocks — e.g. "no lessons every Tuesday" |
 | `inquiries` | Contact form submissions |
+| `admin_tasks` | Owner/admin task list, including priority for admin feedback and urgent follow-up |
 | `roadmap_checks` | Persists checkbox state for the business roadmap page |
+| `rate_limit_events` | Hashed IP rate-limit events for public booking and inquiry protection |
 
 ### Booking uniqueness
 
@@ -366,7 +368,7 @@ All tables use RLS. Public browser reads use the anon key only for non-PII sched
 
 ### Abuse protection
 
-Run `docs/supabase-p1-hardening.sql` to create the `rate_limit_events` table used by public booking and inquiry rate limits. The app stores hashed IP identifiers only, and rate limiting fails open if the table is unavailable.
+Run `docs/supabase-p1-hardening.sql` to create the `rate_limit_events` table used by public booking and inquiry rate limits. Run `docs/supabase-priority-migration.sql` if `admin_tasks.priority` is missing. The app stores hashed IP identifiers only, and rate limiting fails open if the table is unavailable.
 
 ---
 
@@ -502,7 +504,7 @@ Requires a `.env.local` file with all variables listed in Section 2.
   - [ ] `tony.montez@gmail.com`
   - [ ] `ericaxholloway@gmail.com`
   - [ ] `leahmontez@hotmail.com`
-- [ ] **Add time slots** — go to Admin → Availability → Time slots → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists
+- [ ] **Add time slots** — go to Admin → Availability → Settings: lesson times & blocked dates list → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists
 - [ ] **Confirm venue routing copy** — verify public courts book through the site and platform-required venues match `docs/VENUE_RULES.md`
 - [ ] **Submit one live booking test** — confirm student/admin emails include phone and court preference, the calendar invite says Mario confirms the exact court, payment links work, and the test booking can be cancelled
 - [ ] **Publish Google OAuth app to production** before leaving Google Calendar blocking enabled long-term (see Google Calendar blocking)
@@ -513,10 +515,10 @@ Requires a `.env.local` file with all variables listed in Section 2.
 ## 10. Common Operations
 
 ### Add a time slot
-Admin → Availability tab → Time slots section → type the time (e.g. `2:00 PM`) → **Add slot**
+Admin → Availability tab → Settings: lesson times & blocked dates list → type the time (e.g. `2:00 PM`) → **Add slot**
 
 ### Block a date
-Admin → Availability tab → One-off blocks section → pick a date → pick a time or check "Whole day" → **Block**
+Admin → Availability tab → click the calendar day or use **Block a specific date** → pick a date → pick a time or check "Whole day" → **Block time**
 
 ### Cancel a booking
 Admin → Bookings tab → find the booking → **Cancel** — this automatically sends a cancellation email to the student

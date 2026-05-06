@@ -30,7 +30,7 @@ The business operates at the intersection of two booking channels: times that st
 | Unit Tests | Vitest 4 | jsdom environment, no parallelism |
 | E2E Tests | Playwright | Smoke suite covers public + admin flows |
 | Fonts | Google Fonts (Inter + Space Grotesk) | Loaded via `next/font` |
-| Deployment | Vercel (implied by Next.js config) | `NEXT_PUBLIC_SITE_URL` configures the base |
+| Deployment | Vercel | Production serves `https://demariomontezpb.com`; `NEXT_PUBLIC_SITE_URL` configures the base |
 
 **CI pipeline (`npm run ci`):** `typecheck → lint → test → build`
 
@@ -140,7 +140,7 @@ form → (outdoor) → picker → loading → confirmed
 1. **Form** — Student fills in name, email, phone (required), lesson type, and court setup preference (outdoor / indoor / help me choose).
 2. **Indoor Routing** — If indoor or unknown is selected, the modal shows venue route cards. Each card links to the correct external platform. The booking flow stops here for platform-required venues.
 3. **Terms** — Student reads and accepts the waiver and cancellation terms before seeing the time picker.
-4. **Picker** — A date strip showing the next 30 days with slots loaded from `GET /api/availability?date=YYYY-MM-DD`. Slots already booked, blocked by the admin, in Google Calendar, or outside configured time-slot windows are hidden.
+4. **Picker** — A date strip showing the next 30 days with active times loaded from `GET /api/time-slots` and slot conflicts loaded from `GET /api/availability?date=YYYY-MM-DD&lesson_type=...`. Slots already booked, blocked by the admin, in Google Calendar, or outside configured time-slot windows are hidden.
 5. **Loading** — `POST /api/bookings` is called.
 6. **Confirmed** — Displays booking ID, lesson details, court confirmation message, and payment instructions.
 
@@ -156,22 +156,30 @@ All routes live under `src/app/api/`. Each folder contains a `route.ts` file (Ne
 |---|---|---|
 | `/api/bookings` | POST | Create a new booking. Validates input, checks slot availability, enforces indoor routing, stores to Supabase, sends confirmation emails. |
 | `/api/availability` | GET | Returns available and unavailable time slots for a date. Merges bookings, blocked slots, recurring blocks, time-slot config, and Google Calendar free/busy. |
+| `/api/time-slots` | GET | Returns active public time slots for the booking modal. |
 | `/api/inquiries` | POST | Submits a contact form message. Validates honeypot, rate-limits by IP, stores to Supabase, sends notification to DeMario. |
-| `/api/feedback` | POST | Collects post-lesson feedback. |
 
 ### Admin-Only Routes
 
-All admin routes require a valid Supabase session at AAL2 (MFA-verified). The middleware checks both session validity and that the email is in the `ADMIN_EMAIL` allowlist.
+All admin routes require a valid Supabase session at AAL2 (MFA-verified). Protected admin pages enforce this in `src/app/admin/(protected)/layout.tsx`; admin API routes enforce it through `requireAdmin()` in `src/lib/supabase/server.ts`.
 
 | Route | Methods | Purpose |
 |---|---|---|
-| `/api/bookings` | GET, PATCH | List all bookings; update status (confirm, cancel, mark paid). |
-| `/api/blocked-slots` | GET, POST, DELETE | Manage one-off blocked dates and times. |
-| `/api/recurring-blocks` | GET, POST, DELETE | Manage weekly recurring unavailability (e.g., every Monday). |
-| `/api/time-slots` | GET, POST, PATCH, DELETE | Manage the master list of bookable lesson times. |
+| `/api/bookings` | GET | List all bookings. |
+| `/api/bookings/[id]` | PATCH | Update booking status or paid state; cancellation sends the student cancellation email. |
+| `/api/inquiries/[id]` | PATCH | Mark inquiries read or unread. |
+| `/api/blocked-slots` | GET, POST | List or create one-off blocked dates and times. |
+| `/api/blocked-slots/[id]` | DELETE | Remove a one-off blocked slot. |
+| `/api/recurring-blocks` | GET, POST | List or create weekly recurring unavailability rules. |
+| `/api/recurring-blocks/[id]` | DELETE | Remove a weekly recurring unavailability rule. |
+| `/api/time-slots` | GET, POST | With `all=true`, list all time slots; POST creates a new time slot. |
+| `/api/time-slots/[id]` | PATCH, DELETE | Show/hide or delete a time slot. |
+| `/api/availability/month` | GET | Return monthly admin calendar day status for the Availability control center. |
 | `/api/calendar-sync` | GET | Returns Google Calendar sync status and recent free/busy check for admin diagnostics. |
-| `/api/tasks` | GET, POST, PATCH, DELETE | Admin task list (short-term action items). |
-| `/api/roadmap` | GET, POST, PATCH, DELETE | Business roadmap items (longer-horizon milestones). |
+| `/api/tasks` | GET, POST | List and create short-term action items. |
+| `/api/tasks/[id]` | PATCH, DELETE | Complete, update, recur, or delete tasks. |
+| `/api/roadmap/[key]` | PATCH | Save business roadmap checklist state. |
+| `/api/feedback` | POST | Admin issue/question/feature feedback; creates a high-priority task and emails Toni. |
 | `/api/monitoring-test` | POST | Triggers a test Sentry error for production monitoring verification. |
 
 ---
@@ -200,10 +208,10 @@ The booking window is enforced on both the front-end date strip and the API.
 
 ## 9. Admin Dashboard
 
-The admin area lives at `/admin` and is protected at two levels:
+The admin area lives at `/admin` and is protected at three levels:
 
-1. **Supabase session** — The Supabase middleware (`src/lib/supabase/server.ts`) verifies the cookie session on every admin request.
-2. **AAL2 (MFA)** — Admin API routes additionally check that the session assurance level is `aal2`, meaning the user has completed a second-factor challenge. The MFA setup flow is at `/admin/mfa-setup`.
+1. **Supabase session** — Protected admin pages call the Supabase server client from `src/lib/supabase/server.ts` to verify the cookie session.
+2. **AAL2 (MFA)** — Protected admin pages and admin API routes check that the session assurance level is `aal2`, meaning the user has completed a second-factor challenge. The MFA setup flow is at `/admin/mfa-setup`.
 3. **Email allowlist** — The `ADMIN_EMAIL` environment variable holds the comma-separated list of permitted admin email addresses.
 
 ### Dashboard Sections
@@ -323,6 +331,8 @@ The production Supabase project uses the following core tables. Schema changes a
 | `recurring_blocks` | Weekly recurring unavailability. Fields: id, day_of_week (0–6), time (nullable), created_at |
 | `time_slots` | The bookable lesson times. Fields: id, display_label, sort_key, active |
 | `rate_limit_events` | IP-hash + route + timestamp rows used for rate limiting. Rows older than the window are ignored. |
+| `admin_tasks` | Admin to-do list items. Fields: id, title, notes, category, due_date, recurrence, priority, completed_at, created_at, updated_at |
+| `roadmap_checks` | Persisted checklist state for the Business roadmap. Fields: key, checked, updated_at |
 
 **Key constraints (applied by `docs/supabase-p1-hardening.sql`):**
 - `bookings_unique_active_slot` — unique partial index on `(lesson_date, lesson_time)` where `status != 'cancelled'`, preventing double-booking at the database level.
@@ -330,6 +340,7 @@ The production Supabase project uses the following core tables. Schema changes a
 **Migrations to run in order:**
 1. `docs/supabase-p0-migration.sql` — adds waiver columns, tightens public PII policy
 2. `docs/supabase-p1-hardening.sql` — adds the unique slot constraint and rate_limit_events table
+3. `docs/supabase-priority-migration.sql` — adds task priority support used by admin feedback and high-priority tasks
 
 ---
 
@@ -382,7 +393,10 @@ All required variables must be set in Vercel (or `.env.local` for local developm
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Optional | Google Cloud OAuth client secret |
 | `GOOGLE_OAUTH_REFRESH_TOKEN` | Optional | Long-lived OAuth refresh token |
 | `NEXT_PUBLIC_LESSON_LOCATION` | Optional | Fallback location text shown in emails when court not yet confirmed |
-| `SENTRY_DSN` | Optional | Sentry DSN for error reporting |
+| `NEXT_PUBLIC_SENTRY_DSN` | Optional | Browser Sentry DSN for client-side error reporting |
+| `SENTRY_DSN` | Optional | Server/edge Sentry DSN for error reporting |
+| `SENTRY_ORG` | Optional | Sentry organization slug for source-map upload |
+| `SENTRY_PROJECT` | Optional | Sentry project slug for source-map upload |
 | `SENTRY_AUTH_TOKEN` | Optional | Sentry auth token for source map uploads |
 
 ---
@@ -391,13 +405,13 @@ All required variables must be set in Vercel (or `.env.local` for local developm
 
 Before going live with a new environment, see `docs/RELEASE_CHECKLIST.md` for the full sequence. Key steps:
 
-1. Run both Supabase migration SQL files in the Supabase SQL Editor.
+1. Run the Supabase migration SQL files in the Supabase SQL Editor.
 2. Verify `bookings_unique_active_slot` constraint exists.
 3. Verify RLS blocks anon reads/writes on `bookings`, `inquiries`, `rate_limit_events`.
 4. Set all required environment variables in Vercel.
 5. Complete Google Calendar OAuth flow and confirm Admin → Availability shows "connected."
 6. Configure time slots in Admin → Availability.
-7. Verify Sentry receives a test event from `/api/monitoring-test`.
+7. Verify Sentry receives a test event from `/api/monitoring-test`, or explicitly accept monitoring as a post-launch follow-up.
 8. Run `npm run ci` locally (typecheck, lint, unit tests, build all pass).
 9. Run `npm run test:e2e` to confirm Playwright smoke suite passes.
 
@@ -419,3 +433,4 @@ Before going live with a new environment, see `docs/RELEASE_CHECKLIST.md` for th
 | `SETUP.md` | Tonio | Local development setup instructions |
 | `supabase-p0-migration.sql` | Tonio | Run once in production Supabase SQL editor |
 | `supabase-p1-hardening.sql` | Tonio | Run once in production Supabase SQL editor |
+| `supabase-priority-migration.sql` | Tonio | Run once in production Supabase SQL editor for task priority support |

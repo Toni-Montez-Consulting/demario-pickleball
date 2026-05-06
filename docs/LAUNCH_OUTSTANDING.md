@@ -1,6 +1,6 @@
 # Public Launch Outstanding Notes
 
-Last updated: 2026-04-28
+Last updated: 2026-05-06
 
 This file captures the remaining business and operational items that code cannot fully prove on its own. The app can support public launch once the code gates and these manual gates are complete.
 
@@ -42,9 +42,11 @@ Owner: Mario.
 ### Supabase launch hardening
 
 - Apply P0/P1 SQL in Supabase.
+- Apply `docs/supabase-priority-migration.sql` if `admin_tasks.priority` is not already present.
 - Confirm waiver columns exist.
 - Confirm the active-booking unique index exists.
 - Confirm rate-limit table/RLS exists.
+- Confirm task priority support exists for admin feedback and high-priority tasks.
 - Confirm anonymous users cannot read or write private tables.
 
 Owner: Tonio.

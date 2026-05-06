@@ -182,6 +182,17 @@ describe("AdminDashboard availability", () => {
         });
       }
 
+      if (url.startsWith("/api/availability/month?")) {
+        return jsonResponse({
+          year: 2026,
+          month: 5,
+          days: {
+            "2026-05-05": "blocked",
+            "2026-05-07": "available",
+          },
+        });
+      }
+
       if (url === "/api/blocked-slots" && init?.method === "POST") {
         expect(JSON.parse(String(init.body))).toMatchObject({
           date: "2026-05-07",
@@ -208,16 +219,15 @@ describe("AdminDashboard availability", () => {
     await user.click(screen.getByRole("button", { name: /availability/i }));
 
     await expect(screen.findByText(/Google Calendar Connected/i)).resolves.toBeVisible();
-    expect(screen.getByText(/Lesson times students can book/i)).toBeVisible();
-    expect(screen.getByText(/Block a date or time/i)).toBeVisible();
-    expect(screen.getByText(/Weekly recurring blocks/i)).toBeVisible();
-    expect(screen.getByText(/Currently blocked upcoming times/i)).toBeVisible();
-    expect(screen.getByText(/Tue, May 5/i)).toBeVisible();
+    expect(screen.getByRole("heading", { name: /Monthly calendar/i })).toBeVisible();
+    expect(screen.getByRole("heading", { name: /Block a specific date/i })).toBeVisible();
+    expect(screen.getByRole("heading", { name: /Weekly schedule/i })).toBeVisible();
     expect(screen.getAllByText(/Whole day/i).length).toBeGreaterThan(0);
 
     await user.type(screen.getByLabelText(/date to block/i), "2026-05-07");
     await user.selectOptions(screen.getByLabelText(/time to block/i), "10:00 AM");
     await user.click(screen.getByRole("button", { name: /^block time$/i }));
+    await user.click(screen.getByText(/Settings: lesson times & blocked dates list/i));
 
     await waitFor(() => {
       expect(screen.getByText(/Thu, May 7/i)).toBeVisible();

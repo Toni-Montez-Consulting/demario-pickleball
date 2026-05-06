@@ -36,12 +36,14 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 
 - Run `docs/supabase-p0-migration.sql`.
 - Run `docs/supabase-p1-hardening.sql`.
+- Run `docs/supabase-priority-migration.sql`.
 - Verify `bookings.waiver_signed_at` and `bookings.waiver_version` exist.
 - Verify `bookings` and `inquiries` no longer have the exact `public insert` policy.
 - Verify anon users cannot read `bookings` or `inquiries`.
 - Verify anon users cannot read or write `rate_limit_events`.
 - Verify `rate_limit_events` has RLS enabled and no public policies.
 - Verify the `bookings_unique_active_slot` partial unique index exists.
+- Verify `admin_tasks.priority` exists and accepts `high` / `normal`.
 - Verify active `time_slots` include the current lesson schedule.
 - Verify venue/location copy matches `docs/VENUE_RULES.md` before accepting live bookings.
 - Verify public courts are the only direct site-booking court path unless a future venue rule explicitly allows direct scheduling.

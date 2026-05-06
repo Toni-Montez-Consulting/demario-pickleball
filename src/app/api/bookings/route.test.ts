@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextRequest } from "next/server";
 
 type Row = Record<string, string | number | boolean | null>;
@@ -133,11 +133,17 @@ describe("POST /api/bookings", () => {
   const inserted: Row[] = [];
 
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-01T12:00:00-05:00"));
     inserted.length = 0;
     mocks.sendBookingCreatedEmails.mockReset();
     mocks.sendBookingCreatedEmails.mockResolvedValue(undefined);
     mocks.checkRateLimit.mockReset();
     mocks.checkRateLimit.mockResolvedValue({ limited: false });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("creates a booking with waiver metadata after validating availability", async () => {

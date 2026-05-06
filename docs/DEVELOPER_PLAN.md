@@ -47,7 +47,9 @@ should stay in `/admin/roadmap`.
 
 - Run `docs/supabase-p0-migration.sql` if it has not already been applied in production.
 - Run `docs/supabase-p1-hardening.sql` in the Supabase SQL Editor.
+- Run `docs/supabase-priority-migration.sql` in the Supabase SQL Editor if task priority support is not already present.
 - Verify `bookings_unique_active_slot` exists in production Supabase.
+- Verify `admin_tasks.priority` exists and accepts `high` / `normal`.
 - Verify anon users cannot read or write `bookings`, `inquiries`, or `rate_limit_events`.
 - Run the live manual checks in `docs/RELEASE_CHECKLIST.md`.
 - Generate a fresh production Google refresh token with DeMario and confirm Admin -> Availability reports Google Calendar connected.
