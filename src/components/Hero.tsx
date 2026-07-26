@@ -63,9 +63,9 @@ export default function Hero({ onOpenBooking }: HeroProps) {
             </div>
             <div className="hero-stat">
               <div className="num">
-                5.0<span className="unit">★</span>
+                600<span className="unit">+</span>
               </div>
-              <div className="label">79 reviews</div>
+              <div className="label">Students coached</div>
             </div>
             <div className="hero-stat">
               <div className="num">Top 3%</div>
