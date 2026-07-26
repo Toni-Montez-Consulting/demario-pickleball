@@ -2941,3 +2941,108 @@ a.pay-card:focus-visible {
 .pay-page-wrap .pay-qr {
   width: min(300px, 100%);
 }
+
+/* ── Review capture pages ─────────────────────────────────────────────── */
+.review-page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 6rem 1.25rem 4rem;
+}
+.review-page h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  margin-bottom: 0.5rem;
+}
+.review-page > p {
+  color: var(--fg-dim);
+  margin-bottom: 2rem;
+}
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.review-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: var(--fg-dim);
+  font-size: 0.9rem;
+}
+.review-form input[type="text"],
+.review-form input:not([type]),
+.review-form textarea {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--fg);
+  padding: 0.75rem 0.9rem;
+  font: inherit;
+  width: 100%;
+}
+.review-form textarea {
+  resize: vertical;
+}
+.review-lesson {
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+.review-rating {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.review-rating legend {
+  color: var(--fg-dim);
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+.star {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--line);
+  min-width: 44px;
+  min-height: 44px;
+  transition: color 120ms ease;
+}
+.star.on {
+  color: var(--accent);
+}
+.star:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.review-consent {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.6rem;
+  color: var(--fg);
+}
+.review-consent input {
+  margin-top: 0.2rem;
+}
+.review-error {
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+.review-done {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 2rem;
+}
+.review-done h2 {
+  margin-bottom: 0.5rem;
+}
+.review-done p {
+  color: var(--fg-dim);
+  margin-bottom: 1.25rem;
+}
