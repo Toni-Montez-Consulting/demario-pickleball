@@ -6,6 +6,7 @@ import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
 import Testimonials from "@/components/Testimonials";
 import ImproveGrid from "@/components/ImproveGrid";
+import FilmRoom from "@/components/FilmRoom";
 import Philosophy from "@/components/Philosophy";
 import Lessons from "@/components/Lessons";
 import WhereWeTrain from "@/components/WhereWeTrain";
@@ -35,6 +36,7 @@ export default function Home() {
       <TrustBar />
       <Testimonials onOpenBooking={() => openBooking()} />
       <ImproveGrid />
+      <FilmRoom />
       <Philosophy />
       <Lessons onOpenBooking={openBooking} />
       <WhereWeTrain />
