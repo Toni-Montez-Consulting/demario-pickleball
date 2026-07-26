@@ -3135,3 +3135,40 @@ a.pay-card:focus-visible {
   color: var(--danger);
   border-color: var(--danger);
 }
+
+/* ── Film room ────────────────────────────────────────────────────────── */
+.clip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+.clip {
+  margin: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.clip video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  background: var(--bg-3);
+}
+.clip figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem;
+}
+.clip-concept {
+  color: var(--fg);
+  font-weight: 600;
+}
+.clip-watch {
+  color: var(--fg-dim);
+  font-size: 0.9rem;
+}
