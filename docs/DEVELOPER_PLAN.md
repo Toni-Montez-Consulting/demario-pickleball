@@ -43,11 +43,38 @@ should stay in `/admin/roadmap`.
 - Deferred availability/Google Calendar checks until students continue to site-bookable times.
 - Added first-week admin booking filters plus one-tap text/call actions from booking rows.
 
+### Student Spine and Review Loop (2026-07-25)
+
+Shipped in code and CI. Not yet live: the migration and backfill are manual gates below.
+
+- Added `students` as the person object bookings and reviews hang off, canonical by normalized
+  phone then email. A phone match with a conflicting name or email raises `needs_review`
+  instead of silently merging or duplicating.
+- Linked booking creation to student records and added a `no_show` booking status.
+- Added a one-time backfill script with a reconciliation report that exits non-zero if the
+  counts do not balance.
+- Added the review loop: tokenized post-lesson links, a public `/review` link for past clients,
+  an admin moderation queue, and homepage rendering of published reviews only.
+- Moderation is publish / hide / delete plus Mario's own tag and takeaway labels. There is no
+  code path that edits a student's words.
+- Retired the seven hardcoded testimonials in favour of database rows seeded as `legacy`.
+- Added a daily Vercel cron that emails review requests 24h after each confirmed lesson,
+  idempotent via `bookings.review_request_sent_at`.
+- Added the Film Room section for self-hosted coaching clips. Hidden until clips are added.
+- Fixed a pre-existing class of bug found while building this: form controls driven purely by
+  React state dropped any tap landing before hydration. The review rating is a native radio
+  group with a CSS-only fill.
+
 ## Remaining Manual Launch Gates
 
 - Run `docs/supabase-p0-migration.sql` if it has not already been applied in production.
 - Run `docs/supabase-p1-hardening.sql` in the Supabase SQL Editor.
 - Run `docs/supabase-priority-migration.sql` in the Supabase SQL Editor if task priority support is not already present.
+- Run the pre-flight status query in `docs/supabase-students-reviews-migration.sql`, then run the migration.
+- Decide whether the four `REVIEW_WALL` legacy testimonials are permissioned before running the seed. Cut that insert if not.
+- Run `node scripts/backfill-students.mjs` once with production credentials and confirm the reconciliation balances.
+- Set `CRON_SECRET` in Vercel and redeploy, then confirm the cron appears in the project's Cron Jobs tab.
+- Submit one real review end to end and publish it from Admin -> Reviews.
 - Verify `bookings_unique_active_slot` exists in production Supabase.
 - Verify `admin_tasks.priority` exists and accepts `high` / `normal`.
 - Verify anon users cannot read or write `bookings`, `inquiries`, or `rate_limit_events`.
@@ -61,6 +88,9 @@ should stay in `/admin/roadmap`.
 
 - Add privacy-conscious analytics after consent/cookie policy is final.
 - Add 24-hour reminder emails.
+- Round 2 of the yield/retention work: drilling sessions and play-with-the-pro as bookable
+  formats, plus packages as a manual lesson-credits ledger on the student record. Blocked on
+  DeMario's pricing, duration, and player counts.
 - Add secure student cancellation/reschedule links using private email tokens, policy-aware UI/API checks, student/admin notifications, ICS cancel/update files, and manual payment/refund handling until Stripe exists.
 - Add Stripe Checkout only after the pickleball business entity and banking setup exist.
 - Add automated DUPR rating sync only after Mario receives official read-only API or partner access from DUPR.
