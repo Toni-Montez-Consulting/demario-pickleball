@@ -17,7 +17,9 @@ export async function PATCH(
 
   const update: { status?: string; paid_at?: string | null } = {};
   if (status !== undefined) {
-    if (!["confirmed", "cancelled"].includes(status)) {
+    // no_show records a booking the student did not attend. It sends no email
+    // and excludes the booking from the review request cron.
+    if (!["confirmed", "cancelled", "no_show"].includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
     update.status = status;
