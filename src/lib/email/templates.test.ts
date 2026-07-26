@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { adminNotificationHtml, studentRequestedHtml } from "./templates";
+import { adminNotificationHtml, studentRequestedHtml, reviewRequestHtml } from "./templates";
 
 const booking = {
   id: "12345678-1234-1234-1234-123456789abc",
@@ -29,5 +29,39 @@ describe("email templates", () => {
     expect(html).toContain("(469) 371-9220");
     expect(html).toContain("Outdoor public court");
     expect(html).toContain("Text the student to confirm the exact court");
+  });
+});
+
+describe("reviewRequestHtml", () => {
+  it("includes the review link and the lesson details", () => {
+    const html = reviewRequestHtml({
+      name: "Rachel Kim",
+      lessonName: "Foundations",
+      lessonDate: "2026-07-23",
+      reviewUrl: "https://demariomontezpb.com/review/abc123",
+    });
+    expect(html).toContain("https://demariomontezpb.com/review/abc123");
+    expect(html).toContain("Foundations");
+    expect(html).toContain("Rachel");
+  });
+
+  it("escapes a name containing markup", () => {
+    const html = reviewRequestHtml({
+      name: "<script>alert(1)</script>",
+      lessonName: "Foundations",
+      lessonDate: "2026-07-23",
+      reviewUrl: "https://example.com/review/x",
+    });
+    expect(html).not.toContain("<script>");
+  });
+
+  it("falls back gracefully when the name is blank", () => {
+    const html = reviewRequestHtml({
+      name: "   ",
+      lessonName: "Group Clinic",
+      lessonDate: "2026-07-23",
+      reviewUrl: "https://example.com/review/x",
+    });
+    expect(html).toContain("How was it, there?");
   });
 });
