@@ -1,10 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { REVIEWS } from "@/lib/data";
 
 interface TestimonialsProps {
   onOpenBooking: () => void;
+}
+
+interface PublishedReview {
+  id: string;
+  rating: number;
+  body: string | null;
+  display_name: string;
+  lesson_context: string | null;
+  tag: string | null;
+  takeaway: string | null;
+  verified_booking: boolean;
 }
 
 const PROOF_POINTS = [
@@ -22,32 +32,9 @@ const PROOF_POINTS = [
   },
 ];
 
-const REVIEW_WALL = [
-  {
-    quote: "Actually explains why, not just what. Game-changer.",
-    name: "David L.",
-    focus: "Shot selection",
-  },
-  {
-    quote: "Patient, sharp, and fun. My wife and I both take lessons now.",
-    name: "Carlos M.",
-    focus: "Doubles lessons",
-  },
-  {
-    quote: "First coach that made strategy feel doable at a 3.0 level.",
-    name: "Priya S.",
-    focus: "Beginner strategy",
-  },
-  {
-    quote: "Showed up for my tournament to scout opponents. Unreal.",
-    name: "Tom B.",
-    focus: "Tournament support",
-  },
-];
-
-const Stars = () => (
+const Stars = ({ count = 5 }: { count?: number }) => (
   <div className="stars">
-    {[...Array(5)].map((_, i) => (
+    {[...Array(count)].map((_, i) => (
       <svg key={i} viewBox="0 0 24 24">
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
       </svg>
@@ -55,39 +42,56 @@ const Stars = () => (
   </div>
 );
 
-function renderQuote(quote: string, accentWord: string | null) {
-  if (!accentWord) return `"${quote}"`;
-  const parts = quote.split(accentWord);
-  return (
-    <>
-      &ldquo;{parts[0]}
-      <span className="accent">{accentWord}</span>
-      {parts[1]}&rdquo;
-    </>
-  );
-}
-
 export default function Testimonials({ onOpenBooking }: TestimonialsProps) {
+  const [reviews, setReviews] = useState<PublishedReview[]>([]);
   const [idx, setIdx] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pausedRef = useRef(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/reviews/published")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: PublishedReview[]) => {
+        if (!cancelled) setReviews(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setReviews([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // A takeaway is Mario's signal that a review belongs in the featured slot.
+  const featured = reviews.filter((r) => r.takeaway);
+  const wall = reviews.filter((r) => !r.takeaway);
+
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
+    if (featured.length < 2) return;
     timerRef.current = setInterval(() => {
       if (!pausedRef.current) {
-        setIdx((prev) => (prev + 1) % REVIEWS.length);
+        setIdx((prev) => (prev + 1) % featured.length);
       }
     }, 6000);
-  }, []);
+  }, [featured.length]);
 
   function goReview(i: number) {
     setIdx(i);
     startTimer();
   }
 
-  function pause() { pausedRef.current = true; }
-  function resume() { pausedRef.current = false; }
+  function pause() {
+    pausedRef.current = true;
+  }
+  function resume() {
+    pausedRef.current = false;
+  }
+
+  useEffect(() => {
+    setIdx(0);
+  }, [featured.length]);
 
   useEffect(() => {
     startTimer();
@@ -96,7 +100,7 @@ export default function Testimonials({ onOpenBooking }: TestimonialsProps) {
     };
   }, [startTimer]);
 
-  const r = REVIEWS[idx];
+  const r = featured[idx] ?? null;
 
   return (
     <section className="block testimonials-section" id="testimonials">
@@ -118,33 +122,39 @@ export default function Testimonials({ onOpenBooking }: TestimonialsProps) {
         onFocus={pause}
         onBlur={resume}
       >
-        <div className="featured-review">
-          <div className="review-tag">{r.tag}</div>
-          <Stars />
-          <p className="featured-quote">{renderQuote(r.quote, r.accentWord)}</p>
-          <div className="review-author">
-            <div className="avatar">{r.initial}</div>
-            <div>
-              <div className="author-name">{r.name}</div>
-              <div className="author-meta">{r.meta}</div>
+        {r && (
+          <div className="featured-review">
+            {r.tag && <div className="review-tag">{r.tag}</div>}
+            <Stars count={r.rating} />
+            <p className="featured-quote">&ldquo;{r.body}&rdquo;</p>
+            <div className="review-author">
+              <div className="avatar">{r.display_name.trim().charAt(0).toUpperCase()}</div>
+              <div>
+                <div className="author-name">{r.display_name}</div>
+                {r.lesson_context && <div className="author-meta">{r.lesson_context}</div>}
+              </div>
             </div>
+            {r.takeaway && (
+              <div className="review-takeaway">
+                <span>Lesson impact</span>
+                <strong>{r.takeaway}</strong>
+              </div>
+            )}
+            {featured.length > 1 && (
+              <div className="review-pager">
+                {featured.map((review, i) => (
+                  <button
+                    key={review.id}
+                    type="button"
+                    className={i === idx ? "active" : ""}
+                    onClick={() => goReview(i)}
+                    aria-label={`Review ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-          <div className="review-takeaway">
-            <span>Lesson impact</span>
-            <strong>{r.takeaway}</strong>
-          </div>
-          <div className="review-pager">
-            {REVIEWS.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                className={i === idx ? "active" : ""}
-                onClick={() => goReview(i)}
-                aria-label={`Review ${i + 1}`}
-              />
-            ))}
-          </div>
-        </div>
+        )}
         <div className="proof-panel">
           <div className="proof-panel-head">
             <span>What students remember</span>
@@ -168,18 +178,20 @@ export default function Testimonials({ onOpenBooking }: TestimonialsProps) {
         </div>
       </div>
       <div className="reveal in reveal-d150">
-        <div className="small-reviews">
-          {REVIEW_WALL.map((review) => (
-            <div className="small-review" key={`${review.name}-${review.focus}`}>
-              <div className="mini-review-head">
-                <Stars />
-                <span>{review.focus}</span>
+        {wall.length > 0 && (
+          <div className="small-reviews">
+            {wall.map((review) => (
+              <div className="small-review" key={review.id}>
+                <div className="mini-review-head">
+                  <Stars count={review.rating} />
+                  {review.lesson_context && <span>{review.lesson_context}</span>}
+                </div>
+                <div>&ldquo;{review.body}&rdquo;</div>
+                <div className="name">— {review.display_name}</div>
               </div>
-              <div>&ldquo;{review.quote}&rdquo;</div>
-              <div className="name">— {review.name}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
         <div className="testimonial-footer">
           <p>Student stories are shared with permission as players hit new goals.</p>
           <button type="button" className="btn btn-primary" onClick={onOpenBooking}>
