@@ -156,6 +156,8 @@ create table reviews (
   source            text not null default 'site',
   status            text not null default 'pending'
                       check (status in ('pending','published','hidden')),
+  tag               text,
+  takeaway          text,
   token_hash        text unique,
   token_used_at     timestamptz,
   submitted_ip_hash text,
@@ -176,12 +178,23 @@ SHA-256 + salt utility already used for IP hashing in `src/lib/rate-limit.ts`.
 `source` values: `site` | `legacy` | `google` | `teachmeto`. Only `site` and `legacy` are
 written this round.
 
+`tag` and `takeaway` are Mario's editorial labels, set at publish time, not the student's
+words. The featured carousel on the homepage renders both, so they must exist for that UI to
+survive the switch to database-driven reviews. A non-null `takeaway` is what promotes a review
+into the carousel; everything else renders in the review wall. Neither field weakens the
+no-editing rule — there remains no path to alter `body` or `rating`.
+
 ### 4.4 Legacy testimonial seed
 
-The three existing testimonials in `src/lib/data.ts` are confirmed real and permissioned.
-They are seeded as rows with `source: 'legacy'`, `status: 'published'`,
-`verified_booking: false`, `consent_publish: true`, carrying their existing quote,
-display name, and lesson context.
+**Corrected 2026-07-25 during plan writing: there are seven hardcoded testimonials, not
+three.** `src/lib/data.ts` holds three in `REVIEWS`, and `src/components/Testimonials.tsx`
+holds four more in a separate `REVIEW_WALL` constant. All seven are seeded as rows with
+`source: 'legacy'`, `status: 'published'`, `verified_booking: false`,
+`consent_publish: true`, carrying their existing quote, display name, and lesson context.
+
+DeMario confirmed the **three** in `REVIEWS` as real and permissioned. The four in
+`REVIEW_WALL` have not been confirmed. If he cannot vouch for them, they come out of the seed
+before the migration runs.
 
 The `REVIEWS` constant and the `Review` interface are then **deleted** from
 `src/lib/data.ts`. One review system, one source of truth. The wall starts at three rather
