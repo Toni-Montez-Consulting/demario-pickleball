@@ -2992,8 +2992,10 @@ a.pay-card:focus-visible {
   padding: 0;
   margin: 0;
   display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: wrap-reverse;
   gap: 0.35rem;
 }
 .review-rating legend {
@@ -3001,9 +3003,16 @@ a.pay-card:focus-visible {
   font-size: 0.9rem;
   margin-bottom: 0.4rem;
 }
-.star {
-  background: none;
-  border: 0;
+.star-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.star-option label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   font-size: 2rem;
   line-height: 1;
@@ -3012,10 +3021,13 @@ a.pay-card:focus-visible {
   min-height: 44px;
   transition: color 120ms ease;
 }
-.star.on {
+/* Stars render high-to-low in the DOM, so every sibling AFTER the checked one
+   is a lower rating and fills too. Zero JavaScript. */
+.star-option:has(input:checked) label,
+.star-option:has(input:checked) ~ .star-option label {
   color: var(--accent);
 }
-.star:focus-visible {
+.star-option:has(input:focus-visible) label {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 6px;

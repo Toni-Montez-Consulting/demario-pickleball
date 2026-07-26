@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ReviewFormProps {
   /** Present on the emailed link. Absent on the public /review page. */
@@ -10,19 +10,50 @@ interface ReviewFormProps {
 }
 
 export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFormProps) {
-  const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
-  const [displayName, setDisplayName] = useState(defaultName ?? "");
-  const [contact, setContact] = useState("");
-  const [consent, setConsent] = useState(false);
-  const [company, setCompany] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [error, setError] = useState("");
 
+  // Until the client has hydrated, submitting would trigger a plain form GET
+  // and silently reload the page. Say so with the button rather than let a tap
+  // vanish. The rating radios above work without JS either way.
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+
   const googleUrl = process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL;
 
-  async function submit(e: React.FormEvent) {
+  /**
+   * Values are read from the form itself, not from React state, so a tap that
+   * lands before hydration is never lost. Rating is a native radio group and
+   * the star fill is pure CSS for the same reason.
+   */
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = new FormData(e.currentTarget);
+
+    const rating = Number(form.get("rating") ?? 0);
+    const consent = form.get("consent") === "on";
+    const body = String(form.get("body") ?? "");
+    const displayName = String(form.get("displayName") ?? "").trim();
+    const contact = String(form.get("contact") ?? "");
+    const company = String(form.get("company") ?? "");
+
+    if (rating === 0) {
+      setError("Pick a star rating first.");
+      setState("error");
+      return;
+    }
+    if (!displayName) {
+      setError("Add the name you want shown with your review.");
+      setState("error");
+      return;
+    }
+    if (!consent) {
+      setError("Check the box so DeMario knows he can publish this.");
+      setState("error");
+      return;
+    }
+
     setState("sending");
     setError("");
 
@@ -32,7 +63,7 @@ export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFo
       body: JSON.stringify({
         token,
         rating,
-        body: text,
+        body,
         displayName,
         contact: token ? undefined : contact,
         consent,
@@ -46,6 +77,7 @@ export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFo
       setState("error");
       return;
     }
+    setText(body);
     setState("done");
   }
 
@@ -77,77 +109,65 @@ export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFo
     <form className="review-form" onSubmit={submit}>
       {lessonLabel && <p className="review-lesson">Reviewing: {lessonLabel}</p>}
 
+      {/* Rendered high-to-low so the CSS sibling selector can fill every star
+          below the checked one. Visually reversed with row-reverse. */}
       <fieldset className="review-rating">
         <legend>How was it?</legend>
-        {[1, 2, 3, 4, 5].map((n) => (
-          <button
-            key={n}
-            type="button"
-            aria-label={`${n} star${n > 1 ? "s" : ""}`}
-            aria-pressed={rating === n}
-            className={rating >= n ? "star on" : "star"}
-            onClick={() => setRating(n)}
-          >
-            ★
-          </button>
+        {[5, 4, 3, 2, 1].map((n) => (
+          <span className="star-option" key={n}>
+            <input
+              type="radio"
+              id={`rating-${n}`}
+              name="rating"
+              value={n}
+              aria-label={`${n} star${n > 1 ? "s" : ""}`}
+            />
+            <label htmlFor={`rating-${n}`} aria-hidden="true">
+              ★
+            </label>
+          </span>
         ))}
       </fieldset>
 
       <label>
         Anything you want to add? (optional)
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          maxLength={2000}
-          rows={5}
-        />
+        <textarea name="body" defaultValue="" maxLength={2000} rows={5} />
       </label>
 
       <label>
         How your name should appear
-        <input
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          maxLength={80}
-          required
-        />
+        <input name="displayName" defaultValue={defaultName ?? ""} maxLength={80} />
       </label>
 
       {!token && (
         <label>
           Your email or phone (so DeMario knows who you are)
-          <input value={contact} onChange={(e) => setContact(e.target.value)} maxLength={254} />
+          <input name="contact" defaultValue="" maxLength={254} />
         </label>
       )}
 
       <label className="review-consent">
-        <input
-          type="checkbox"
-          checked={consent}
-          onChange={(e) => setConsent(e.target.checked)}
-          required
-        />
+        <input type="checkbox" name="consent" />
         I am ok with DeMario publishing this on his website.
       </label>
 
       <input
         type="text"
         name="company"
-        value={company}
-        onChange={(e) => setCompany(e.target.value)}
+        defaultValue=""
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
         style={{ position: "absolute", left: "-9999px" }}
       />
 
-      {error && <p className="review-error">{error}</p>}
+      {error && (
+        <p className="review-error" role="alert">
+          {error}
+        </p>
+      )}
 
-      <button
-        className="btn btn-primary"
-        type="submit"
-        disabled={state === "sending" || rating === 0 || !consent}
-      >
+      <button className="btn btn-primary" type="submit" disabled={!ready || state === "sending"}>
         {state === "sending" ? "Sending…" : "Submit review"}
       </button>
     </form>
