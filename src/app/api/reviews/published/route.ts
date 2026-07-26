@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
-export const revalidate = 300;
+// Must be dynamic. With ISR this route was prerendered at build time and the
+// snapshot reused, so a review Mario published could fail to appear at all —
+// the database is the source of truth for content he edits. Caching is done at
+// the CDN with an explicit header below instead, which is bounded and legible.
+export const dynamic = "force-dynamic";
 
 /**
  * Published reviews for the homepage. Public and unauthenticated.
@@ -22,7 +26,15 @@ export async function GET() {
 
   if (error) {
     console.error("[reviews published GET]", error);
-    return NextResponse.json([]);
+    // Never break the homepage over a database hiccup. Do not cache the failure.
+    return NextResponse.json([], {
+      headers: { "Cache-Control": "no-store" },
+    });
   }
-  return NextResponse.json(data ?? []);
+
+  return NextResponse.json(data ?? [], {
+    headers: {
+      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+    },
+  });
 }
