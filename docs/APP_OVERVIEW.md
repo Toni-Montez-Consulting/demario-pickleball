@@ -48,6 +48,7 @@ demario-pickleball-1/
 │   │   ├── admin/            Admin shell + dashboard (auth-gated)
 │   │   ├── api/              Server-side API route handlers
 │   │   ├── auth/callback/    Supabase OAuth callback
+│   │   ├── review/           Public + tokenized review submission pages
 │   │   ├── pay/              Payment instructions page
 │   │   ├── privacy/          Privacy policy page
 │   │   └── terms/            Terms of service page
@@ -59,7 +60,7 @@ demario-pickleball-1/
 │   └── sentry.edge.config.ts
 ├── docs/                     All project documentation
 ├── e2e/                      Playwright end-to-end test specs
-├── scripts/                  PowerShell launch/config helpers
+├── scripts/                  PowerShell launch/config helpers + one-off backfills
 ├── public/img/               Static images served at /img/
 ├── next.config.ts
 ├── vitest.config.ts
@@ -80,7 +81,7 @@ The homepage (`src/app/page.tsx`) is a client component that assembles the full 
 | `Nav` | Fixed top navigation bar with a "Book a Lesson" CTA |
 | `Hero` | Above-the-fold splash with headline and primary CTA |
 | `TrustBar` | Credential badges (DUPR rating, USTA cert, SuperCoach rank) |
-| `Testimonials` | Student review cards sourced from `src/lib/data.ts` |
+| `Testimonials` | Student review cards fetched from `GET /api/reviews/published` |
 | `ImproveGrid` | Visual grid showing areas of coaching focus |
 | `Philosophy` | DeMario's coaching philosophy prose section |
 | `Lessons` | Three lesson types with pricing, structure, and individual CTAs |
@@ -89,6 +90,7 @@ The homepage (`src/app/page.tsx`) is a client component that assembles the full 
 | `FinalCta` | Bottom-of-page call-to-action |
 | `BookingPlatforms` | Cards for platform-required venues (PodPlay, Life Time, TeachMe.To) |
 | `ContactForm` | Public inquiry / contact form |
+| `FilmRoom` | Self-hosted coaching clips, each tied to the concept it teaches. Hidden while `CLIPS` is empty. |
 | `Footer` | Links to privacy, terms, social, and site info |
 | `StickyCta` | Mobile-optimized sticky booking button |
 | `BookingModal` | Full multi-step booking flow (see §6) |
@@ -158,6 +160,8 @@ All routes live under `src/app/api/`. Each folder contains a `route.ts` file (Ne
 | `/api/availability` | GET | Returns available and unavailable time slots for a date. Merges bookings, blocked slots, recurring blocks, time-slot config, and Google Calendar free/busy. |
 | `/api/time-slots` | GET | Returns active public time slots for the booking modal. |
 | `/api/inquiries` | POST | Submits a contact form message. Validates honeypot, rate-limits by IP, stores to Supabase, sends notification to DeMario. |
+| `/api/reviews` | POST | Submits a review. Two paths: a tokenized link emailed after a lesson (verified), or the public `/review` link (unverified). Honeypot + rate limit + server-side consent enforcement. |
+| `/api/reviews/published` | GET | Published reviews for the homepage. Returns `[]` rather than a 500 if the database is unreachable. |
 
 ### Admin-Only Routes
 
@@ -181,6 +185,14 @@ All admin routes require a valid Supabase session at AAL2 (MFA-verified). Protec
 | `/api/roadmap/[key]` | PATCH | Save business roadmap checklist state. |
 | `/api/feedback` | POST | Admin issue/question/feature feedback; creates a high-priority task and emails Toni. |
 | `/api/monitoring-test` | POST | Triggers a test Sentry error for production monitoring verification. |
+| `/api/reviews` | GET | List reviews for moderation, filtered by status. Excludes tokenized rows the student has not filled in yet. |
+| `/api/reviews/[id]` | PATCH, DELETE | Publish or hide a review, set Mario's `tag`/`takeaway` labels, or delete it. **There is no path here to edit a student's words.** |
+
+### Cron Routes
+
+| Route | Methods | Purpose |
+|---|---|---|
+| `/api/cron/review-requests` | GET | Daily Vercel cron. Emails a private review link 24h after each confirmed lesson. Requires `Authorization: Bearer $CRON_SECRET`, which Vercel sends automatically. Idempotent via `bookings.review_request_sent_at`. |
 
 ---
 
@@ -223,6 +235,7 @@ The admin area lives at `/admin` and is protected at three levels:
 | Availability | `AvailabilityCalendar.tsx` + `WeeklyTemplateEditor.tsx` | Manage time slots, blocked dates, recurring blocks, and Google Calendar sync status |
 | Tasks | `/admin/(protected)/tasks/` + `TasksDashboard.tsx` | Short-term action items (add, complete, delete) |
 | Business Roadmap | `/admin/(protected)/roadmap/` + `RoadmapDashboard.tsx` | Longer-horizon milestones for the coaching business |
+| Reviews | `/admin/(protected)/reviews/` + `ReviewsDashboard.tsx` | Moderate student reviews: publish, hide, delete, and set the tag/takeaway labels. No editing of review text. |
 | Site Roadmap | `/admin/(protected)/site-roadmap/` + `SiteRoadmapDashboard.tsx` | Developer-facing technical roadmap items |
 
 ---
@@ -237,6 +250,7 @@ The admin area lives at `/admin` and is protected at three levels:
 - Student booking request confirmation (with ICS calendar attachment, payment instructions, and court confirmation note)
 - Admin booking notification (with student phone, lesson type, court preference, and booking ID)
 - Booking cancellation (student and admin copies)
+- Post-lesson review request (private tokenized link, sent by the daily cron)
 - Inquiry notification (to DeMario)
 
 **ICS generation:** `src/lib/email/ics.ts` — generates RFC 5545-compliant `.ics` calendar event attachments. Attached to student-facing booking emails so they can add the lesson to their calendar app.
@@ -333,6 +347,10 @@ The production Supabase project uses the following core tables. Schema changes a
 | `rate_limit_events` | IP-hash + route + timestamp rows used for rate limiting. Rows older than the window are ignored. |
 | `admin_tasks` | Admin to-do list items. Fields: id, title, notes, category, due_date, recurrence, priority, completed_at, created_at, updated_at |
 | `roadmap_checks` | Persisted checklist state for the Business roadmap. Fields: key, checked, updated_at |
+| `students` | One row per person. Canonical by normalized phone, then email. Fields: id, name, phone_normalized, email_normalized, source, notes, first_seen_at, last_lesson_at, needs_review, needs_review_reason, metadata, created_at, updated_at. Lesson counts are always derived by query, never stored. |
+| `reviews` | One row per review. Fields: id, student_id, booking_id, rating, body, display_name, lesson_context, tag, takeaway, consent_publish, verified_booking, source, status, token_hash, token_used_at, submitted_ip_hash, published_at, created_at |
+
+`bookings` also carries `student_id` and `review_request_sent_at`, and accepts a `no_show` status.
 
 **Key constraints (applied by `docs/supabase-p1-hardening.sql`):**
 - `bookings_unique_active_slot` — unique partial index on `(lesson_date, lesson_time)` where `status != 'cancelled'`, preventing double-booking at the database level.
@@ -341,6 +359,7 @@ The production Supabase project uses the following core tables. Schema changes a
 1. `docs/supabase-p0-migration.sql` — adds waiver columns, tightens public PII policy
 2. `docs/supabase-p1-hardening.sql` — adds the unique slot constraint and rate_limit_events table
 3. `docs/supabase-priority-migration.sql` — adds task priority support used by admin feedback and high-priority tasks
+4. `docs/supabase-students-reviews-migration.sql` — adds `students` and `reviews`, links bookings to students, allows `no_show`, and seeds the seven legacy testimonials
 
 ---
 
@@ -356,6 +375,9 @@ Run with `npm run test`. Tests run sequentially (`--no-file-parallelism`) to avo
 | `src/lib/booking-notes.test.ts` | Court preference serialization and parsing |
 | `src/lib/data.test.ts` | Lesson data shape validation |
 | `src/lib/rate-limit.test.ts` | IP hashing and rate-limit window logic |
+| `src/lib/students.test.ts` | Phone/email normalization and fail-loud student matching |
+| `src/lib/reviews.test.ts` | Review tokens, submission validation, and cron eligibility |
+| `src/app/api/bookings/route.test.ts` | Booking creation, availability guards, and student attachment |
 | `src/lib/tasks.test.ts` | Task list data operations |
 | `src/lib/google-calendar.test.ts` | Calendar free/busy parsing |
 | `src/lib/email/ics.test.ts` | ICS event generation |
@@ -371,6 +393,9 @@ Run with `npm run test:e2e`. The smoke suite in `e2e/smoke.spec.ts` covers:
 - Payment options page
 - Contact form submission
 - Admin login page gating (redirects unauthenticated users)
+
+`e2e/reviews.spec.ts` additionally covers the public review form, its validation, server-error
+surfacing, unknown review tokens, admin review gating, and cron authentication.
 
 ---
 
@@ -398,6 +423,8 @@ All required variables must be set in Vercel (or `.env.local` for local developm
 | `SENTRY_ORG` | Optional | Sentry organization slug for source-map upload |
 | `SENTRY_PROJECT` | Optional | Sentry project slug for source-map upload |
 | `SENTRY_AUTH_TOKEN` | Optional | Sentry auth token for source map uploads |
+| `CRON_SECRET` | Yes (for reviews) | Protects `/api/cron/review-requests`. Vercel sends it as an Authorization Bearer header. |
+| `NEXT_PUBLIC_GOOGLE_REVIEW_URL` | Optional | Google Business Profile review link. The "post this to Google too" button stays hidden while unset. |
 
 ---
 
@@ -434,3 +461,6 @@ Before going live with a new environment, see `docs/RELEASE_CHECKLIST.md` for th
 | `supabase-p0-migration.sql` | Tonio | Run once in production Supabase SQL editor |
 | `supabase-p1-hardening.sql` | Tonio | Run once in production Supabase SQL editor |
 | `supabase-priority-migration.sql` | Tonio | Run once in production Supabase SQL editor for task priority support |
+| `supabase-students-reviews-migration.sql` | Tonio | Run once in production Supabase SQL editor for students + reviews |
+| `specs/2026-07-25-student-spine-and-review-loop.md` | Tonio | Design spec for the student spine and review loop |
+| `plans/2026-07-25-student-spine-and-review-loop.md` | Tonio | Task-by-task implementation plan for the same |
