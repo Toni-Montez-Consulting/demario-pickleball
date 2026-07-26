@@ -118,6 +118,9 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 
 Run in order. Do not mark this section done until every box is genuinely true.
 
+**Steps 1-10 were completed against production on 2026-07-26.** They are kept here as the
+record of what was done and as the procedure for any future environment.
+
 1. Run `select status, count(*) from bookings group by status;` and confirm every value is in
    `('pending','confirmed','cancelled','no_show')`. Add any missing value to the allowlist in
    `docs/supabase-students-reviews-migration.sql` before running it.
