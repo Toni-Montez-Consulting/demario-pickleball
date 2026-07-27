@@ -1,3 +1,4 @@
+import Image from "next/image";
 import RevealWrapper from "./RevealWrapper";
 
 interface HeroProps {
@@ -7,10 +8,19 @@ interface HeroProps {
 export default function Hero({ onOpenBooking }: HeroProps) {
   return (
     <section className="hero" id="hero">
-      <div
-        className="hero-bg"
-        style={{ backgroundImage: "url('/img/hero-ready.jpg')" }}
-      />
+      {/* Served through next/image so it gets avif/webp. As a CSS background it
+          skipped the optimiser entirely, and it is the LCP candidate. Decorative,
+          so alt is empty — the headline carries the meaning. */}
+      <div className="hero-bg">
+        <Image
+          src="/img/hero-ready.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="hero-bg-img"
+        />
+      </div>
       <RevealWrapper>
         <div className="hero-content">
           <div className="eyebrow">
