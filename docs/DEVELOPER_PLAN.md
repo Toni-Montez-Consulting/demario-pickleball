@@ -99,6 +99,15 @@ Shipped in code and CI. Not yet live: the migration and backfill are manual gate
 
 ## Long-Term Reference
 
+- `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it
+  invalidates every unused review link sitting in a student's inbox. Rotate only deliberately.
+  It was set 2026-07-27, before any tokens had been issued, so nothing was invalidated. Before
+  that it fell back to `SUPABASE_SERVICE_ROLE_KEY`, which coupled review links to the database
+  credential.
+- Environment variables added through the Vercel CLI are stored as sensitive and **cannot be
+  read back** with `vercel env pull` — it reports them as empty. "Set" is verifiable, "set to
+  the right value" is not. Verify those functionally after deploy instead of trusting a pull.
+
 - Keep the Business roadmap focused on DeMario's operating tasks: venue routing, proof-on-file, payments, follow-ups, and growth.
 - Keep `docs/MARIO_ACTION_PLAN.md`, `/admin/tasks`, and `/admin/roadmap` nontechnical enough for Mario to complete without understanding code or infrastructure.
 - Keep the Developer roadmap focused on Tonio's code/ops tasks: CI, tests, monitoring, database constraints, dependency upgrades, and stale documentation.

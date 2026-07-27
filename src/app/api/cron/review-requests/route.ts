@@ -36,8 +36,15 @@ type CronBooking = ReviewEligibleBooking & {
  * check is the first thing that happens.
  */
 export async function GET(req: NextRequest) {
+  // A missing secret is a deployment misconfiguration, not a rejected caller.
+  // Collapsing both into 401 would make a cron that never runs look identical to
+  // a bot being turned away — silent, and invisible in the logs.
   const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!secret) {
+    console.error("[cron review-requests] CRON_SECRET is not set; no review requests can be sent");
+    return NextResponse.json({ error: "Cron is not configured" }, { status: 500 });
+  }
+  if (req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
