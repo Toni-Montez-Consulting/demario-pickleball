@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -48,12 +49,28 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "LocalBusiness",
+      // Deliberately no aggregateRating. Google treats reviews a business collects
+      // about itself on its own site as self-serving: the markup is ignored for
+      // rich results, so it would add surface area and buy nothing.
+      "@type": "SportsActivityLocation",
       "@id": `${SITE_URL}/#business`,
       name: "DeMario Montez Pickleball Coaching",
       url: SITE_URL,
+      image: `${SITE_URL}/img/hero-ready.jpg`,
       telephone: "+14693719220",
       email: "demariomontez10@gmail.com",
+      areaServed: [
+        { "@type": "City", name: "Dallas" },
+        { "@type": "City", name: "Fort Worth" },
+        { "@type": "City", name: "Farmers Branch" },
+        { "@type": "City", name: "Plano" },
+      ],
+      sameAs: [
+        "https://instagram.com/Alexanderiio",
+        "https://tiktok.com/@DemarioMontez",
+        "https://facebook.com/demario.montez.9/",
+      ],
+      employee: { "@id": `${SITE_URL}/#coach` },
       address: {
         "@type": "PostalAddress",
         addressLocality: "Farmers Branch",
@@ -98,7 +115,11 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Cookieless, so it does not need the consent banner. */}
+        <Analytics />
+      </body>
     </html>
   );
 }
