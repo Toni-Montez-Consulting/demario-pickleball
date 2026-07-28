@@ -154,3 +154,38 @@ export function feedbackNotificationHtml({
     `Admin Feedback: ${type}`
   );
 }
+
+export function reviewRequestHtml({
+  name,
+  lessonName,
+  lessonDate,
+  reviewUrl,
+}: {
+  name: string;
+  lessonName: string;
+  lessonDate: string;
+  reviewUrl: string;
+}): string {
+  const first = name.trim().split(/\s+/)[0] || "there";
+  return wrap(
+    `
+    <h1 style="font-size:22px;margin:0 0 12px;">How was it, ${escapeHtml(first)}?</h1>
+    <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">
+      Thanks for training with me on ${escapeHtml(lessonDate)}. I hope the ${escapeHtml(lessonName)} session
+      gave you something specific to work on.
+    </p>
+    <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">
+      If you have a minute, I would appreciate a quick review. It takes about thirty seconds
+      and it helps other players find me.
+    </p>
+    <p style="margin:0 0 20px;">
+      <a href="${reviewUrl}" style="display:inline-block;padding:10px 16px;background:#111;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">Leave a review</a>
+    </p>
+    <p style="font-size:13px;color:#666;line-height:1.5;margin:0;">
+      Nothing gets posted without your ok, and you choose how your name appears.
+      See you on the court.<br>DeMario
+    </p>
+    `,
+    "How was your lesson?"
+  );
+}

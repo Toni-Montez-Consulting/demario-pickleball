@@ -1,15 +1,5 @@
 import { addDays } from "@/lib/time";
 
-export interface Review {
-  quote: string;
-  accentWord: string | null;
-  name: string;
-  meta: string;
-  initial: string;
-  tag: string;
-  takeaway: string;
-}
-
 export interface LessonStep {
   t: string;
   h: string;
@@ -26,38 +16,9 @@ export interface Lesson {
 
 export type LessonKey = "beginner" | "advanced" | "clinic";
 
-export const REVIEWS: Review[] = [
-  {
-    quote:
-      "DeMario doesn't just teach you how to hit the ball — he teaches you how to think the point. Two months in and I'm reading opponents in a way I never could before.",
-    accentWord: "think the point",
-    name: "Rachel K.",
-    meta: "Intermediate · 12 lessons",
-    initial: "R",
-    tag: "Strategy",
-    takeaway: "Better point construction",
-  },
-  {
-    quote:
-      "Most coaches feed you balls for an hour. DeMario built a real plan around my weak spots. My DUPR jumped 0.4 in a season.",
-    accentWord: null,
-    name: "Marcus T.",
-    meta: "Competitive · 20 lessons",
-    initial: "M",
-    tag: "Competitive",
-    takeaway: "Targeted practice plan",
-  },
-  {
-    quote:
-      "I was the person dinking into the net every point. After four sessions I played my first tournament — and won my first match.",
-    accentWord: null,
-    name: "Jenna P.",
-    meta: "Beginner · 6 lessons",
-    initial: "J",
-    tag: "Beginner",
-    takeaway: "First tournament confidence",
-  },
-];
+// Reviews now live in the database and are served by /api/reviews/published.
+// The seven previously hardcoded here and in Testimonials.tsx were migrated in
+// docs/supabase-students-reviews-migration.sql with source = 'legacy'.
 
 export const LESSONS: Record<LessonKey, Lesson> = {
   beginner: {

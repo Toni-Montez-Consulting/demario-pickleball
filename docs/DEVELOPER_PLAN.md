@@ -43,11 +43,66 @@ should stay in `/admin/roadmap`.
 - Deferred availability/Google Calendar checks until students continue to site-bookable times.
 - Added first-week admin booking filters plus one-tap text/call actions from booking rows.
 
+### Student Spine and Review Loop (2026-07-25)
+
+Shipped in code and CI. Not yet live: the migration and backfill are manual gates below.
+
+- Added `students` as the person object bookings and reviews hang off, canonical by normalized
+  phone then email. A phone match with a conflicting name or email raises `needs_review`
+  instead of silently merging or duplicating.
+- Linked booking creation to student records and added a `no_show` booking status.
+- Added a one-time backfill script with a reconciliation report that exits non-zero if the
+  counts do not balance.
+- Added the review loop: tokenized post-lesson links, a public `/review` link for past clients,
+  an admin moderation queue, and homepage rendering of published reviews only.
+- Moderation is publish / hide / delete plus Mario's own tag and takeaway labels. There is no
+  code path that edits a student's words.
+- Retired the seven hardcoded testimonials in favour of database rows seeded as `legacy`.
+- Added a daily Vercel cron that emails review requests 24h after each confirmed lesson,
+  idempotent via `bookings.review_request_sent_at`.
+- Added the Film Room section for self-hosted coaching clips. Hidden until clips are added.
+- Fixed a pre-existing class of bug found while building this: form controls driven purely by
+  React state dropped any tap landing before hydration. The review rating is a native radio
+  group with a CSS-only fill.
+
+### Site Health and SEO Pass (2026-07-27)
+
+From the 2026-07-26 audit. Shipped in code and CI.
+
+- Fixed a live SEO break: a trailing newline in `NEXT_PUBLIC_SITE_URL` was rendering
+  `Sitemap: https://demariomontezpb.com
+/sitemap.xml` in robots.txt, splitting every sitemap
+  `<loc>`, and putting a literal newline in the JSON-LD `url` and `@id`. `normalizeSiteUrl`
+  now trims, so output is correct regardless of the stored value.
+- Set `RATE_LIMIT_SALT` so review link tokens are no longer salted with the Supabase
+  service-role key. Done before any tokens were issued, so nothing was invalidated.
+- An unset `CRON_SECRET` now returns a logged 500 instead of a 401, so a misconfigured cron
+  cannot masquerade as a rejected caller.
+- Raised `--fg-muted` from 0.55 to 0.62. It measured 3.94:1 on `--bg` and 3.65:1 on `--bg-2`,
+  both below the 4.5:1 AA floor; it now measures 5.25:1 and 4.87:1.
+- Lesson steps use `h4` instead of `h5`, which was skipping a level under `h3`.
+- Added a styled 404. This matters more than it used to because the review-token page calls
+  `notFound()` for used or expired links.
+- The hero photo goes through `next/image` instead of a CSS `background-image`, so it gets
+  avif/webp. Rendered geometry verified identical to production.
+- Added cookieless Vercel Web Analytics.
+- Enriched the LocalBusiness structured data with `image`, `areaServed`, `sameAs`, and an
+  `employee` link to the coach node.
+
+**Deliberately not done:** `Review`/`AggregateRating` structured data. Researched 2026-07-27 —
+Google treats reviews a business collects and displays about itself as self-serving, so the
+markup is ignored for rich results. It produces no stars and is not worth the surface area.
+
 ## Remaining Manual Launch Gates
 
 - Run `docs/supabase-p0-migration.sql` if it has not already been applied in production.
 - Run `docs/supabase-p1-hardening.sql` in the Supabase SQL Editor.
 - Run `docs/supabase-priority-migration.sql` in the Supabase SQL Editor if task priority support is not already present.
+- Run the pre-flight status query in `docs/supabase-students-reviews-migration.sql`, then run the migration.
+- Decide whether the four `REVIEW_WALL` legacy testimonials are permissioned before running the seed. Cut that insert if not.
+- Run `node scripts/backfill-students.mjs` once with production credentials and confirm the reconciliation balances.
+- Set `CRON_SECRET` in Vercel and redeploy, then confirm the cron appears in the project's Cron Jobs tab.
+- Submit one real review end to end and publish it from Admin -> Reviews.
 - Verify `bookings_unique_active_slot` exists in production Supabase.
 - Verify `admin_tasks.priority` exists and accepts `high` / `normal`.
 - Verify anon users cannot read or write `bookings`, `inquiries`, or `rate_limit_events`.
@@ -59,8 +114,10 @@ should stay in `/admin/roadmap`.
 
 ## Deferred P2
 
-- Add privacy-conscious analytics after consent/cookie policy is final.
 - Add 24-hour reminder emails.
+- Round 2 of the yield/retention work: drilling sessions and play-with-the-pro as bookable
+  formats, plus packages as a manual lesson-credits ledger on the student record. Blocked on
+  DeMario's pricing, duration, and player counts.
 - Add secure student cancellation/reschedule links using private email tokens, policy-aware UI/API checks, student/admin notifications, ICS cancel/update files, and manual payment/refund handling until Stripe exists.
 - Add Stripe Checkout only after the pickleball business entity and banking setup exist.
 - Add automated DUPR rating sync only after Mario receives official read-only API or partner access from DUPR.
@@ -68,6 +125,15 @@ should stay in `/admin/roadmap`.
 - Upgrade dependency advisories when compatible patched versions are available; do not use `npm audit fix --force` without a tested migration branch.
 
 ## Long-Term Reference
+
+- `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it
+  invalidates every unused review link sitting in a student's inbox. Rotate only deliberately.
+  It was set 2026-07-27, before any tokens had been issued, so nothing was invalidated. Before
+  that it fell back to `SUPABASE_SERVICE_ROLE_KEY`, which coupled review links to the database
+  credential.
+- Environment variables added through the Vercel CLI are stored as sensitive and **cannot be
+  read back** with `vercel env pull` — it reports them as empty. "Set" is verifiable, "set to
+  the right value" is not. Verify those functionally after deploy instead of trusting a pull.
 
 - Keep the Business roadmap focused on DeMario's operating tasks: venue routing, proof-on-file, payments, follow-ups, and growth.
 - Keep `docs/MARIO_ACTION_PLAN.md`, `/admin/tasks`, and `/admin/roadmap` nontechnical enough for Mario to complete without understanding code or infrastructure.

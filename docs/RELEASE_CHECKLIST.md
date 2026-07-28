@@ -112,3 +112,33 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 - Production error monitoring is configured and a test event has been received, or Mario and Tonio have explicitly accepted Sentry as a post-launch follow-up.
 - Dependency advisories have been reviewed in `docs/DEPENDENCY_ADVISORIES.md`.
 - Historical audit/planning docs have been reviewed against current docs.
+
+
+## Student Spine and Review Loop (added 2026-07-25)
+
+Run in order. Do not mark this section done until every box is genuinely true.
+
+**Steps 1-10 were completed against production on 2026-07-26.** They are kept here as the
+record of what was done and as the procedure for any future environment.
+
+1. Run `select status, count(*) from bookings group by status;` and confirm every value is in
+   `('pending','confirmed','cancelled','no_show')`. Add any missing value to the allowlist in
+   `docs/supabase-students-reviews-migration.sql` before running it.
+2. Confirm with DeMario whether the four `REVIEW_WALL` testimonials (David L., Carlos M.,
+   Priya S., Tom B.) are real and permissioned. If not, delete that insert from the migration.
+3. Run `docs/supabase-students-reviews-migration.sql` in the Supabase SQL Editor.
+4. Confirm `students` and `reviews` exist, and that `bookings` has `student_id` and
+   `review_request_sent_at`.
+5. Confirm `select count(*) from reviews where source = 'legacy';` returns 7 (or 3 if the wall
+   was cut).
+6. Run `node scripts/backfill-students.mjs`. Confirm it prints "Reconciliation balanced." and
+   exits 0. If any bookings are listed as unmatched, resolve them before continuing.
+7. Confirm anonymous users cannot read or write `students` or `reviews`.
+8. Set `CRON_SECRET` in Vercel. Redeploy.
+9. Confirm `/api/cron/review-requests` returns 401 without the header in production.
+10. Confirm the cron is registered in the Vercel dashboard under Cron Jobs.
+11. Submit a test review through `/review`. Confirm it appears as Pending and Unverified in
+    Admin -> Reviews.
+12. Publish it. Confirm it appears on the homepage.
+13. Hide it again and confirm it disappears from the homepage.
+14. Leave `NEXT_PUBLIC_GOOGLE_REVIEW_URL` unset until DeMario has a Google Business Profile.
