@@ -5,9 +5,11 @@
   --line: oklch(0.32 0.013 260);
   --fg: oklch(0.97 0.005 260);
   --fg-dim: oklch(0.72 0.01 260);
-  /* 0.55 measured 3.94:1 on --bg and 3.65:1 on --bg-2, both under the 4.5:1 AA
-     floor for normal text. 0.62 measures 5.25:1 and 4.87:1. */
-  --fg-muted: oklch(0.62 0.012 260);
+  /* AA needs 4.5:1 for normal text. Measured against the real rendered card
+     background (#1e2228), not the nominal token: 0.55 gave 3.94:1 and 0.62 gave
+     4.37:1 — Lighthouse still failed .proof-panel-head span at 11px bold.
+     0.65 measures 4.92:1 there and 5.9:1 on the page background. */
+  --fg-muted: oklch(0.65 0.012 260);
   --accent: oklch(0.88 0.24 135);
   --accent-ink: oklch(0.2 0.05 135);
   --danger: oklch(0.7 0.2 25);
