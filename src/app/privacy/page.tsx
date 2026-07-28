@@ -73,10 +73,15 @@ export default function PrivacyPage() {
           We will respond within 30 days.
         </p>
 
-        <h2>Cookies</h2>
+        <h2>Cookies and analytics</h2>
         <p>
           This site uses session cookies for authentication purposes only (admin login). We do not
           use tracking or advertising cookies.
+        </p>
+        <p>
+          We measure page views using Vercel Web Analytics, which is cookieless. It records the
+          page visited, referrer, and general device type. It does not set cookies, does not build
+          a profile of you, and does not follow you to other websites.
         </p>
 
         <h2>Contact</h2>

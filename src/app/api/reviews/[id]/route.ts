@@ -64,12 +64,15 @@ export async function PATCH(
     .select()
     .single();
 
-  if (error?.code === "PGRST116" || !data) {
-    return NextResponse.json({ error: "Review not found" }, { status: 404 });
-  }
-  if (error) {
-    console.error("[reviews PATCH]", error);
+  // PGRST116 is specifically "no rows returned". Any other error is a real
+  // failure and must not be dressed up as a missing review.
+  if (error && error.code !== "PGRST116") {
+    console.error("[reviews PATCH]", id, error);
     return NextResponse.json({ error: "Failed to update review" }, { status: 500 });
+  }
+  if (!data) {
+    console.warn("[reviews PATCH] no review matched", id);
+    return NextResponse.json({ error: "Review not found" }, { status: 404 });
   }
   return NextResponse.json(data);
 }
@@ -86,10 +89,21 @@ export async function DELETE(
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }
 
-  const { error } = await admin.supabase.from("reviews").delete().eq("id", id);
+  // select() so we can tell "deleted one row" from "matched nothing". Reporting
+  // success for a row that was never there hides real drift from Mario.
+  const { data, error } = await admin.supabase
+    .from("reviews")
+    .delete()
+    .eq("id", id)
+    .select("id");
+
   if (error) {
-    console.error("[reviews DELETE]", error);
+    console.error("[reviews DELETE]", id, error);
     return NextResponse.json({ error: "Failed to delete review" }, { status: 500 });
   }
-  return NextResponse.json({ ok: true });
+  if (!data || data.length === 0) {
+    console.warn("[reviews DELETE] no review matched", id);
+    return NextResponse.json({ error: "Review not found" }, { status: 404 });
+  }
+  return NextResponse.json({ ok: true, deleted: data.length });
 }

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import SiteAnalytics from "@/components/SiteAnalytics";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
     title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
     description:
       "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.70 doubles DUPR, USTA certified, Top 3% SuperCoach.",
-    images: [{ url: "/img/hero-ready.jpg", width: 1200, height: 630, alt: "DeMario Montez on the pickleball court" }],
+    images: [{ url: "/img/hero-ready.jpg", width: 828, height: 1099, alt: "DeMario Montez on the pickleball court" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -48,12 +49,28 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "LocalBusiness",
+      // Deliberately no aggregateRating. Google treats reviews a business collects
+      // about itself on its own site as self-serving: the markup is ignored for
+      // rich results, so it would add surface area and buy nothing.
+      "@type": "SportsActivityLocation",
       "@id": `${SITE_URL}/#business`,
       name: "DeMario Montez Pickleball Coaching",
       url: SITE_URL,
+      image: `${SITE_URL}/img/hero-ready.jpg`,
       telephone: "+14693719220",
       email: "demariomontez10@gmail.com",
+      areaServed: [
+        { "@type": "City", name: "Dallas" },
+        { "@type": "City", name: "Fort Worth" },
+        { "@type": "City", name: "Farmers Branch" },
+        { "@type": "City", name: "Plano" },
+      ],
+      sameAs: [
+        "https://instagram.com/Alexanderiio",
+        "https://tiktok.com/@DemarioMontez",
+        "https://facebook.com/demario.montez.9/",
+      ],
+      employee: { "@id": `${SITE_URL}/#coach` },
       address: {
         "@type": "PostalAddress",
         addressLocality: "Farmers Branch",
@@ -98,7 +115,11 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Cookieless. Redacts review tokens from reported paths. */}
+        <SiteAnalytics />
+      </body>
     </html>
   );
 }
