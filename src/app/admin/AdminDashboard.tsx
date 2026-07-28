@@ -14,7 +14,7 @@ interface Booking {
   lesson_type: string;
   lesson_date: string;
   lesson_time: string;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "confirmed" | "cancelled" | "no_show";
   notes: string | null;
   paid_at: string | null;
 }
@@ -219,7 +219,18 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
       .finally(() => setAvailLoading(false));
   }, [tab, hasLoadedAvail]);
 
-  async function updateBookingStatus(id: string, status: "confirmed" | "cancelled") {
+  async function updateBookingStatus(
+    id: string,
+    status: "confirmed" | "cancelled" | "no_show"
+  ) {
+    if (
+      status === "no_show" &&
+      !window.confirm(
+        "Mark this lesson as a no-show? The student is not emailed, and they will not be asked for a review."
+      )
+    ) {
+      return;
+    }
     if (status === "cancelled" && !window.confirm("Cancel this booking and email the student?")) {
       return;
     }
@@ -580,6 +591,20 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                               onClick={() => updateBookingStatus(b.id, "cancelled")}
                             >
                               Cancel
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn"
+                              title="They booked but did not show. No email is sent and no review is requested."
+                              disabled={
+                                b.status === "cancelled" ||
+                                b.status === "no_show" ||
+                                b.lesson_date > today ||
+                                updating === b.id
+                              }
+                              onClick={() => updateBookingStatus(b.id, "no_show")}
+                            >
+                              No show
                             </button>
                           </div>
                         </td>

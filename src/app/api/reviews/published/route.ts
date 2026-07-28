@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
@@ -10,8 +11,10 @@ export const dynamic = "force-dynamic";
 /**
  * Published reviews for the homepage. Public and unauthenticated.
  *
- * Returns an empty array on error rather than a 500: a database hiccup must
- * not break the homepage. The error is still logged and reaches Sentry.
+ * Returns an empty array on error rather than a 500: a database hiccup must not
+ * break the homepage. The trade-off is that the wall silently empties, so the
+ * failure is reported to Sentry explicitly — console.error alone does NOT reach
+ * Sentry with this project's configuration.
  */
 export async function GET() {
   const supabase = createServiceRoleClient();
@@ -26,6 +29,7 @@ export async function GET() {
 
   if (error) {
     console.error("[reviews published GET]", error);
+    Sentry.captureException(error, { tags: { route: "reviews/published" } });
     // Never break the homepage over a database hiccup. Do not cache the failure.
     return NextResponse.json([], {
       headers: { "Cache-Control": "no-store" },

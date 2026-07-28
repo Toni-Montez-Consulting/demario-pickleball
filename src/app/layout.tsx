@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
+import SiteAnalytics from "@/components/SiteAnalytics";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
     description:
       "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.70 doubles DUPR, USTA certified, Top 3% SuperCoach.",
-    images: [{ url: "/img/hero-ready.jpg", width: 1200, height: 630, alt: "DeMario Montez on the pickleball court" }],
+    images: [{ url: "/img/hero-ready.jpg", width: 828, height: 1099, alt: "DeMario Montez on the pickleball court" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -117,8 +117,8 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        {/* Cookieless, so it does not need the consent banner. */}
-        <Analytics />
+        {/* Cookieless. Redacts review tokens from reported paths. */}
+        <SiteAnalytics />
       </body>
     </html>
   );

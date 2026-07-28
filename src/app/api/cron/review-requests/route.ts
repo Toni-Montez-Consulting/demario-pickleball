@@ -22,6 +22,13 @@ const REASK_WINDOW_DAYS = 90;
 /** Only look back a month. Older bookings are not worth an unexpected email. */
 const LOOKBACK_DAYS = 30;
 
+/**
+ * Ceiling on emails per run. A normal day is a handful of lessons; anything
+ * near this cap means a backlog was confirmed at once, and blasting it would be
+ * the wrong call. What gets deferred is logged, never silently dropped.
+ */
+const MAX_SENDS_PER_RUN = 25;
+
 type CronBooking = ReviewEligibleBooking & {
   name: string;
   email: string;
@@ -71,7 +78,14 @@ export async function GET(req: NextRequest) {
   const skipped: Record<string, number> = {};
   const failed: string[] = [];
 
+  let deferred = 0;
+
   for (const booking of (bookings ?? []) as CronBooking[]) {
+    if (sent >= MAX_SENDS_PER_RUN) {
+      deferred++;
+      continue;
+    }
+
     const eligibility = isEligibleForReviewRequest(booking, now);
     if (!eligibility.eligible) {
       const reason = eligibility.reason ?? "unknown";
@@ -80,12 +94,20 @@ export async function GET(req: NextRequest) {
     }
 
     const since = new Date(now.getTime() - REASK_WINDOW_DAYS * 24 * 3_600_000).toISOString();
-    const { data: recent } = await supabase
+    const { data: recent, error: recentError } = await supabase
       .from("reviews")
       .select("id")
       .eq("student_id", booking.student_id)
       .gte("created_at", since)
       .limit(1);
+
+    // A failed dedupe check must not be read as "never asked". Skip and report
+    // rather than risk emailing a student twice.
+    if (recentError) {
+      console.error("[cron review-requests] dedupe check failed", booking.id, recentError);
+      failed.push(booking.id);
+      continue;
+    }
 
     if (recent && recent.length > 0) {
       skipped["asked within 90 days"] = (skipped["asked within 90 days"] ?? 0) + 1;
@@ -93,6 +115,23 @@ export async function GET(req: NextRequest) {
     }
 
     const token = generateReviewToken();
+
+    // Send first, then persist. The reverse order meant a failed send left a
+    // pending row whose token nobody had, which the 90-day dedupe then counted
+    // as "already asked" — silencing that student for a quarter.
+    const ok = await sendReviewRequestEmail({
+      to: booking.email,
+      name: booking.name,
+      lessonName: LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type,
+      lessonDate: booking.lesson_date,
+      reviewUrl: `${SITE_URL}/review/${token}`,
+    });
+
+    if (!ok) {
+      console.error("[cron review-requests] email send failed", booking.id);
+      failed.push(booking.id);
+      continue;
+    }
 
     // Placeholder rating and display name. The row is not submittable and is
     // filtered out of the admin queue until token_used_at is stamped; the
@@ -110,20 +149,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (createError) {
-      console.error("[cron review-requests] review row failed", booking.id, createError);
-      failed.push(booking.id);
-      continue;
-    }
-
-    const ok = await sendReviewRequestEmail({
-      to: booking.email,
-      name: booking.name,
-      lessonName: LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type,
-      lessonDate: booking.lesson_date,
-      reviewUrl: `${SITE_URL}/review/${token}`,
-    });
-
-    if (!ok) {
+      console.error("[cron review-requests] review row failed after send", booking.id, createError);
       failed.push(booking.id);
       continue;
     }
@@ -145,5 +171,11 @@ export async function GET(req: NextRequest) {
   if (failed.length > 0) {
     console.error("[cron review-requests] failed bookings", failed);
   }
-  return NextResponse.json({ sent, skipped, failed });
+  // Neither is a truncated run. A silent cap reads as "we asked everyone".
+  if (deferred > 0) {
+    console.warn(
+      `[cron review-requests] hit the ${MAX_SENDS_PER_RUN}/run ceiling; ${deferred} booking(s) deferred to the next run`
+    );
+  }
+  return NextResponse.json({ sent, skipped, failed, deferred });
 }

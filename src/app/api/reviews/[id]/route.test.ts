@@ -31,10 +31,12 @@ function adminClient(returnRow: Row | null = { id: VALID_ID }, error: unknown = 
         },
         delete() {
           return {
-            eq: async (_col: string, id: string) => {
-              deletes.push(id);
-              return { error };
-            },
+            eq: (_col: string, id: string) => ({
+              select: async () => {
+                deletes.push(id);
+                return { data: returnRow ? [{ id }] : [], error };
+              },
+            }),
           };
         },
       };
@@ -203,6 +205,15 @@ describe("DELETE /api/reviews/[id]", () => {
     const res = await DELETE({} as NextRequest, params("../../etc/passwd"));
     expect(res.status).toBe(400);
     expect(deletes).toHaveLength(0);
+  });
+
+  it("reports 404 rather than success when no row matched", async () => {
+    const { supabase } = adminClient(null);
+    mocks.requireAdmin.mockResolvedValue({ ok: true, supabase });
+    const { DELETE } = await import("./route");
+
+    const res = await DELETE({} as NextRequest, params(VALID_ID));
+    expect(res.status).toBe(404);
   });
 
   it("deletes the requested review", async () => {
