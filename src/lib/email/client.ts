@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { generateIcs, type IcsBooking, type IcsMethod } from "./ics";
-import { studentRequestedHtml, adminNotificationHtml, studentCancelledHtml, feedbackNotificationHtml } from "./templates";
+import { studentRequestedHtml, adminNotificationHtml, studentCancelledHtml, feedbackNotificationHtml, reviewRequestHtml } from "./templates";
 
 function getResend(): Resend | null {
   const key = process.env.RESEND_API_KEY;
@@ -115,3 +115,36 @@ export async function sendFeedbackEmail({
 }
 
 export type { IcsBooking, IcsMethod };
+
+export async function sendReviewRequestEmail({
+  to,
+  name,
+  lessonName,
+  lessonDate,
+  reviewUrl,
+}: {
+  to: string;
+  name: string;
+  lessonName: string;
+  lessonDate: string;
+  reviewUrl: string;
+}): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping review request");
+    return false;
+  }
+  const first = name.trim().split(/\s+/)[0] || "there";
+  const result = await resend.emails.send({
+    from: emailFrom(),
+    to,
+    subject: `How was your lesson, ${first}?`,
+    html: reviewRequestHtml({ name, lessonName, lessonDate, reviewUrl }),
+    replyTo: adminEmail(),
+  });
+  if (result.error) {
+    console.error("[email] review request failed", result.error);
+    return false;
+  }
+  return true;
+}

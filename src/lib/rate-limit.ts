@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import * as Sentry from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -29,7 +30,14 @@ export async function checkRateLimit(
     .gte("created_at", windowStart);
 
   if (error) {
-    console.error("[rate-limit] count failed", error);
+    // Deliberately fail open: a rate-limit outage must not block real students
+    // from booking. That leaves the endpoint uncapped, so it is reported rather
+    // than logged and forgotten.
+    console.error("[rate-limit] count failed; failing open", options.route, error);
+    Sentry.captureException(error, {
+      tags: { route: options.route, subsystem: "rate-limit" },
+      level: "warning",
+    });
     return { limited: false };
   }
 

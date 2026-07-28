@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient, requireAdmin } from "@/lib/supabase/server";
 import { sendBookingCreatedEmails } from "@/lib/email/client";
+import { findOrCreateStudent } from "@/lib/students";
 import { assertBookableSlot } from "@/lib/availability";
 import { WAIVER_VERSION } from "@/lib/business";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -101,6 +102,29 @@ export async function POST(req: NextRequest) {
   if (error) {
     console.error("[bookings POST]", error);
     return NextResponse.json({ error: "Booking failed. Please try again." }, { status: 500 });
+  }
+
+  // Attach the booking to a student record. A booking must never fail because
+  // the student spine had a problem, so this only logs.
+  const match = await findOrCreateStudent(supabase, {
+    name: data.name,
+    email: data.email,
+    phone: data.phone,
+  });
+  if (match) {
+    const { error: linkError } = await supabase
+      .from("bookings")
+      .update({ student_id: match.student.id })
+      .eq("id", data.id);
+    if (linkError) console.error("[bookings POST] student link failed", linkError);
+
+    const { error: touchError } = await supabase
+      .from("students")
+      .update({ last_lesson_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("id", match.student.id);
+    if (touchError) console.error("[bookings POST] student touch failed", touchError);
+  } else {
+    console.warn("[bookings POST] no usable student key for booking", data.id);
   }
 
   sendBookingCreatedEmails({

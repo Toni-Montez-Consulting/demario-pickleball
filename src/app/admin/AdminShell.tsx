@@ -69,12 +69,15 @@ export default function AdminShell({
             <span className="nav-overdue-badge" aria-label={`${overdueCount} overdue`}>{overdueCount}</span>
           )}
         </Link>
+        <Link href="/admin/reviews" className={`admin-nav-link${pathname === "/admin/reviews" ? " active" : ""}`}>Reviews</Link>
         <Link href="/admin/roadmap" className={`admin-nav-link${pathname === "/admin/roadmap" ? " active" : ""}`}>Business</Link>
         <Link href="/admin/site-roadmap" className={`admin-nav-link${pathname === "/admin/site-roadmap" ? " active" : ""}`}>Site Tracker</Link>
       </div>
       <p className="admin-nav-desc">
         {pathname === "/admin/tasks"
           ? "Track to-dos — anyone can add, complete, or delete tasks."
+          : pathname === "/admin/reviews"
+          ? "Student reviews waiting for your approval — nothing goes live until you publish it."
           : pathname === "/admin/roadmap"
           ? "DeMario's operating checklist — legal, digital presence, and milestones."
           : pathname === "/admin/site-roadmap"

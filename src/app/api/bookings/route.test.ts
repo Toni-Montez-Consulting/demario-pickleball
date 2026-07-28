@@ -30,7 +30,11 @@ vi.mock("@/lib/rate-limit", () => ({
 
 class MockQuery {
   private filters: Array<{ key: string; value: string | number | boolean | null; op: "eq" | "neq" }> = [];
+  private orClauses: Array<{ key: string; value: string }> = [];
+  private hasOr = false;
+  private limitCount: number | null = null;
   private insertRow: Row | null = null;
+  private updateRow: Row | null = null;
 
   constructor(
     private readonly table: string,
@@ -52,11 +56,32 @@ class MockQuery {
     return this;
   }
 
+  // Supports the PostgREST "key.eq.value,key2.eq.value2" form the student
+  // lookup uses. A row matches when any clause matches.
+  or(expression: string) {
+    this.hasOr = true;
+    for (const clause of expression.split(",")) {
+      const [key, op, ...rest] = clause.split(".");
+      if (op === "eq") this.orClauses.push({ key, value: rest.join(".") });
+    }
+    return this;
+  }
+
+  limit(count: number) {
+    this.limitCount = count;
+    return this;
+  }
+
   insert(row: Row) {
     this.insertRow = {
       id: "12345678-1234-1234-1234-123456789abc",
       ...row,
     };
+    return this;
+  }
+
+  update(row: Row) {
+    this.updateRow = row;
     return this;
   }
 
@@ -84,21 +109,33 @@ class MockQuery {
     onfulfilled?: ((value: QueryResult) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
   ) {
+    if (this.updateRow) {
+      const matched = this.result().data ?? [];
+      for (const row of matched) Object.assign(row, this.updateRow);
+      return Promise.resolve({ data: matched, error: null } as QueryResult).then(
+        onfulfilled,
+        onrejected
+      );
+    }
     return Promise.resolve(this.result()).then(onfulfilled, onrejected);
   }
 
   private result(): QueryResult {
     const rows = this.tables[this.table] ?? [];
-    return {
-      data: rows.filter((row) =>
-        this.filters.every((filter) =>
-          filter.op === "eq"
-            ? row[filter.key] === filter.value
-            : row[filter.key] !== filter.value
-        )
-      ),
-      error: null,
-    };
+    let data = rows.filter((row) =>
+      this.filters.every((filter) =>
+        filter.op === "eq"
+          ? row[filter.key] === filter.value
+          : row[filter.key] !== filter.value
+      )
+    );
+    if (this.hasOr) {
+      data = data.filter((row) =>
+        this.orClauses.some((clause) => String(row[clause.key]) === clause.value)
+      );
+    }
+    if (this.limitCount !== null) data = data.slice(0, this.limitCount);
+    return { data, error: null };
   }
 }
 
@@ -173,6 +210,15 @@ describe("POST /api/bookings", () => {
     });
     expect(typeof inserted[0].waiver_signed_at).toBe("string");
     expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledOnce();
+
+    // The booking also creates the student record it hangs off.
+    const student = inserted.find((row) => row.phone_normalized !== undefined);
+    expect(student).toMatchObject({
+      name: "Jane Student",
+      phone_normalized: "4693719220",
+      email_normalized: "jane@example.com",
+      source: "site",
+    });
     expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledWith(
       expect.objectContaining({
         phone: "(469) 371-9220",
