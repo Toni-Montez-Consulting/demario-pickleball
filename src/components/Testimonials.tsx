@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
 interface TestimonialsProps {
   onOpenBooking: () => void;
@@ -64,8 +64,14 @@ export default function Testimonials({ onOpenBooking }: TestimonialsProps) {
   }, []);
 
   // A takeaway is Mario's signal that a review belongs in the featured slot.
-  const featured = reviews.filter((r) => r.takeaway);
-  const wall = reviews.filter((r) => !r.takeaway);
+  // If he has published reviews but labelled none of them, fall back to showing
+  // the most recent rather than leaving half the layout empty.
+  const { featured, wall } = useMemo(() => {
+    const labelled = reviews.filter((r) => r.takeaway);
+    const feat = labelled.length > 0 ? labelled : reviews.slice(0, 1);
+    const featIds = new Set(feat.map((r) => r.id));
+    return { featured: feat, wall: reviews.filter((r) => !featIds.has(r.id)) };
+  }, [reviews]);
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);

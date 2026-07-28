@@ -99,6 +99,9 @@ export async function POST(req: NextRequest) {
       email: looksLikeEmail ? contact : "",
       phone: looksLikeEmail ? "" : contact,
       source: "import",
+      // displayName is "Rachel K.", not the name they booked under. Comparing it
+      // would flag every honest public review as a conflict on a real student.
+      compareName: false,
     });
     studentId = match?.student.id ?? null;
   }

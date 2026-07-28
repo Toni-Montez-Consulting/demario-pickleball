@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Deliberately stricter than the loose "anything@anything.anything" pattern used
+// elsewhere: this value becomes a canonical database key, and characters that are
+// meaningful to PostgREST (comma, parens, quotes) must never reach a query.
+const EMAIL_RE = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 /**
  * Canonical phone key: 10 US digits, or null when the input is unusable.
@@ -49,7 +52,14 @@ export interface StudentMatch {
  */
 export async function findOrCreateStudent(
   supabase: SupabaseClient,
-  input: { name: string; email: string; phone: string; source?: string }
+  input: {
+    name: string;
+    email: string;
+    phone: string;
+    source?: string;
+    /** Set false when `name` is a display name, not the name they booked under. */
+    compareName?: boolean;
+  }
 ): Promise<StudentMatch | null> {
   const phone = normalizePhone(input.phone);
   const email = normalizeEmail(input.email);
@@ -57,25 +67,52 @@ export async function findOrCreateStudent(
 
   if (!phone && !email) return null;
 
-  const filters = [
-    phone ? `phone_normalized.eq.${phone}` : null,
-    email ? `email_normalized.eq.${email}` : null,
-  ]
-    .filter(Boolean)
-    .join(",");
+  // Two separate .eq() lookups rather than one interpolated .or() string.
+  // postgrest-js appends .or() filters to the query verbatim — it is an
+  // unsanitised escape hatch — and an email is allowed to contain the comma
+  // and dot that PostgREST uses as its own delimiters. Interpolating one let
+  // an unauthenticated caller append their own conditions and match arbitrary
+  // student rows. .eq() encodes its value, so this closes that off entirely.
+  const byPhone = phone
+    ? await supabase
+        .from("students")
+        .select("id,name,phone_normalized,email_normalized")
+        .eq("phone_normalized", phone)
+        .limit(2)
+    : null;
 
-  const { data, error } = await supabase
-    .from("students")
-    .select("id,name,phone_normalized,email_normalized")
-    .or(filters)
-    .limit(1);
-
-  if (error) {
-    console.error("[students] lookup failed", error);
+  if (byPhone?.error) {
+    console.error("[students] phone lookup failed", byPhone.error);
     return null;
   }
 
-  const existing = (data?.[0] ?? null) as StudentRow | null;
+  const byEmail = email
+    ? await supabase
+        .from("students")
+        .select("id,name,phone_normalized,email_normalized")
+        .eq("email_normalized", email)
+        .limit(2)
+    : null;
+
+  if (byEmail?.error) {
+    console.error("[students] email lookup failed", byEmail.error);
+    return null;
+  }
+
+  const phoneHit = (byPhone?.data?.[0] ?? null) as StudentRow | null;
+  const emailHit = (byEmail?.data?.[0] ?? null) as StudentRow | null;
+
+  // Phone wins, but if the two keys point at DIFFERENT people we are looking at
+  // one human split across two records, or two humans sharing a key. Picking one
+  // silently is exactly the plausible-but-wrong resolution we refuse to make.
+  let ambiguity: string | null = null;
+  if (phoneHit && emailHit && phoneHit.id !== emailHit.id) {
+    ambiguity =
+      `phone matches student ${phoneHit.id} but email matches student ${emailHit.id}; ` +
+      `these may be the same person split across two records`;
+  }
+
+  const existing = phoneHit ?? emailHit;
 
   if (!existing) {
     const { data: created, error: insertError } = await supabase
@@ -102,12 +139,25 @@ export async function findOrCreateStudent(
   }
 
   const mismatches: string[] = [];
-  if (existing.name.trim().toLowerCase() !== name.toLowerCase()) {
+  if (ambiguity) mismatches.push(ambiguity);
+
+  // compareName is false for surfaces where the caller only has a display name
+  // ("Rachel K.") rather than the name the student booked under. Comparing those
+  // would flag every honest public review as a conflict.
+  if (
+    input.compareName !== false &&
+    existing.name.trim().toLowerCase() !== name.toLowerCase()
+  ) {
     mismatches.push(`name on file is "${existing.name}", booking says "${name}"`);
   }
   if (email && existing.email_normalized && existing.email_normalized !== email) {
     mismatches.push(
       `email on file is "${existing.email_normalized}", booking says "${email}"`
+    );
+  }
+  if (phone && existing.phone_normalized && existing.phone_normalized !== phone) {
+    mismatches.push(
+      `phone on file is "${existing.phone_normalized}", booking says "${phone}"`
     );
   }
 
