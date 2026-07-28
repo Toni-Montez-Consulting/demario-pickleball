@@ -58,7 +58,7 @@ export default function Lessons({
               <div key={s.t} className="lesson-step">
                 <div className="step-time">{s.t}</div>
                 <div className="step-body">
-                  <h5>{s.h}</h5>
+                  <h4>{s.h}</h4>
                   <p>{s.p}</p>
                 </div>
               </div>

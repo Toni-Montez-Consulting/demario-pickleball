@@ -65,6 +65,34 @@ Shipped in code and CI. Not yet live: the migration and backfill are manual gate
   React state dropped any tap landing before hydration. The review rating is a native radio
   group with a CSS-only fill.
 
+### Site Health and SEO Pass (2026-07-27)
+
+From the 2026-07-26 audit. Shipped in code and CI.
+
+- Fixed a live SEO break: a trailing newline in `NEXT_PUBLIC_SITE_URL` was rendering
+  `Sitemap: https://demariomontezpb.com
+/sitemap.xml` in robots.txt, splitting every sitemap
+  `<loc>`, and putting a literal newline in the JSON-LD `url` and `@id`. `normalizeSiteUrl`
+  now trims, so output is correct regardless of the stored value.
+- Set `RATE_LIMIT_SALT` so review link tokens are no longer salted with the Supabase
+  service-role key. Done before any tokens were issued, so nothing was invalidated.
+- An unset `CRON_SECRET` now returns a logged 500 instead of a 401, so a misconfigured cron
+  cannot masquerade as a rejected caller.
+- Raised `--fg-muted` from 0.55 to 0.62. It measured 3.94:1 on `--bg` and 3.65:1 on `--bg-2`,
+  both below the 4.5:1 AA floor; it now measures 5.25:1 and 4.87:1.
+- Lesson steps use `h4` instead of `h5`, which was skipping a level under `h3`.
+- Added a styled 404. This matters more than it used to because the review-token page calls
+  `notFound()` for used or expired links.
+- The hero photo goes through `next/image` instead of a CSS `background-image`, so it gets
+  avif/webp. Rendered geometry verified identical to production.
+- Added cookieless Vercel Web Analytics.
+- Enriched the LocalBusiness structured data with `image`, `areaServed`, `sameAs`, and an
+  `employee` link to the coach node.
+
+**Deliberately not done:** `Review`/`AggregateRating` structured data. Researched 2026-07-27 —
+Google treats reviews a business collects and displays about itself as self-serving, so the
+markup is ignored for rich results. It produces no stars and is not worth the surface area.
+
 ## Remaining Manual Launch Gates
 
 - Run `docs/supabase-p0-migration.sql` if it has not already been applied in production.
@@ -86,7 +114,6 @@ Shipped in code and CI. Not yet live: the migration and backfill are manual gate
 
 ## Deferred P2
 
-- Add privacy-conscious analytics after consent/cookie policy is final.
 - Add 24-hour reminder emails.
 - Round 2 of the yield/retention work: drilling sessions and play-with-the-pro as bookable
   formats, plus packages as a manual lesson-credits ledger on the student record. Blocked on
@@ -98,6 +125,15 @@ Shipped in code and CI. Not yet live: the migration and backfill are manual gate
 - Upgrade dependency advisories when compatible patched versions are available; do not use `npm audit fix --force` without a tested migration branch.
 
 ## Long-Term Reference
+
+- `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it
+  invalidates every unused review link sitting in a student's inbox. Rotate only deliberately.
+  It was set 2026-07-27, before any tokens had been issued, so nothing was invalidated. Before
+  that it fell back to `SUPABASE_SERVICE_ROLE_KEY`, which coupled review links to the database
+  credential.
+- Environment variables added through the Vercel CLI are stored as sensitive and **cannot be
+  read back** with `vercel env pull` — it reports them as empty. "Set" is verifiable, "set to
+  the right value" is not. Verify those functionally after deploy instead of trusting a pull.
 
 - Keep the Business roadmap focused on DeMario's operating tasks: venue routing, proof-on-file, payments, follow-ups, and growth.
 - Keep `docs/MARIO_ACTION_PLAN.md`, `/admin/tasks`, and `/admin/roadmap` nontechnical enough for Mario to complete without understanding code or infrastructure.

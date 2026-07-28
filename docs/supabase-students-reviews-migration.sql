@@ -51,12 +51,21 @@ do $$
 declare
   con record;
 begin
+  -- Only constraints that actually reference the status COLUMN, not merely any
+  -- constraint whose text happens to contain the word. Matching on the text
+  -- would drop an unrelated CHECK that mentions status in a comment or value.
   for con in
-    select conname
-    from pg_constraint
-    where conrelid = 'bookings'::regclass
-      and contype = 'c'
-      and pg_get_constraintdef(oid) ilike '%status%'
+    select c.conname
+    from pg_constraint c
+    where c.conrelid = 'bookings'::regclass
+      and c.contype = 'c'
+      and exists (
+        select 1
+        from unnest(c.conkey) as k(attnum)
+        join pg_attribute a
+          on a.attrelid = c.conrelid and a.attnum = k.attnum
+        where a.attname = 'status'
+      )
   loop
     execute format('alter table bookings drop constraint %I', con.conname);
   end loop;
