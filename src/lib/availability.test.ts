@@ -329,3 +329,82 @@ describe("overlapping bookings", () => {
     expect(result?.status).toBe(409);
   });
 });
+
+describe("lessons must not run through the coach's own blocks", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-28T12:00:00-05:00"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const SLOTS = [
+    { display_label: "4:00 PM", active: true },
+    { display_label: "5:00 PM", active: true },
+    { display_label: "5:30 PM", active: true },
+    { display_label: "6:00 PM", active: true },
+    { display_label: "7:00 PM", active: true },
+  ];
+  const noBusy = async () => ({ busy: [], error: null });
+
+  function withBlock(time: string) {
+    return mockSupabase({
+      bookings: [],
+      blocked_slots: [{ date: "2026-05-04", time, all_day: false }],
+      recurring_blocks: [],
+      time_slots: SLOTS,
+    });
+  }
+
+  // Mario blocks 6:00 PM. A 90-minute clinic at 5:00 PM runs to 6:30 and would
+  // eat 30 minutes of it. Blocks were single-point labels, so this booked fine.
+  it("blocks a 90-minute lesson that would run over a blocked time", async () => {
+    const { data } = await getAvailabilityForDate(withBlock("6:00 PM"), "2026-05-04", {
+      lessonType: "clinic",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual(expect.arrayContaining(["6:00 PM", "5:00 PM", "5:30 PM"]));
+  });
+
+  // Even the default 60-minute lesson reaches a 5:30 block from 5:00.
+  it("blocks a 60-minute lesson that would run over a blocked time", async () => {
+    const { data } = await getAvailabilityForDate(withBlock("5:30 PM"), "2026-05-04", {
+      lessonType: "beginner",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual(expect.arrayContaining(["5:30 PM", "5:00 PM"]));
+  });
+
+  // A lesson ending exactly when the block starts is fine — do not over-block.
+  it("still allows a lesson that finishes exactly as the block begins", async () => {
+    const { data } = await getAvailabilityForDate(withBlock("6:00 PM"), "2026-05-04", {
+      lessonType: "beginner",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toContain("6:00 PM");
+    expect(data?.unavailable).not.toContain("5:00 PM");
+    expect(data?.unavailable).not.toContain("4:00 PM");
+  });
+
+  it("applies the same rule to recurring weekly blocks", async () => {
+    const supabase = mockSupabase({
+      bookings: [],
+      blocked_slots: [],
+      // 2026-05-04 is a Monday
+      recurring_blocks: [{ day_of_week: 1, time: "6:00 PM" }],
+      time_slots: SLOTS,
+    });
+    const { data } = await getAvailabilityForDate(supabase, "2026-05-04", {
+      lessonType: "clinic",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual(expect.arrayContaining(["6:00 PM", "5:00 PM", "5:30 PM"]));
+  });
+
+  it("refuses such a booking server-side too", async () => {
+    const result = await assertBookableSlot(withBlock("6:00 PM"), "2026-05-04", "5:00 PM", "clinic");
+    expect(result?.ok).toBe(false);
+    expect(result?.status).toBe(409);
+  });
+});
