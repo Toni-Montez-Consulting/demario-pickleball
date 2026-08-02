@@ -356,9 +356,21 @@ npx vercel --prod
 
 ### Booking uniqueness
 
-A partial unique index prevents double-booking:
+Two database guards prevent double-booking. The partial unique index catches an exact
+duplicate slot:
 ```sql
 bookings_unique_active_slot ON bookings(lesson_date, lesson_time) WHERE status != 'cancelled'
+```
+
+And `bookings_no_overlap` (an exclusion constraint, see
+`docs/supabase-booking-overlap-migration.sql`) catches a lesson that OVERLAPS an existing
+one without sharing its start time — a 90-minute clinic at 5:00 PM against a 6:00 PM
+booking. Lessons run 60/75/90 minutes against hourly slots, so the unique index alone
+never caught that case:
+
+```sql
+bookings_no_overlap EXCLUDE USING gist (lesson_date WITH =, <duration range> WITH &&)
+  WHERE (status <> 'cancelled' AND status <> 'no_show')
 ```
 If two students try to book the same slot simultaneously, one gets a 409 error and the booking modal refreshes availability automatically.
 
@@ -394,7 +406,13 @@ Run `docs/supabase-p1-hardening.sql` to create the `rate_limit_events` table use
 
 **One-off blocks** — block a specific date. Check "Whole day" to block all times, or pick a specific time slot to block just that time on that date.
 
-> The booking API checks all three layers (time_slots active, not in blocked_slots, not in recurring_blocks) before allowing a booking.
+> The booking API checks all three layers (time_slots active, not in blocked_slots, not in
+> recurring_blocks) before allowing a booking, and rejects any lesson whose duration would
+> run through a blocked time or overlap an existing booking.
+>
+> Note: blocked_slots and recurring_blocks are enforced by the application only. The
+> `bookings_no_overlap` database constraint covers booking-vs-booking overlap; it cannot
+> see the block tables.
 
 ### Roadmap page (`/admin/roadmap`)
 

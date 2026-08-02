@@ -145,15 +145,38 @@ export async function getAvailabilityForDate(
     const start = zonedDateTimeToUtc(date, parsed, TIME_ZONE);
     bookingBusy.push({ start, end: new Date(start.getTime() + durationMin * 60_000) });
   });
+  const blockedLabels: string[] = [];
   blockedResult.data?.forEach((block) => {
     if (block.all_day) allDay = true;
-    else if (block.time) unavailable.add(block.time);
+    else if (block.time) {
+      unavailable.add(block.time);
+      blockedLabels.push(block.time);
+    }
   });
   recurringResult.data?.forEach((block) => {
     if (block.time === null) allDay = true;
-    else if (block.time) unavailable.add(block.time);
+    else if (block.time) {
+      unavailable.add(block.time);
+      blockedLabels.push(block.time);
+    }
   });
-  const busy = [...busyResult.busy, ...bookingBusy];
+  // Mario's own blocks are a start instant, not a span — a block means "I am not
+  // free from here". A lesson may therefore END exactly when a block begins, but
+  // must never RUN THROUGH one. Treating blocks as zero-width intervals gives
+  // exactly that rule, and avoids inventing a duration for them.
+  const blockBusy: BusyInterval[] = [];
+  for (const label of blockedLabels) {
+    const parsed = parseDisplayTime(label);
+    if (!parsed) {
+      console.error("[availability] unparseable blocked time", label);
+      continue;
+    }
+    const at = zonedDateTimeToUtc(date, parsed, TIME_ZONE);
+    // 1ms wide so the half-open overlap test treats it as "contains this instant".
+    blockBusy.push({ start: at, end: new Date(at.getTime() + 1) });
+  }
+
+  const busy = [...busyResult.busy, ...bookingBusy, ...blockBusy];
   timeSlotsResult.data?.forEach((slot) => {
     if (
       typeof slot.display_label === "string" &&
