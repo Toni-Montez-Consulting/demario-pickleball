@@ -64,6 +64,16 @@ export async function PATCH(
     .select()
     .single();
 
+  // Reactivating a booking (for example no_show back to confirmed) brings it back
+  // inside the overlap constraint. If something else was booked into that time in
+  // the meantime the constraint fires, and a bare 500 would leave Mario guessing.
+  if (error?.code === "23P01" || error?.code === "23505") {
+    console.warn("[bookings PATCH] status change would overlap another booking", id);
+    return NextResponse.json(
+      { error: "Another booking now overlaps that time. Cancel or move it first." },
+      { status: 409 }
+    );
+  }
   if (error?.code === "PGRST116" || !data) {
     return NextResponse.json({ error: "Booking not found" }, { status: 404 });
   }
