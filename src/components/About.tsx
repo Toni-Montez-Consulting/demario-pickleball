@@ -51,8 +51,8 @@ export default function About() {
             <div className="label">Singles DUPR</div>
           </div>
           <div className="about-stat">
-            <div className="num">500+</div>
-            <div className="label">Lessons Taught</div>
+            <div className="num">25+</div>
+            <div className="label">Lessons a Week</div>
           </div>
           <div className="about-stat">
             <div className="num">12</div>
