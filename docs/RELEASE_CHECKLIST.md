@@ -43,6 +43,10 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 - Verify anon users cannot read or write `rate_limit_events`.
 - Verify `rate_limit_events` has RLS enabled and no public policies.
 - Verify the `bookings_unique_active_slot` partial unique index exists.
+- Verify the `bookings_no_overlap` exclusion constraint exists (see
+  `docs/supabase-booking-overlap-migration.sql`). Confirm it rejects a 90-minute clinic at
+  5:00 PM followed by a 60-minute lesson at 6:00 PM on the same date, and still ALLOWS
+  back-to-back 60-minute lessons at 5:00 PM and 6:00 PM.
 - Verify `admin_tasks.priority` exists and accepts `high` / `normal`.
 - Verify active `time_slots` include the current lesson schedule.
 - Verify venue/location copy matches `docs/VENUE_RULES.md` before accepting live bookings.

@@ -353,7 +353,8 @@ The production Supabase project uses the following core tables. Schema changes a
 `bookings` also carries `student_id` and `review_request_sent_at`, and accepts a `no_show` status.
 
 **Key constraints (applied by `docs/supabase-p1-hardening.sql`):**
-- `bookings_unique_active_slot` — unique partial index on `(lesson_date, lesson_time)` where `status != 'cancelled'`, preventing double-booking at the database level.
+- `bookings_unique_active_slot` — unique partial index on `(lesson_date, lesson_time)` where `status != 'cancelled'`, catching an exact duplicate slot.
+- `bookings_no_overlap` — exclusion constraint (gist) rejecting bookings whose lesson durations overlap on the same date, where `status` is neither `cancelled` nor `no_show`. Lessons run 60/75/90 minutes against hourly slots, so the unique index above never caught an overlapping-but-different start time. See `docs/supabase-booking-overlap-migration.sql`.
 
 **Migrations to run in order:**
 1. `docs/supabase-p0-migration.sql` — adds waiver columns, tightens public PII policy
@@ -433,7 +434,7 @@ All required variables must be set in Vercel (or `.env.local` for local developm
 Before going live with a new environment, see `docs/RELEASE_CHECKLIST.md` for the full sequence. Key steps:
 
 1. Run the Supabase migration SQL files in the Supabase SQL Editor.
-2. Verify `bookings_unique_active_slot` constraint exists.
+2. Verify `bookings_unique_active_slot` and `bookings_no_overlap` constraints exist.
 3. Verify RLS blocks anon reads/writes on `bookings`, `inquiries`, `rate_limit_events`.
 4. Set all required environment variables in Vercel.
 5. Complete Google Calendar OAuth flow and confirm Admin → Availability shows "connected."
