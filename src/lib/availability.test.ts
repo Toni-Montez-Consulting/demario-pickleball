@@ -233,3 +233,99 @@ describe("availability", () => {
     expect(result.error).toBe("database unavailable");
   });
 });
+
+describe("overlapping bookings", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-28T12:00:00-05:00"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const SLOTS = [
+    { display_label: "1:00 PM", active: true },
+    { display_label: "2:00 PM", active: true },
+    { display_label: "3:00 PM", active: true },
+    { display_label: "5:00 PM", active: true },
+    { display_label: "5:30 PM", active: true },
+    { display_label: "6:00 PM", active: true },
+    { display_label: "7:00 PM", active: true },
+  ];
+
+  const noBusy = async () => ({ busy: [], error: null });
+
+  function withBooking(time: string, type: string) {
+    return mockSupabase({
+      bookings: [{ lesson_time: time, lesson_type: type, lesson_date: "2026-05-04", status: "confirmed" }],
+      blocked_slots: [],
+      recurring_blocks: [],
+      time_slots: SLOTS,
+    });
+  }
+
+  // A 90-minute clinic at 5:00 PM runs to 6:30. Before this fix only the exact
+  // "5:00 PM" label was blocked, so 5:30 and 6:00 stayed bookable and Mario
+  // ended up with two students at once.
+  it("blocks every slot a 90-minute clinic runs through", async () => {
+    const { data } = await getAvailabilityForDate(withBooking("5:00 PM", "clinic"), "2026-05-04", {
+      lessonType: "beginner",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual(expect.arrayContaining(["5:00 PM", "5:30 PM", "6:00 PM"]));
+    expect(data?.unavailable).not.toContain("7:00 PM");
+  });
+
+  it("blocks the next hourly slot for a 75-minute lesson", async () => {
+    const { data } = await getAvailabilityForDate(withBooking("1:00 PM", "advanced"), "2026-05-04", {
+      lessonType: "beginner",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual(expect.arrayContaining(["1:00 PM", "2:00 PM"]));
+    expect(data?.unavailable).not.toContain("3:00 PM");
+  });
+
+  it("blocks the half-hour slot after a 60-minute lesson", async () => {
+    const { data } = await getAvailabilityForDate(withBooking("5:00 PM", "beginner"), "2026-05-04", {
+      lessonType: "beginner",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual(expect.arrayContaining(["5:00 PM", "5:30 PM"]));
+    expect(data?.unavailable).not.toContain("6:00 PM");
+  });
+
+  // The requested lesson's own length matters too: a 90-minute clinic starting
+  // at 5:30 would run into a 6:00 booking.
+  it("accounts for the length of the lesson being requested", async () => {
+    const { data } = await getAvailabilityForDate(withBooking("6:00 PM", "beginner"), "2026-05-04", {
+      lessonType: "clinic",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual(expect.arrayContaining(["5:00 PM", "5:30 PM", "6:00 PM"]));
+  });
+
+  it("ignores cancelled bookings", async () => {
+    const supabase = mockSupabase({
+      bookings: [],
+      blocked_slots: [],
+      recurring_blocks: [],
+      time_slots: SLOTS,
+    });
+    const { data } = await getAvailabilityForDate(supabase, "2026-05-04", {
+      lessonType: "beginner",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual([]);
+  });
+
+  it("refuses the booking server-side, not just in the picker", async () => {
+    const result = await assertBookableSlot(
+      withBooking("5:00 PM", "clinic"),
+      "2026-05-04",
+      "6:00 PM",
+      "beginner"
+    );
+    expect(result?.ok).toBe(false);
+    expect(result?.status).toBe(409);
+  });
+});
