@@ -49,7 +49,7 @@ export const LESSONS: Record<LessonKey, Lesson> = {
   },
   clinic: {
     name: "Group Clinic",
-    desc: "Small-group. 3–4 players, 90 minutes, sharp focus.",
+    desc: "Small-group. 90 minutes, 3–4 players. One person books the session, then tells DeMario who else is coming.",
     price: "$50",
     per: "per player",
     steps: [

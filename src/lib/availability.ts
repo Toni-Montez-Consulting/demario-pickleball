@@ -87,7 +87,7 @@ export async function getAvailabilityForDate(
   const [bookingsResult, blockedResult, recurringResult, timeSlotsResult, busyResult] = await Promise.all([
     supabase
       .from("bookings")
-      .select("lesson_time")
+      .select("lesson_time, lesson_type")
       .eq("lesson_date", date)
       .neq("status", "cancelled"),
     supabase
@@ -120,8 +120,30 @@ export async function getAvailabilityForDate(
   let allDay = false;
   const unavailable = new Set<string>();
 
+  // An existing booking occupies an INTERVAL, not a single label. Lessons run
+  // 60/75/90 minutes against hourly slots (plus a 5:30 PM), so blocking only the
+  // exact start label left the slots the lesson runs through bookable — two
+  // students, one time, discovered when Mario turned up. Convert each booking to
+  // a busy interval and reuse the same overlap test the Google Calendar path
+  // already uses, which also accounts for the length of the lesson being booked.
+  const bookingBusy: BusyInterval[] = [];
   bookingsResult.data?.forEach((booking) => {
-    if (booking.lesson_time) unavailable.add(booking.lesson_time);
+    if (!booking.lesson_time) return;
+
+    // Always block the booking's own start label, independent of the time_slots
+    // table. The interval expansion below only reaches labels that are active
+    // slots, so this keeps a booking blocking itself even if its slot was
+    // deactivated or renamed.
+    unavailable.add(booking.lesson_time);
+
+    const parsed = parseDisplayTime(booking.lesson_time);
+    if (!parsed) {
+      console.error("[availability] unparseable lesson_time on a booking", booking.lesson_time);
+      return;
+    }
+    const durationMin = LESSON_DURATION_MINUTES[booking.lesson_type ?? "beginner"] ?? 60;
+    const start = zonedDateTimeToUtc(date, parsed, TIME_ZONE);
+    bookingBusy.push({ start, end: new Date(start.getTime() + durationMin * 60_000) });
   });
   blockedResult.data?.forEach((block) => {
     if (block.all_day) allDay = true;
@@ -131,10 +153,11 @@ export async function getAvailabilityForDate(
     if (block.time === null) allDay = true;
     else if (block.time) unavailable.add(block.time);
   });
+  const busy = [...busyResult.busy, ...bookingBusy];
   timeSlotsResult.data?.forEach((slot) => {
     if (
       typeof slot.display_label === "string" &&
-      slotOverlapsBusyInterval(date, slot.display_label, options.lessonType, busyResult.busy)
+      slotOverlapsBusyInterval(date, slot.display_label, options.lessonType, busy)
     ) {
       unavailable.add(slot.display_label);
     }
