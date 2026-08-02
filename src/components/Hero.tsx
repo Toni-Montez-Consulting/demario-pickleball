@@ -75,7 +75,7 @@ export default function Hero({ onOpenBooking }: HeroProps) {
               <div className="num">
                 600<span className="unit">+</span>
               </div>
-              <div className="label">Students coached</div>
+              <div className="label">Students</div>
             </div>
             <div className="hero-stat">
               <div className="num">Top 3%</div>

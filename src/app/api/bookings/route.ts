@@ -96,7 +96,10 @@ export async function POST(req: NextRequest) {
     .select()
     .single();
 
-  if (error?.code === "23505") {
+  // 23505 = the exact-slot unique index. 23P01 = the overlap exclusion
+  // constraint, which catches a lesson that runs into an existing booking even
+  // though the start times differ. Both mean the same thing to a student.
+  if (error?.code === "23505" || error?.code === "23P01") {
     return NextResponse.json({ error: "That time slot was just booked. Please pick another." }, { status: 409 });
   }
   if (error) {

@@ -44,6 +44,9 @@ export async function sendBookingCreatedEmails(booking: IcsBooking): Promise<voi
     subject: `You're booked — ${lesson} on ${booking.lesson_date}`,
     html: studentRequestedHtml(booking),
     attachments: [{ filename, content: icsContent, contentType: "text/calendar; method=REQUEST" }],
+    // Without this a student replying to their confirmation hits the no-reply
+    // sending domain and bounces. Mario never sees the question.
+    replyTo: adminEmail(),
   });
   if (studentResult.error) {
     console.error("[email] student confirmation failed", studentResult.error);
@@ -81,6 +84,7 @@ export async function sendBookingCancelledEmail(booking: IcsBooking): Promise<vo
     subject: `Cancelled: your lesson on ${booking.lesson_date}`,
     html: studentCancelledHtml(booking),
     attachments: [{ filename, content: icsContent, contentType: "text/calendar; method=CANCEL" }],
+    replyTo: adminEmail(),
   });
   if (result.error) {
     console.error("[email] cancellation email failed", result.error);
