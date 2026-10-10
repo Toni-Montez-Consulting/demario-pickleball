@@ -5,6 +5,11 @@ should stay in `/admin/roadmap`.
 
 ## Current Status
 
+- **As of 2026-08-12:** everything through PR #10 is merged and deployed to production. There
+  is no code in flight. What remains is the manual gate list below, Mario's blocked inputs, and
+  round 2. The binding constraint is not code: no booking has been created since 2026-07-28 and
+  no review request has ever been sent, so the round 1 retention work has never been exercised
+  by a real student.
 - P0 reliability work is shipped.
 - P1 launch-confidence work is shipped in code and CI.
 - Location Clarity Booking V1 is shipped in code: phone is required, court preference is collected, and Mario gets the handoff details.
@@ -78,8 +83,9 @@ From the 2026-07-26 audit. Shipped in code and CI.
   service-role key. Done before any tokens were issued, so nothing was invalidated.
 - An unset `CRON_SECRET` now returns a logged 500 instead of a 401, so a misconfigured cron
   cannot masquerade as a rejected caller.
-- Raised `--fg-muted` from 0.55 to 0.62. It measured 3.94:1 on `--bg` and 3.65:1 on `--bg-2`,
-  both below the 4.5:1 AA floor; it now measures 5.25:1 and 4.87:1.
+- Raised `--fg-muted` from 0.55 to 0.62, then to 0.65 (PR #8). 0.62 cleared the nominal tokens
+  but measured 4.37:1 against the real proof-panel card background at 11px bold, still under
+  the 4.5:1 AA floor. 0.65 measures 4.92:1. Measure against the rendered colour, not the token.
 - Lesson steps use `h4` instead of `h5`, which was skipping a level under `h3`.
 - Added a styled 404. This matters more than it used to because the review-token page calls
   `notFound()` for used or expired links.
@@ -93,24 +99,60 @@ From the 2026-07-26 audit. Shipped in code and CI.
 Google treats reviews a business collects and displays about itself as self-serving, so the
 markup is ignored for rich results. It produces no stars and is not worth the surface area.
 
+### Booking Overlap Fixes (2026-08-02)
+
+PRs #9 and #10. Found by an adversarial audit of the round 1 merge.
+
+- Lessons run 60/75/90 minutes against hourly slots, but availability only ever blocked the
+  exact start label of an existing booking. A 90-minute clinic at 5:00 PM ran to 6:30 and left
+  5:30 PM and 6:00 PM bookable, with confirmation emails to both students. `availability.ts`
+  now expands bookings into intervals and reuses the overlap test the Google Calendar path
+  already used.
+- Added `bookings_no_overlap`, a gist exclusion constraint, as the database backstop so a bug,
+  a manual insert, or a race fails loudly instead of silently double-booking a real lesson.
+  See `docs/supabase-booking-overlap-migration.sql`.
+- Admin status changes surface the resulting overlap conflict as a 409 instead of a bare 500.
+- PR #9 converted bookings to intervals but left `blocked_slots` and `recurring_blocks` as
+  single labels, so the same bug survived in the sibling path. PR #10 made blocks zero-width
+  busy intervals: a lesson may end exactly when a block begins but can never run through one.
+  The database constraint cannot cover this, because it only sees the `bookings` table. The
+  application layer is the sole guard for blocks.
+
 ## Remaining Manual Launch Gates
 
-- Run `docs/supabase-p0-migration.sql` if it has not already been applied in production.
-- Run `docs/supabase-p1-hardening.sql` in the Supabase SQL Editor.
-- Run `docs/supabase-priority-migration.sql` in the Supabase SQL Editor if task priority support is not already present.
-- Run the pre-flight status query in `docs/supabase-students-reviews-migration.sql`, then run the migration.
-- Decide whether the four `REVIEW_WALL` legacy testimonials are permissioned before running the seed. Cut that insert if not.
-- Run `node scripts/backfill-students.mjs` once with production credentials and confirm the reconciliation balances.
-- Set `CRON_SECRET` in Vercel and redeploy, then confirm the cron appears in the project's Cron Jobs tab.
-- Submit one real review end to end and publish it from Admin -> Reviews.
-- Verify `bookings_unique_active_slot` exists in production Supabase.
-- Verify `admin_tasks.priority` exists and accepts `high` / `normal`.
+Reconciled against production on 2026-08-12. The previous version of this list had gone stale
+and still named migrations that shipped on 2026-07-28 and 2026-08-02.
+
+**Verified done (queried against production Supabase, 2026-08-12).** Do not re-run these.
+
+- `bookings_unique_active_slot`, `bookings_no_overlap`, and `admin_tasks.priority` all exist.
+- The `students`, `reviews`, and `rate_limit_events` tables exist.
+- The students/reviews migration ran, the `legacy` seed ran (7 rows, permissioned), and
+  `scripts/backfill-students.mjs` ran: 5 bookings, 3 students, 0 unmatched.
+- 15 active time slots are configured.
+
+**Still open.**
+
 - Verify anon users cannot read or write `bookings`, `inquiries`, or `rate_limit_events`.
-- Run the live manual checks in `docs/RELEASE_CHECKLIST.md`.
-- Generate a fresh production Google refresh token with DeMario and confirm Admin -> Availability reports Google Calendar connected.
+  The policies are in place; proving it needs a real anon-key request, not a query.
+- Confirm the daily cron appears in the project's Cron Jobs tab and that `CRON_SECRET` is set.
+  The route logs a 500 when the secret is missing, so the function logs are the proof.
+- Run the live manual checks in `docs/RELEASE_CHECKLIST.md`, including the new overlap check.
+- Generate a fresh production Google refresh token with DeMario and confirm Admin ->
+  Availability reports Google Calendar connected.
+- Submit one real review end to end and publish it from Admin -> Reviews. Blocked below.
 - Review `docs/ADMIN_HANDOFF.md` with DeMario.
 - Have Mario review `docs/MARIO_ACTION_PLAN.md` and complete the live Tasks list.
-- Keep the external proof for insurance, waiver/terms, cancellation, payment policy, and venue rules available outside the repo.
+- Keep the external proof for insurance, waiver/terms, cancellation, payment policy, and venue
+  rules available outside the repo.
+
+**The review loop is unproven in production.** As of 2026-08-12, `review_request_sent_at` is
+null on all 5 bookings, all 7 `reviews` rows are `legacy` seeds from 2026-07-26, and there have
+been no new bookings since 2026-07-28. This is not a defect: the cron only asks on a booking
+with status `confirmed`, at least 24h past the lesson date, inside a 30-day lookback, and the
+only lesson in that window (2026-07-25) is still `pending` because nobody confirmed it in
+Admin. Round 1's centrepiece is built and unit tested but has never run against a real student.
+Treat that as the gate, not as more code to write. See `docs/LAUNCH_OUTSTANDING.md`.
 
 ## Deferred P2
 
