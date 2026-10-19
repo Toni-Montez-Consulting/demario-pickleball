@@ -209,10 +209,13 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
 - **LCP:** the hero uses `loading="eager"` + `fetchPriority="high"` (Next 16 deprecated
   `priority`); the offscreen About portrait is no longer preloaded; every `sizes` value
   matches its measured render width.
-- **Link previews:** 1200x630 card at `public/img/og-card.jpg`. Regenerate it with
-  `node scripts/generate-og-image.mjs` whenever the DUPR numbers change.
-- **SEO:** per-page title, canonical, and og:url via `src/lib/metadata.ts`. `/pay` is noindex
-  and out of the sitemap, and the legal pages carry fixed lastmod dates.
+- **Link previews:** 1200x630 card at `public/img/og-card.jpg`. The script reads
+  `src/lib/dupr.json`, so rerun `node scripts/generate-og-image.mjs` after any rating update.
+  Both image scripts refuse to write if the brand fonts fail to load.
+- **SEO:** per-page title, canonical, and og:url via `src/lib/metadata.ts`. The root layout
+  keeps only site-wide preview fields, so pages without their own (a `/review` link, the 404)
+  no longer preview as the homepage. `/pay` is noindex and out of the sitemap. The legal
+  pages' lastmod dates are the dates their text last changed, set in `src/app/sitemap.ts`.
 - **Accessibility:** `<main>` landmarks, `/pay` heading order, 24px tap targets on the review
   dots and footer links, and the sticky bar is inert while hidden. axe-core: 0 violations on
   `/`, `/pay`, `/privacy`, `/terms`.
