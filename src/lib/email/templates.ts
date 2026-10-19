@@ -168,7 +168,7 @@ export function lessonOutcomeDigestHtml(lessons: OutcomeDigestLesson[]): string 
     `
     <h1 style="font-size:20px;margin:0 0 8px;">${heading}</h1>
     <p style="font-size:14px;line-height:1.5;margin:0 0 8px;color:#444;">
-      One tap each. "Lesson happened" lets the site ask the student for a review.
+      One tap each. "Lesson happened" is what lets the site ask the student for a review.
     </p>
     ${rows}
     <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">

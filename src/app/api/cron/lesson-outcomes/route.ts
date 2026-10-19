@@ -7,17 +7,12 @@ import {
   outcomeSecret,
   reminderWindow,
   signOutcomeToken,
+  LESSON_NAMES,
   OUTCOMES,
   type LessonOutcome,
 } from "@/lib/lesson-outcomes";
 import { SITE_URL } from "@/lib/site";
 import { parseDisplayTime } from "@/lib/time";
-
-const LESSON_NAMES: Record<string, string> = {
-  beginner: "Foundations",
-  advanced: "Strategy Lab",
-  clinic: "Group Clinic",
-};
 
 /**
  * Daily Vercel cron, two hours before the review-request cron. Emails Mario

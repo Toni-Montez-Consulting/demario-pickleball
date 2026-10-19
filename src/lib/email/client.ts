@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 import { Resend, type CreateEmailOptions } from "resend";
+import { shortName } from "@/lib/lesson-outcomes";
 import { generateIcs, type IcsBooking, type IcsMethod } from "./ics";
 import {
   studentRequestedHtml,
@@ -217,9 +218,10 @@ export async function sendLessonOutcomeDigest(lessons: OutcomeDigestLesson[]): P
     return false;
   }
   const first = lessons[0];
+  // "Jane S.", as the spec's contract says: subjects show on lock screens.
   const subject =
     lessons.length === 1
-      ? `Did it happen? ${first.lessonName} with ${first.name.replace(/[\r\n]+/g, " ").trim()}`
+      ? `Did it happen? ${first.lessonName} with ${oneLine(shortName(first.name))}`
       : `${lessons.length} lessons need an outcome`;
   const result = await resend.emails.send({
     from: emailFrom(),
@@ -228,7 +230,7 @@ export async function sendLessonOutcomeDigest(lessons: OutcomeDigestLesson[]): P
     html: lessonOutcomeDigestHtml(lessons),
   });
   if (result.error) {
-    console.error("[email] lesson outcome digest failed", result.error);
+    reportSendFailure("lesson outcome digest", result.error);
     return false;
   }
   return true;
