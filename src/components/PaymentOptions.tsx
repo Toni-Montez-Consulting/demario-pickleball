@@ -1,6 +1,8 @@
 interface PaymentOptionsProps {
   bookingId?: string;
   amount?: string;
+  /** 4 inside the booking dialog (under its h3); 2 on /pay (under the page h1). */
+  headingLevel?: 2 | 4;
 }
 
 const CASH_APP_URL = "https://cash.app/$DeMarioMontez1";
@@ -9,14 +11,15 @@ const ZELLE_URL =
 const PAYPAL_URL = "https://www.paypal.com/paypalme/DemarioMontez";
 const PAYPAL_QR_SRC = "/img/paypal-qr-tight.png";
 
-export default function PaymentOptions({ bookingId, amount }: PaymentOptionsProps) {
+export default function PaymentOptions({ bookingId, amount, headingLevel = 4 }: PaymentOptionsProps) {
+  const Heading = headingLevel === 2 ? "h2" : "h4";
   const shortId = bookingId ? bookingId.slice(0, 8).toUpperCase() : null;
   const memo = shortId ? `Lesson ${shortId}` : null;
 
   return (
     <div className="pay-options">
       <div className="pay-options-header">
-        <h4>Pay DeMario</h4>
+        <Heading>Pay DeMario</Heading>
         {amount && <span className="pay-amount">{amount}</span>}
       </div>
       {memo && (

@@ -11,7 +11,7 @@ export const metadata = pageMetadata({
 export default function PrivacyPage() {
   return (
     <div className="legal-bg">
-      <div className="legal-page">
+      <main className="legal-page">
         <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Privacy Policy</h1>
         <p className="legal-date">Effective April 27, 2026</p>
@@ -98,7 +98,7 @@ export default function PrivacyPage() {
           <a href="mailto:demariomontez10@gmail.com">demariomontez10@gmail.com</a> or call{" "}
           <a href="tel:4693719220">(469) 371-9220</a>.
         </p>
-      </div>
+      </main>
     </div>
   );
 }

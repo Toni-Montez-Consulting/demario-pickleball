@@ -369,14 +369,23 @@ section.block { padding: 64px 22px; position: relative; }
 }
 
 .review-pager {
-  display: flex; gap: 6px; margin-top: 18px; justify-content: center;
+  /* 7.5px + the buttons' 10.5px top padding keeps the bars where an 18px
+     margin put them before the tap targets grew. */
+  display: flex; gap: 6px; margin-top: 7.5px; justify-content: center;
 }
+/* The visible bar stays 3px tall. Padding plus content-box clipping gives each
+   button a 24px-tall tap target (WCAG 2.5.8); before, it was the 3px bar. */
 .review-pager button {
   width: 20px; height: 3px; border-radius: 2px;
-  background: var(--line);
-  transition: background .2s, width .2s;
+  box-sizing: content-box;
+  padding: 10.5px 0;
+  background-color: var(--line);
+  background-clip: content-box;
+  transition: background-color .2s, width .2s;
 }
-.review-pager button.active { background: var(--accent); width: 34px; }
+/* background-color, not the shorthand: the shorthand resets background-clip
+   and would paint the whole 24px target. */
+.review-pager button.active { background-color: var(--accent); width: 34px; }
 .proof-panel {
   display: flex;
   flex-direction: column;
@@ -1731,7 +1740,8 @@ footer .contact-line a:hover { color: var(--fg); }
   gap: 8px;
   align-items: center;
 }
-.footer-legal a { color: inherit; transition: color 0.15s; }
+/* 24px tall tap targets (WCAG 2.5.8); the text alone was 17px. */
+.footer-legal a { color: inherit; transition: color 0.15s; display: inline-flex; align-items: center; min-height: 24px; }
 .footer-legal a:hover { color: var(--fg); }
 .legal-sep { opacity: 0.5; }
 
@@ -2851,7 +2861,7 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
   align-items: baseline;
   margin-bottom: 8px;
 }
-.pay-options-header h4 {
+.pay-options-header :is(h2, h4) {
   margin: 0;
   font-family: var(--font-space-grotesk), var(--font-inter), sans-serif;
   font-size: 15px;

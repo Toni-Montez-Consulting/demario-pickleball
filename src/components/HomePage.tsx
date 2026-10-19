@@ -32,6 +32,8 @@ export default function HomePage() {
   return (
     <div className="device" id="device">
       <Nav onOpenBooking={() => openBooking()} />
+      {/* One main landmark, so screen-reader users can jump past the nav. */}
+      <main>
       <Hero onOpenBooking={() => openBooking()} />
       <TrustBar />
       <Testimonials onOpenBooking={() => openBooking()} />
@@ -44,6 +46,7 @@ export default function HomePage() {
       <FinalCta onOpenBooking={() => openBooking()} />
       <BookingPlatforms />
       <ContactForm />
+      </main>
       <Footer />
       <StickyCta onOpenBooking={() => openBooking()} />
       <BookingModal

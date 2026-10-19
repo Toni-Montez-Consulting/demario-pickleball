@@ -15,7 +15,7 @@ export const metadata = pageMetadata({
 export default function PayPage() {
   return (
     <div className="legal-bg">
-      <div className="legal-page">
+      <main className="legal-page">
         <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Pay DeMario</h1>
         <p className="legal-date">
@@ -25,7 +25,7 @@ export default function PayPage() {
         </p>
 
         <div className="pay-page-wrap">
-          <PaymentOptions />
+          <PaymentOptions headingLevel={2} />
         </div>
 
         <p className="legal-date" style={{ marginTop: "2rem" }}>
@@ -33,7 +33,7 @@ export default function PayPage() {
           <a href="mailto:demariomontez10@gmail.com">demariomontez10@gmail.com</a> or call{" "}
           <a href="tel:4693719220">(469) 371-9220</a>.
         </p>
-      </div>
+      </main>
     </div>
   );
 }
