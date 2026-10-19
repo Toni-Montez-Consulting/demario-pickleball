@@ -166,7 +166,14 @@ production. The audit evidence is `docs/plans/2026-10-19-audit-and-enhancements.
 - CI moves to Node 24 (matching Vercel) on `actions/checkout@v7` and `actions/setup-node@v7`.
 - `agentRules: false` in `next.config.ts`: Next 16.4's `next dev` otherwise appends a generated
   block to the hand-maintained `AGENTS.md` every time an AI agent runs the dev server.
-- Details and the remaining dev-only ESLint advisories: `docs/DEPENDENCY_ADVISORIES.md`.
+- Node 24.x is declared in `engines` and `.nvmrc`. The new `@supabase/supabase-js` throws on
+  Node 20, so local development needs Node 22 or newer.
+- `next-env.d.ts` is gitignored, and `npm run typecheck` runs `next typegen` first. Next 16.4
+  rewrote the tracked copy on every dev or build run.
+- The Sentry config import moved to `@sentry/nextjs/config`; the Vitest config is now
+  `vitest.config.mts`. Both clear deprecation warnings from this round's upgrades.
+- Details, the remaining dev-only ESLint advisory, and the Sentry 11 to-do:
+  `docs/DEPENDENCY_ADVISORIES.md`.
 
 ## Long-Term Reference
 
