@@ -8,5 +8,13 @@
       "path": "/api/cron/lesson-outcomes",
       "schedule": "0 13 * * *"
     }
+  ],
+  "headers": [
+    {
+      "source": "/fonts/(.*)\\.woff2",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
   ]
 }

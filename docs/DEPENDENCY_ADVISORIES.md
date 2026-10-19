@@ -59,13 +59,15 @@ the date and the condition for removing it.
   `sendDefaultPii: false` configs to `dataCollection` before upgrading, keeping PII off.
 - The Vitest config is `vitest.config.mts`. Vite 8.3 warns when a `.ts` config with ESM syntax
   loads as CommonJS, which its future native config loader will reject.
-- `next dev` occasionally never finishes starting. The log repeats `next/font/google queries
-  have exactly one entry` and `Can't resolve '@vercel/turbopack-next/internal/font/google/font'`
-  until Playwright's 120-second web-server timeout. About 1 in 30 Google Fonts CSS responses
-  (measured 2026-10-19) use `fonts.gstatic.com/l/font?kit=...&skey=...&v=...` URLs, and Next
-  16.4's Turbopack font loader cannot parse the `&` in them. The cause is upstream, not this code:
-  restart the dev server. No Vercel build has failed this way. Self-hosting Inter and Space
-  Grotesk with `next/font/local` would remove the network dependency entirely.
+- Resolved: `next dev` occasionally never finished starting. The log repeated `next/font/google
+  queries have exactly one entry` and `Can't resolve '@vercel/turbopack-next/internal/font/google/font'`
+  until Playwright's 120-second web-server timeout; it failed GitHub CI on #11 and again on #22.
+  About 1 in 30 Google Fonts CSS responses (measured 2026-10-19) use
+  `fonts.gstatic.com/l/font?kit=...&skey=...&v=...` URLs, and Next 16.4's Turbopack font loader
+  cannot parse the `&` in them. Inter and Space Grotesk are now self-hosted
+  (`src/app/fonts.css`, `public/fonts/`), so nothing fetches Google Fonts. These are the same
+  files and rules next/font/google produced, as plain `@font-face` rules: `next/font/local`
+  cannot give each file of one family its own `unicode-range`, which the per-subset split needs.
 
 ## Policy
 

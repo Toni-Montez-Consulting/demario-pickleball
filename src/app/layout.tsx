@@ -1,21 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { preload } from "react-dom";
 import SiteAnalytics from "@/components/SiteAnalytics";
 import { SITE_URL } from "@/lib/site";
 import { OG_IMAGE, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/metadata";
+import "./fonts.css";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-inter",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-space-grotesk",
-});
+// The Latin subsets carry nearly all of the site's text. next/font preloaded
+// these two files before fonts.css replaced it, and the preload stays.
+const PRELOADED_FONTS = [
+  "/fonts/inter-latin.83afe278.woff2",
+  "/fonts/space-grotesk-latin.0c89a48f.woff2",
+];
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -108,8 +104,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  for (const href of PRELOADED_FONTS) {
+    preload(href, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+  }
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en">
       <head>
         <script
           type="application/ld+json"
