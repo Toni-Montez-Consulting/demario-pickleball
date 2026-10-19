@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import SiteAnalytics from "@/components/SiteAnalytics";
+import { DUPR } from "@/lib/dupr";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -19,8 +20,7 @@ const spaceGrotesk = Space_Grotesk({
 // One source for the search and link-preview snippet. It was pasted into two
 // places before, which is how a stale rating survives an update. Kept under
 // ~155 characters so Google does not truncate it.
-const SITE_DESCRIPTION =
-  "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book DeMario Montez — 4.97 doubles DUPR, top 1% worldwide, top 40 in DFW, USPTA certified.";
+const SITE_DESCRIPTION = `Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book DeMario Montez — ${DUPR.doublesShort} doubles DUPR, top ${DUPR.topPercent}% worldwide, top ${DUPR.dfwTop} in DFW, USPTA certified.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

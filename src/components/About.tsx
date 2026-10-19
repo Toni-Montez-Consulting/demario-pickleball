@@ -1,5 +1,6 @@
 import Image from "next/image";
 import RevealWrapper from "./RevealWrapper";
+import { DUPR } from "@/lib/dupr";
 
 export default function About() {
   return (
@@ -31,8 +32,9 @@ export default function About() {
       </RevealWrapper>
       <RevealWrapper delay={120}>
         <p className="about-bio-intro">
-          I&apos;m a 4.97 doubles DUPR player — top 1% worldwide and in Texas,
-          top 100 in the state, and top 40 in DFW. I&apos;m also a
+          I&apos;m a {DUPR.doublesShort} doubles DUPR player — top{" "}
+          {DUPR.topPercent}% worldwide and in Texas, top {DUPR.texasTop} in the
+          state, and top {DUPR.dfwTop} in DFW. I&apos;m also a
           USPTA/DUPR certified coach and a pickleball instructor for Dallas ISD
           and the City of Carrollton. I built my game the hard way — film study,
           repeatable patterns, pressure-testing every shot. Now I build yours
@@ -45,11 +47,11 @@ export default function About() {
         </p>
         <div className="about-stats">
           <div className="about-stat">
-            <div className="num">4.973</div>
+            <div className="num">{DUPR.doubles}</div>
             <div className="label">Doubles DUPR</div>
           </div>
           <div className="about-stat">
-            <div className="num">Top 40</div>
+            <div className="num">Top {DUPR.dfwTop}</div>
             <div className="label">DFW players</div>
           </div>
           <div className="about-stat">
@@ -64,7 +66,7 @@ export default function About() {
         {/* Ratings move every week and are updated by hand until DUPR grants API
             access. The date keeps the claim honest once it starts to age. */}
         <p className="about-stats-note">
-          DUPR doubles rating and rankings as of October 2026.
+          DUPR doubles rating and rankings as of {DUPR.asOf}.
         </p>
       </RevealWrapper>
       <RevealWrapper delay={150}>
