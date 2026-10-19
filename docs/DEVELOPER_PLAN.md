@@ -239,9 +239,16 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
   Pro limit). An e2e test proves the booking funnel's events never contain what the student
   typed.
 - `booking_created` is server-side, so only saved bookings count. It sends no cookies, unlike
-  the library default.
+  the library default. In production it posts to the custom domain: the library's default
+  `*.vercel.app` target sits behind Vercel Authentication on this project, which silently
+  dropped every server event.
+- Each booking step counts once per opening of the form, so step totals read as a funnel.
+  Middle clicks count as link clicks; a saved booking whose response body is lost still shows
+  the confirmation.
+- The event list and court-setup codes are compiler-checked, and a unit test fails if a
+  partner venue's name stops mapping to a code.
 - Privacy policy (now "Updated October 19, 2026") and cookie notice disclose the interaction
-  counts.
+  counts. The site roadmap marks analytics shipped.
 - **Before relying on it:** open Vercel -> Analytics and confirm Web Analytics is enabled. The
   query API said "not found" for this project on 2026-10-19.
 
