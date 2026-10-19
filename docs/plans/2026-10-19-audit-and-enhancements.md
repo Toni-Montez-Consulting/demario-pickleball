@@ -133,8 +133,12 @@ Verification:
 - Vercel showed no runtime errors (checked 18:13 UTC).
 
 #19 fixes the sticky nav's blur outside Safari. The CSS build had dropped it, which predates
-this round; it showed once #16 made the nav stick. It is merged and goes out with the next
-deploy.
+this round; it showed once #16 made the nav stick. It went live at 19:52 UTC in
+`dpl_45DWEAsGRKowFhXRhV63XpuPTAjx` (`master` at `3aabb05`):
+- The smoke checks and browser pass again passed 30 of 30 and 28 of 28.
+- The stuck nav's computed `backdrop-filter` reads `blur(14px)`; it was `none`.
+
+#11, the August launch reconciliation, was brought up to date and merged. It is docs only.
 
 Also done on 2026-10-19: Supabase `rls_auto_enable()` no longer grants `EXECUTE` to
 `public`, `anon`, or `authenticated` (migration `revoke_public_execute_on_rls_auto_enable`),
@@ -163,10 +167,10 @@ For Tonio:
     2026".
   - Every booking since then records a version whose text the student did not see.
   - Decide with whoever advises on the waiver before changing either.
-- PR #11's `LAUNCH_OUTSTANDING.md` still calls the "5.0 star, 79 reviews" claim live. It was
-  removed in July (`dad3a06`), and #13 links the sourced 5.0 from 137 ratings instead.
-- Optional: self-host Inter and Space Grotesk with `next/font/local`. That ends the
-  intermittent `next dev` start-up failure caused by Google Fonts responses.
+- Recommended: self-host Inter and Space Grotesk with `next/font/local`. That ends the
+  intermittent `next dev` start-up failure caused by Google Fonts responses, which failed one
+  GitHub CI run on 2026-10-19 (#11; it passed on re-run). Keep today's per-subset
+  `unicode-range` split and check the typography renders the same.
 
 For DeMario:
 - Instagram handle, and which address to use.

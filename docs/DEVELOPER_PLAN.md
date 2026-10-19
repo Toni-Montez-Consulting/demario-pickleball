@@ -178,7 +178,8 @@ Six stacked PRs, merged on 2026-10-19 in this order: #13 `fix/dupr-rankings`, #1
 `feat/conversion-tracking`, #18 `feat/lesson-outcome-nudge`. They reached production the same
 day in one deployment (`dpl_5scgTq8n43n4uqBxmGYiogUZkDee`, master `30c99be`), started by hand
 because pushes to master no longer deploy (`docs/SETUP.md` section 8). The audit evidence is
-`docs/plans/2026-10-19-audit-and-enhancements.md`, added by #12.
+`docs/plans/2026-10-19-audit-and-enhancements.md`, added by #12. A follow-up the same day, #19,
+restored the sticky nav's blur outside Safari (`dpl_45DWEAsGRKowFhXRhV63XpuPTAjx`).
 
 ### 1. `fix/dupr-rankings` — credentials update (2026-10-19)
 
