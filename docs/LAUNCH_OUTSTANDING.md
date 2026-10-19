@@ -1,8 +1,9 @@
 # Public Launch Outstanding Notes
 
-Last updated: 2026-08-12. Previous revision was 2026-05-06 and had gone stale: it
-still listed database work that shipped in round 1 (2026-07-28) and in the
-double-booking fixes (2026-08-02).
+Last updated: 2026-10-19, after the October round (PRs #12 to #19). The full
+reconciliation below is from 2026-08-12. The revision before that (2026-05-06)
+had gone stale: it still listed database work that shipped in round 1
+(2026-07-28) and in the double-booking fixes (2026-08-02).
 
 This file captures the items that code cannot prove on its own. Anything listed
 here as verified was checked against production on the date shown, not inferred
@@ -47,6 +48,13 @@ Mario using the Confirm action, not on more code.
 Until a real lesson runs through it, treat the review loop as built and unit
 tested but unproven in production.
 
+**Update 2026-10-19.** Still unproven. Aggregate counts on 2026-10-18: 8
+bookings, 1 ever confirmed, 0 review requests sent. PR #18 adds a morning email
+that gives Mario one-tap Lesson happened / No-show / Didn't happen links for
+recent pending lessons, so they get recorded without opening Admin. It stays
+off until `LESSON_OUTCOME_SECRET` is set in Vercel Production; see the Lesson
+Outcome Nudge section of `docs/RELEASE_CHECKLIST.md`.
+
 Owner: Mario for confirming bookings, Tonio for watching the first live pass.
 
 ### Live booking QA
@@ -79,10 +87,11 @@ Owner: Tonio and Mario.
 
 ### CRON_SECRET
 
-`vercel.json` declares the daily cron at 15:00 UTC. The route returns a 500 and
-logs loudly if `CRON_SECRET` is missing, so this is verifiable from the function
-logs once a lesson is eligible. Confirm the cron appears in the project's Cron
-Jobs tab.
+Set, verified 2026-10-19: an unauthenticated request to
+`/api/cron/review-requests` returns 401 in production, and the route returns a
+500 instead when the secret is missing. `vercel.json` declares two daily crons:
+review requests at 15:00 UTC and, since #18, the lesson outcome digest at 13:00
+UTC. Still to do: confirm both appear in the project's Cron Jobs tab.
 
 Owner: Tonio.
 
@@ -90,15 +99,15 @@ Owner: Tonio.
 
 - Pricing, duration, and player counts for drilling sessions and
   play-with-the-pro. This blocks all of round 2.
-- The source of the live `5.0 star, 79 reviews` claim. Unverified since May. If
-  the source or permission is not ready, replace the claim with softer copy.
-  Acceptable proof: Google Business Profile, TeachMe.To profile, another public
-  review source, or direct written permission.
 - Mario has no Google Business Profile. Verify service-area-business eligibility
   against live Google documentation before writing that task.
 - DUPR read-only API or partner access. Automated rating sync waits on it.
 
 The three homepage testimonials are confirmed real and permissioned.
+
+The unsourced `5.0 star, 79 reviews` claim was removed on 2026-07-26
+(`dad3a06`). Since #13 (2026-10-19) the trust strip links his TeachMe.To rating
+instead: 5.0 from 137+ ratings, checked October 2026.
 
 ## Settled
 
@@ -150,7 +159,11 @@ recurring blocks are guarded by the application layer alone.
 - `Confirm` marks the booking confirmed. It does not email the student. It is
   also what makes a booking eligible for a review request 24 hours after the
   lesson.
-- `Cancel` marks the booking cancelled and sends the cancellation email.
+- `Cancel` marks the booking cancelled and emails the student a cancellation.
+  Once the lesson has started, the button reads `Didn't happen` instead and
+  emails no one (#18).
+- The `Needs outcome` filter lists pending bookings whose lesson date has
+  passed (#18).
 - `Mark paid` toggles `paid_at` after Mario receives Cash App, Zelle, or PayPal.
 - Mario should text each new student to confirm the exact court, any court
   reservation fee, and payment expectation.
@@ -169,5 +182,5 @@ reserved court fee is confirmed separately by Mario before the lesson.
 - Add structured venue selection only after the court expansion checklist proves
   it will help students more than it clutters booking.
 - Add a short availability debounce or cache if public traffic increases.
-- Replace static review claims with linked review-source badges when Mario's
-  review profiles are ready.
+- Link more review sources as Mario's profiles are ready. TeachMe.To is linked
+  (#13); Google reviews wait on a Business Profile.

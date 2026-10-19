@@ -5,6 +5,10 @@ should stay in `/admin/roadmap`.
 
 ## Current Status
 
+- **As of 2026-10-19:** the October round (PRs #12 to #19) is merged; see "October 2026 Audit
+  Round" below. The binding constraint has not moved: of 8 bookings only 1 was ever confirmed,
+  and no review request has been sent (aggregate counts, 2026-10-18). #18's morning outcome
+  digest targets exactly that, once `LESSON_OUTCOME_SECRET` is set.
 - **As of 2026-08-12:** everything through PR #10 is merged and deployed to production. There
   is no code in flight. What remains is the manual gate list below, Mario's blocked inputs, and
   round 2. The binding constraint is not code: no booking has been created since 2026-07-28 and
@@ -135,8 +139,9 @@ and still named migrations that shipped on 2026-07-28 and 2026-08-02.
 
 - Verify anon users cannot read or write `bookings`, `inquiries`, or `rate_limit_events`.
   The policies are in place; proving it needs a real anon-key request, not a query.
-- Confirm the daily cron appears in the project's Cron Jobs tab and that `CRON_SECRET` is set.
-  The route logs a 500 when the secret is missing, so the function logs are the proof.
+- Confirm both crons (review requests at 15:00 UTC, lesson outcomes at 13:00 UTC) appear in the
+  project's Cron Jobs tab. `CRON_SECRET` is set: on 2026-10-19 an unauthenticated request
+  returned 401, and the route returns 500 when the secret is missing.
 - Run the live manual checks in `docs/RELEASE_CHECKLIST.md`, including the new overlap check.
 - Generate a fresh production Google refresh token with DeMario and confirm Admin ->
   Availability reports Google Calendar connected.
@@ -152,7 +157,8 @@ been no new bookings since 2026-07-28. This is not a defect: the cron only asks 
 with status `confirmed`, at least 24h past the lesson date, inside a 30-day lookback, and the
 only lesson in that window (2026-07-25) is still `pending` because nobody confirmed it in
 Admin. Round 1's centrepiece is built and unit tested but has never run against a real student.
-Treat that as the gate, not as more code to write. See `docs/LAUNCH_OUTSTANDING.md`.
+Treat that as the gate, not as more code to write. See `docs/LAUNCH_OUTSTANDING.md`. Still true
+on 2026-10-18 (8 bookings, 1 confirmed, 0 review requests); #18 is the response.
 
 ## Deferred P2
 
