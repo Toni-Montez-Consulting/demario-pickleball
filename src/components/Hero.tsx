@@ -25,7 +25,7 @@ export default function Hero({ onOpenBooking }: HeroProps) {
         <div className="hero-content">
           <div className="eyebrow">
             <span className="dot" />
-            Dallas–Fort Worth · Head Pro
+            Dallas–Fort Worth · Pickleball Coach
           </div>
           <h1 className="hero-title">
             Train smarter.
