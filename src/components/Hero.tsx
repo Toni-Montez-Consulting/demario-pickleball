@@ -67,19 +67,19 @@ export default function Hero({ onOpenBooking }: HeroProps) {
           <div className="hero-stats">
             <div className="hero-stat">
               <div className="num">
-                4.70<span className="unit">DUPR</span>
+                4.97<span className="unit">DUPR</span>
               </div>
               <div className="label">Doubles rating</div>
+            </div>
+            <div className="hero-stat">
+              <div className="num">Top 1%</div>
+              <div className="label">DUPR worldwide</div>
             </div>
             <div className="hero-stat">
               <div className="num">
                 600<span className="unit">+</span>
               </div>
               <div className="label">Students</div>
-            </div>
-            <div className="hero-stat">
-              <div className="num">Top 3%</div>
-              <div className="label">SuperCoach</div>
             </div>
           </div>
         </div>

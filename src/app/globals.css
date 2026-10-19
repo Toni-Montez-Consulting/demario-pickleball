@@ -656,6 +656,7 @@ section.block { padding: 64px 22px; position: relative; }
 .about-stat { background: var(--bg-2); padding: 16px; }
 .about-stat .num { font-size: 22px; font-family: var(--font-space-grotesk); font-weight: 600; }
 .about-stat .label { font-size: 10.5px; color: var(--fg-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 4px; }
+.about-stats-note { font-size: 11px; color: var(--fg-muted); margin: 10px 0 0; }
 .about-bio-intro { color: var(--fg-dim); font-size: 15px; margin: 0 0 16px; }
 .about-bio-sub { color: var(--fg-muted); font-size: 14px; margin: 0; }
 .achievement-card {

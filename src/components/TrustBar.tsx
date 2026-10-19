@@ -30,7 +30,19 @@ export default function TrustBar() {
         <div className="trust-chip">
           <StarIcon />
           <span>
-            <strong>DUPR</strong> · 4.70 Dbl · 4.58 Sngl
+            <strong>DUPR</strong> · 4.97 Dbl · 4.58 Sngl
+          </span>
+        </div>
+        <div className="trust-chip">
+          <StarIcon />
+          <span>
+            <strong>Top 40</strong> · DFW Metroplex
+          </span>
+        </div>
+        <div className="trust-chip">
+          <StarIcon />
+          <span>
+            <strong>Top 100</strong> · Texas DUPR
           </span>
         </div>
         <div className="trust-chip">
