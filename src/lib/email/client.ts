@@ -1,7 +1,18 @@
 import * as Sentry from "@sentry/nextjs";
 import { Resend, type CreateEmailOptions } from "resend";
+import { shortName } from "@/lib/lesson-outcomes";
 import { generateIcs, type IcsBooking, type IcsMethod } from "./ics";
-import { studentRequestedHtml, adminNotificationHtml, studentCancelledHtml, feedbackNotificationHtml, reviewRequestHtml, inquiryNotificationHtml, firstName } from "./templates";
+import {
+  studentRequestedHtml,
+  adminNotificationHtml,
+  studentCancelledHtml,
+  feedbackNotificationHtml,
+  reviewRequestHtml,
+  inquiryNotificationHtml,
+  lessonOutcomeDigestHtml,
+  firstName,
+  type OutcomeDigestLesson,
+} from "./templates";
 
 function getResend(): Resend | null {
   const key = process.env.RESEND_API_KEY;
@@ -194,6 +205,32 @@ export async function sendReviewRequestEmail({
   });
   if (result.error) {
     reportSendFailure("review request", result.error);
+    return false;
+  }
+  return true;
+}
+
+/** Mario's morning digest of lessons that still need an outcome. */
+export async function sendLessonOutcomeDigest(lessons: OutcomeDigestLesson[]): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping lesson outcome digest");
+    return false;
+  }
+  const first = lessons[0];
+  // "Jane S.", as the spec's contract says: subjects show on lock screens.
+  const subject =
+    lessons.length === 1
+      ? `Did it happen? ${first.lessonName} with ${oneLine(shortName(first.name))}`
+      : `${lessons.length} lessons need an outcome`;
+  const result = await resend.emails.send({
+    from: emailFrom(),
+    to: adminEmail(),
+    subject,
+    html: lessonOutcomeDigestHtml(lessons),
+  });
+  if (result.error) {
+    reportSendFailure("lesson outcome digest", result.error);
     return false;
   }
   return true;

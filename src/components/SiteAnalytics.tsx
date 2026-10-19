@@ -53,6 +53,11 @@ export default function SiteAnalytics() {
             url.pathname = "/review/[token]";
             return { ...event, url: url.toString() };
           }
+          // Same for the signed links in Mario's lesson outcome email.
+          if (/^\/lesson-outcome\/[^/]+$/.test(url.pathname)) {
+            url.pathname = "/lesson-outcome/[token]";
+            return { ...event, url: url.toString() };
+          }
           return event;
         } catch {
           // Never let analytics break a page render.

@@ -132,6 +132,57 @@ export function inquiryNotificationHtml({
   );
 }
 
+export interface OutcomeDigestLesson {
+  name: string;
+  lessonName: string;
+  when: string;
+  courtSetup: string | null;
+  links: { confirmed: string; no_show: string; cancelled: string };
+}
+
+/**
+ * Mario's morning digest of lessons that still need an outcome. Each button
+ * opens a confirmation page; nothing is recorded until he taps the button
+ * there (mail scanners fetch every link in an email).
+ */
+export function lessonOutcomeDigestHtml(lessons: OutcomeDigestLesson[]): string {
+  const button = (href: string, label: string, primary: boolean) =>
+    `<a href="${escapeHtml(href)}" style="display:inline-block;margin:0 6px 6px 0;padding:9px 14px;border-radius:8px;font-weight:600;font-size:14px;text-decoration:none;${
+      primary ? "background:#111;color:#fff;" : "background:#f0f0f0;color:#222;"
+    }">${label}</a>`;
+  const rows = lessons
+    .map(
+      (lesson) => `
+    <div style="border-top:1px solid #eee;padding:16px 0;">
+      <p style="margin:0 0 4px;font-size:15px;"><strong>${escapeHtml(lesson.name)}</strong> · ${escapeHtml(lesson.lessonName)}</p>
+      <p style="margin:0 0 12px;font-size:14px;color:#666;">${escapeHtml(lesson.when)}${
+        lesson.courtSetup ? ` · ${escapeHtml(lesson.courtSetup)}` : ""
+      }</p>
+      ${button(lesson.links.confirmed, "Lesson happened", true)}${button(lesson.links.no_show, "No-show", false)}${button(lesson.links.cancelled, "Didn't happen", false)}
+    </div>`
+    )
+    .join("");
+  const heading =
+    lessons.length === 1 ? "Did this lesson happen?" : `${lessons.length} lessons need an outcome`;
+  return wrap(
+    `
+    <h1 style="font-size:20px;margin:0 0 8px;">${heading}</h1>
+    <p style="font-size:14px;line-height:1.5;margin:0 0 8px;color:#444;">
+      One tap each. "Lesson happened" is what lets the site ask the student for a review.
+    </p>
+    ${rows}
+    <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">
+      Nothing is sent to the student for No-show or Didn't happen. Each button opens a page where
+      you confirm; links expire in 14 days. Lessons drop off this email after three mornings.
+    </p>
+    <p style="margin:16px 0 0;">
+      <a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open admin dashboard</a>
+    </p>
+    `,
+    heading
+  );
+}
+
 export function studentCancelledHtml(booking: IcsBooking): string {
   const lesson = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
   return wrap(

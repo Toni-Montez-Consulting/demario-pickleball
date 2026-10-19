@@ -14,6 +14,18 @@ export function parseDisplayTime(display: string): DisplayTime | null {
   return { hour, minute };
 }
 
+/** The calendar date (YYYY-MM-DD) at `date` in the given time zone. */
+export function dateInTimeZone(date: Date, timeZone = "America/Chicago"): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
 export function addDays(date: string, days: number): string {
   const parsed = new Date(`${date}T00:00:00Z`);
   parsed.setUTCDate(parsed.getUTCDate() + days);
@@ -46,6 +58,21 @@ function getTimeZoneOffsetMs(date: Date, timeZone: string): number {
     value("second")
   );
   return asUtc - date.getTime();
+}
+
+/**
+ * Whether a lesson's start, in the booking time zone, has passed. A time that
+ * does not parse counts as not started, which keeps the old behaviour.
+ */
+export function lessonHasStarted(
+  date: string,
+  time: string,
+  now = new Date(),
+  timeZone = "America/Chicago"
+): boolean {
+  const parsed = parseDisplayTime(time);
+  if (!parsed) return false;
+  return zonedDateTimeToUtc(date, parsed, timeZone).getTime() <= now.getTime();
 }
 
 export function zonedDateTimeToUtc(

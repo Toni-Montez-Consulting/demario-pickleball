@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { LESSON_DURATION_MINUTES } from "@/lib/business";
 import { getGoogleCalendarBusyForDate, type BusyInterval } from "@/lib/google-calendar";
-import { addDays, parseDisplayTime, zonedDateTimeToUtc } from "@/lib/time";
+import { addDays, dateInTimeZone, parseDisplayTime, zonedDateTimeToUtc } from "@/lib/time";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_ZONE = "America/Chicago";
@@ -35,19 +35,8 @@ export function isPastBookingDate(date: string, now = new Date()): boolean {
   return date <= yesterday.toISOString().split("T")[0];
 }
 
-function dateStringInTimeZone(date: Date, timeZone: string): string {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-  return `${value("year")}-${value("month")}-${value("day")}`;
-}
-
 export function isWithinPublicBookingWindow(date: string, now = new Date()): boolean {
-  const today = dateStringInTimeZone(now, TIME_ZONE);
+  const today = dateInTimeZone(now, TIME_ZONE);
   const firstBookableDate = addDays(today, 1);
   const lastBookableDate = addDays(today, PUBLIC_BOOKING_WINDOW_DAYS);
   return date >= firstBookableDate && date <= lastBookableDate;

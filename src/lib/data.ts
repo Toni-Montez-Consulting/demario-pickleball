@@ -1,4 +1,4 @@
-import { addDays } from "@/lib/time";
+import { addDays, dateInTimeZone } from "@/lib/time";
 
 export interface LessonStep {
   t: string;
@@ -69,21 +69,10 @@ export interface DaySlot {
 
 const BOOKING_TIME_ZONE = "America/Chicago";
 
-function dateStringInTimeZone(date: Date, timeZone: string): string {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-  return `${value("year")}-${value("month")}-${value("day")}`;
-}
-
 export function generateDays(now = new Date(), timeZone = BOOKING_TIME_ZONE): DaySlot[] {
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const result: DaySlot[] = [];
-  const today = dateStringInTimeZone(now, timeZone);
+  const today = dateInTimeZone(now, timeZone);
   for (let i = 1; i <= 30; i++) {
     const dateStr = addDays(today, i);
     const date = new Date(`${dateStr}T00:00:00Z`);
