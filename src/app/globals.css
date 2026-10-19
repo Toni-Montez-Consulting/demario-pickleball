@@ -206,6 +206,20 @@ h1.hero-title .italic {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* A 320px screen leaves each column 92px, too narrow for the longer labels
+   and for "4.97 DUPR" at full size. Wrap the labels and shrink the numbers a
+   little there, rather than cut a claim off mid-word. */
+@media (max-width: 359px) {
+  .hero-stat .label { white-space: normal; }
+  .hero-stat .num { font-size: 23px; }
+  .hero-stat .num .unit { font-size: 13px; }
+}
+/* "Dallas–Fort Worth · Pickleball Coach" is 6px too wide for a 375px phone at
+   the default tracking. Slightly tighter tracking keeps it on one line down to
+   360px; narrower screens wrap it. */
+@media (max-width: 389px) {
+  .eyebrow { letter-spacing: 0.08em; }
+}
 
 /* ====== TRUST BAR ====== */
 .trust {
@@ -238,6 +252,13 @@ h1.hero-title .italic {
 .trust-chip strong { color: var(--fg); font-weight: 600; }
 .trust-chip .ico { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
 .trust-chip.rating strong { font-family: var(--font-space-grotesk); font-size: 15px; }
+.trust-chip .ext { width: 12px; height: 12px; color: var(--fg-muted); flex-shrink: 0; }
+a.trust-chip { transition: border-color 0.2s; }
+a.trust-chip:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--line)); }
+/* The strip scrolls, so it clips anything outside its 4px padding. The global
+   3px offset plus a 2px ring would lose the ring's outer edge, and the global
+   4px radius would square off the chip while it has focus. */
+a.trust-chip:focus-visible { outline-offset: 1px; border-radius: 12px; }
 
 /* ====== SECTION ====== */
 section.block { padding: 64px 22px; position: relative; }
@@ -656,6 +677,7 @@ section.block { padding: 64px 22px; position: relative; }
 .about-stat { background: var(--bg-2); padding: 16px; }
 .about-stat .num { font-size: 22px; font-family: var(--font-space-grotesk); font-weight: 600; }
 .about-stat .label { font-size: 10.5px; color: var(--fg-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 4px; }
+.about-stats-note { font-size: 11px; color: var(--fg-muted); margin: 10px 0 0; }
 .about-bio-intro { color: var(--fg-dim); font-size: 15px; margin: 0 0 16px; }
 .about-bio-sub { color: var(--fg-muted); font-size: 14px; margin: 0; }
 .achievement-card {
@@ -1540,6 +1562,9 @@ footer .contact-line a:hover { color: var(--fg); }
   .final-cta { padding: 80px 48px 140px; }
   footer { padding: 36px 48px 80px; }
   .trust { padding: 20px 32px; }
+  /* The strip's scrollbar is hidden and a mouse wheel scrolls vertically, so
+     chips past the edge were unreachable on desktop. Show them all instead. */
+  .trust-marquee { flex-wrap: wrap; justify-content: center; row-gap: 12px; }
 
   .hero { min-height: 640px; padding: 80px 48px 48px; }
   .hero-content { margin-top: 260px; max-width: 560px; }

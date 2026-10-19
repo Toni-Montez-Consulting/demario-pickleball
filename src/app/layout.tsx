@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import SiteAnalytics from "@/components/SiteAnalytics";
+import { DUPR } from "@/lib/dupr";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -16,25 +17,27 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
 });
 
+// One source for the search and link-preview snippet. It was pasted into two
+// places before, which is how a stale rating survives an update. Kept under
+// ~155 characters so Google does not truncate it.
+const SITE_DESCRIPTION = `Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book DeMario Montez — ${DUPR.doublesShort} doubles DUPR, top ${DUPR.topPercent}% worldwide, top ${DUPR.dfwTop} in DFW, USPTA certified.`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
-  description:
-    "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.70 doubles DUPR, USTA certified, Top 3% SuperCoach.",
+  description: SITE_DESCRIPTION,
   icons: { icon: "/favicon.svg" },
   openGraph: {
     type: "website",
     url: SITE_URL,
     title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
-    description:
-      "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez — 4.70 doubles DUPR, USTA certified, Top 3% SuperCoach.",
+    description: SITE_DESCRIPTION,
     images: [{ url: "/img/hero-ready.jpg", width: 828, height: 1099, alt: "DeMario Montez on the pickleball court" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
-    description:
-      "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book a lesson with Head Pro DeMario Montez.",
+    description: SITE_DESCRIPTION,
     images: ["/img/hero-ready.jpg"],
   },
 };
@@ -84,13 +87,13 @@ const jsonLd = {
       },
       priceRange: "$$",
       description:
-        "Strategic 1:1 pickleball coaching in Dallas–Fort Worth by Head Pro DeMario Montez.",
+        "Strategic 1:1 pickleball coaching in Dallas–Fort Worth by USPTA certified coach DeMario Montez.",
     },
     {
       "@type": "Person",
       "@id": `${SITE_URL}/#coach`,
       name: "DeMario Montez",
-      jobTitle: "Head Pickleball Pro",
+      jobTitle: "Pickleball Coach",
       telephone: "+14693719220",
       email: "demariomontez10@gmail.com",
       sameAs: [

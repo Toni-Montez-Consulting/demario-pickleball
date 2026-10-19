@@ -1,5 +1,6 @@
 import Image from "next/image";
 import RevealWrapper from "./RevealWrapper";
+import { DUPR } from "@/lib/dupr";
 
 interface HeroProps {
   onOpenBooking: () => void;
@@ -25,7 +26,7 @@ export default function Hero({ onOpenBooking }: HeroProps) {
         <div className="hero-content">
           <div className="eyebrow">
             <span className="dot" />
-            Dallas–Fort Worth · Head Pro
+            Dallas–Fort Worth · Pickleball Coach
           </div>
           <h1 className="hero-title">
             Train smarter.
@@ -67,19 +68,19 @@ export default function Hero({ onOpenBooking }: HeroProps) {
           <div className="hero-stats">
             <div className="hero-stat">
               <div className="num">
-                4.70<span className="unit">DUPR</span>
+                {DUPR.doublesShort}<span className="unit">DUPR</span>
               </div>
               <div className="label">Doubles rating</div>
+            </div>
+            <div className="hero-stat">
+              <div className="num">Top {DUPR.topPercent}%</div>
+              <div className="label">DUPR worldwide</div>
             </div>
             <div className="hero-stat">
               <div className="num">
                 600<span className="unit">+</span>
               </div>
               <div className="label">Students</div>
-            </div>
-            <div className="hero-stat">
-              <div className="num">Top 3%</div>
-              <div className="label">SuperCoach</div>
             </div>
           </div>
         </div>

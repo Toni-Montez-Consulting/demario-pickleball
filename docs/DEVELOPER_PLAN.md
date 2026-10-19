@@ -124,6 +124,39 @@ markup is ignored for rich results. It produces no stars and is not worth the su
 - Move GitHub Actions to the Node 24 runner default before GitHub's June 2, 2026 default change.
 - Upgrade dependency advisories when compatible patched versions are available; do not use `npm audit fix --force` without a tested migration branch.
 
+## October 2026 Audit Round
+
+Six stacked PRs, merged in this order: #13 `fix/dupr-rankings`, #14 `chore/security-patches`,
+#15 `fix/lead-alerts`, #16 `fix/a11y-perf-seo`, #17 `feat/conversion-tracking`, #18
+`feat/lesson-outcome-nudge`. Each entry below reaches master with its PR, and master deploys to
+production. The audit evidence is `docs/plans/2026-10-19-audit-and-enhancements.md`, added by
+#12.
+
+### 1. `fix/dupr-rankings` — credentials update (2026-10-19)
+
+- Doubles DUPR 4.702 -> 4.973 in the hero (4.97), trust strip, About stat, and meta description.
+  DeMario's own TikTok reads "4.973 currently", which matches his update.
+- Added his rankings: top 1% of DUPR-rated players worldwide and in Texas (hero), top 100 in
+  Texas and top 40 in DFW (trust strip, bio, About stat), with an "as of October 2026" note.
+- The rating, rankings, and as-of date live in `src/lib/dupr.json`. Every surface reads from
+  it, so a new rating is one edit there.
+- Dropped the 4.579 singles rating in its own commit (`ccb49b7`). DeMario confirmed doubles only
+  for now. If he gets back into singles, re-add the stat by hand using that commit as the layout
+  reference. Do not `git revert` it: later commits rewrote the same bio paragraph, and the
+  revert's side of the conflict brings back "USTA" and "Head Pro".
+- Corrected USTA -> USPTA (confirmed by Tonio).
+- The trust strip's first chip links to his TeachMe.To reviews: 5.0 from 137+ ratings,
+  checked October 2026. It replaces the unsourced "5.0 / 79 reviews" claim removed in July.
+- Removed the "Head Pro at Dallas Indoor Pickleball Club" title at DeMario's request. The hero
+  tag, About photo badge, and structured-data `jobTitle` now read "Pickleball Coach"; the bio
+  clause and trust chip are gone. Dallas Indoor stays on the site as a PodPlay venue.
+- Added his instructor roles for Dallas ISD and the City of Carrollton, at his request: one
+  sentence in the bio and two trust chips in the old Dallas Indoor slot.
+- The trust strip now wraps into centered rows from 768px up. At nine chips, with its scrollbar
+  hidden, a mouse could not reach the chips past the edge. Phones keep the swipeable row.
+- **Not added:** Spanish-language lessons. His TeachMe.To profile lists Spanish; add it to the
+  site only once DeMario confirms he wants to offer it here.
+
 ## Long-Term Reference
 
 - `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it
