@@ -1,8 +1,12 @@
+import { eventAttributes } from "@/lib/analytics";
+
 interface PaymentOptionsProps {
   bookingId?: string;
   amount?: string;
   /** 4 inside the booking dialog (under its h3); 2 on /pay (under the page h1). */
   headingLevel?: 2 | 4;
+  /** Where the options are shown, for click analytics. */
+  surface?: "confirmation" | "pay_page";
 }
 
 const CASH_APP_URL = "https://cash.app/$DeMarioMontez1";
@@ -11,7 +15,12 @@ const ZELLE_URL =
 const PAYPAL_URL = "https://www.paypal.com/paypalme/DemarioMontez";
 const PAYPAL_QR_SRC = "/img/paypal-qr-tight.png";
 
-export default function PaymentOptions({ bookingId, amount, headingLevel = 4 }: PaymentOptionsProps) {
+export default function PaymentOptions({
+  bookingId,
+  amount,
+  headingLevel = 4,
+  surface = "confirmation",
+}: PaymentOptionsProps) {
   const Heading = headingLevel === 2 ? "h2" : "h4";
   const shortId = bookingId ? bookingId.slice(0, 8).toUpperCase() : null;
   const memo = shortId ? `Lesson ${shortId}` : null;
@@ -37,6 +46,7 @@ export default function PaymentOptions({ bookingId, amount, headingLevel = 4 }: 
         target="_blank"
         rel="noopener noreferrer"
         className="pay-card pay-cashapp"
+        {...eventAttributes("payment_link_click", { method: "cashapp", surface })}
       >
         <div className="pay-card-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
@@ -59,6 +69,7 @@ export default function PaymentOptions({ bookingId, amount, headingLevel = 4 }: 
         target="_blank"
         rel="noopener noreferrer"
         className="pay-card pay-zelle"
+        {...eventAttributes("payment_link_click", { method: "zelle", surface })}
       >
         <div className="pay-card-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
@@ -81,6 +92,7 @@ export default function PaymentOptions({ bookingId, amount, headingLevel = 4 }: 
         target="_blank"
         rel="noopener noreferrer"
         className="pay-card pay-paypal"
+        {...eventAttributes("payment_link_click", { method: "paypal", surface })}
       >
         <div className="pay-card-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor">
@@ -103,6 +115,7 @@ export default function PaymentOptions({ bookingId, amount, headingLevel = 4 }: 
           target="_blank"
           rel="noopener noreferrer"
           className="pay-qr-link"
+          {...eventAttributes("payment_link_click", { method: "paypal_qr", surface })}
           aria-label="Open PayPal app payment link"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}

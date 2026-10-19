@@ -1,3 +1,5 @@
+import { eventAttributes } from "@/lib/analytics";
+
 export default function Footer() {
   return (
     <footer>
@@ -6,15 +8,26 @@ export default function Footer() {
         <div>© 2026</div>
       </div>
       <div className="contact-line">
-        <a href="mailto:demariomontez10@gmail.com">demariomontez10@gmail.com</a>
+        <a
+          href="mailto:demariomontez10@gmail.com"
+          {...eventAttributes("contact_click", { channel: "email", surface: "footer" })}
+        >
+          demariomontez10@gmail.com
+        </a>
         {" · "}
-        <a href="tel:4693719220">(469) 371-9220</a>
+        <a
+          href="tel:4693719220"
+          {...eventAttributes("contact_click", { channel: "tel", surface: "footer" })}
+        >
+          (469) 371-9220
+        </a>
         {" · "}
         Dallas, TX
       </div>
       <div className="footer-social">
         <a
           href="https://instagram.com/Alexanderiio"
+          {...eventAttributes("outbound_click", { dest: "instagram" })}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Instagram"
@@ -28,6 +41,7 @@ export default function Footer() {
         </a>
         <a
           href="https://tiktok.com/@DemarioMontez"
+          {...eventAttributes("outbound_click", { dest: "tiktok" })}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="TikTok"
@@ -39,6 +53,7 @@ export default function Footer() {
         </a>
         <a
           href="https://facebook.com/demario.montez.9/"
+          {...eventAttributes("outbound_click", { dest: "facebook" })}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Facebook"

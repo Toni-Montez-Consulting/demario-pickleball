@@ -1,3 +1,5 @@
+import { eventAttributes } from "@/lib/analytics";
+
 // Editing these terms? Bump their date in LEGAL_LAST_MODIFIED (src/app/sitemap.ts).
 export const TERMS_EFFECTIVE_DATE = "Effective April 23, 2026";
 
@@ -74,8 +76,20 @@ export default function TermsContent() {
       <h2>Contact</h2>
       <p>
         Questions about these terms? Email{" "}
-        <a href="mailto:demariomontez10@gmail.com">demariomontez10@gmail.com</a> or call{" "}
-        <a href="tel:4693719220">(469) 371-9220</a>.
+        <a
+          href="mailto:demariomontez10@gmail.com"
+          {...eventAttributes("contact_click", { channel: "email", surface: "terms" })}
+        >
+          demariomontez10@gmail.com
+        </a>{" "}
+        or call{" "}
+        <a
+          href="tel:4693719220"
+          {...eventAttributes("contact_click", { channel: "tel", surface: "terms" })}
+        >
+          (469) 371-9220
+        </a>
+        .
       </p>
     </>
   );

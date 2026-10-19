@@ -1,4 +1,5 @@
 import { TEACHMETO_REVIEWS_URL } from "@/lib/business";
+import { eventAttributes } from "@/lib/analytics";
 import { DUPR } from "@/lib/dupr";
 
 const StarIcon = () => (
@@ -40,6 +41,7 @@ export default function TrustBar() {
           href={TEACHMETO_REVIEWS_URL}
           target="_blank"
           rel="noopener noreferrer"
+          {...eventAttributes("outbound_click", { dest: "teachme_reviews" })}
         >
           <svg
             className="ico"

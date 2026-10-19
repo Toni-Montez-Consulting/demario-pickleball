@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/metadata";
+import { eventAttributes } from "@/lib/analytics";
 
 export const metadata = pageMetadata({
   path: "/privacy",
@@ -15,7 +16,7 @@ export default function PrivacyPage() {
         <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Privacy Policy</h1>
         {/* Editing this page? Bump its date in LEGAL_LAST_MODIFIED (src/app/sitemap.ts). */}
-        <p className="legal-date">Effective April 27, 2026</p>
+        <p className="legal-date">Effective April 27, 2026 · Updated October 19, 2026</p>
 
         <h2>What we collect</h2>
         <p>
@@ -88,16 +89,32 @@ export default function PrivacyPage() {
           use tracking or advertising cookies.
         </p>
         <p>
-          We measure page views using Vercel Web Analytics, which is cookieless. It records the
-          page visited, referrer, and general device type. It does not set cookies, does not build
-          a profile of you, and does not follow you to other websites.
+          We measure page views and a few anonymous interactions using Vercel Web Analytics,
+          which is cookieless. It records the page visited, referrer, and general device type,
+          and counts actions such as which booking button was tapped, how far the booking form
+          got, and whether a payment or partner-platform link was opened. Those counts never
+          include your name, email address, phone number, or anything you type into a form. It
+          does not set cookies, does not build a profile of you, and does not follow you to other
+          websites.
         </p>
 
         <h2>Contact</h2>
         <p>
           Questions about this policy? Email{" "}
-          <a href="mailto:demariomontez10@gmail.com">demariomontez10@gmail.com</a> or call{" "}
-          <a href="tel:4693719220">(469) 371-9220</a>.
+          <a
+            href="mailto:demariomontez10@gmail.com"
+            {...eventAttributes("contact_click", { channel: "email", surface: "privacy" })}
+          >
+            demariomontez10@gmail.com
+          </a>{" "}
+          or call{" "}
+          <a
+            href="tel:4693719220"
+            {...eventAttributes("contact_click", { channel: "tel", surface: "privacy" })}
+          >
+            (469) 371-9220
+          </a>
+          .
         </p>
       </main>
     </div>

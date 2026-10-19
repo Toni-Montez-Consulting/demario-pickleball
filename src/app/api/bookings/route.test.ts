@@ -13,7 +13,12 @@ const mocks = vi.hoisted(() => ({
   serviceClient: undefined as unknown,
   sendBookingCreatedEmails: vi.fn(),
   checkRateLimit: vi.fn(),
+  trackServerEvent: vi.fn(),
   afterCallbacks: [] as Array<() => unknown>,
+}));
+
+vi.mock("@/lib/analytics-server", () => ({
+  trackServerEvent: mocks.trackServerEvent,
 }));
 
 // after() needs a live request scope. Capture the callbacks instead so a test
@@ -192,6 +197,8 @@ describe("POST /api/bookings", () => {
     mocks.checkRateLimit.mockReset();
     mocks.checkRateLimit.mockResolvedValue({ limited: false });
     mocks.afterCallbacks.length = 0;
+    mocks.trackServerEvent.mockReset();
+    mocks.trackServerEvent.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -229,9 +236,18 @@ describe("POST /api/bookings", () => {
 
     // Sent after the response, never before it.
     expect(mocks.sendBookingCreatedEmails).not.toHaveBeenCalled();
-    expect(mocks.afterCallbacks).toHaveLength(1);
+    expect(mocks.trackServerEvent).not.toHaveBeenCalled();
+    expect(mocks.afterCallbacks).toHaveLength(2);
     await runAfterCallbacks();
     expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledOnce();
+
+    // The analytics event carries fixed codes only: no name, email, phone,
+    // date, or the student's free-text court note.
+    expect(mocks.trackServerEvent).toHaveBeenCalledWith(
+      "booking_created",
+      { lesson_type: "beginner", court_setup: "outdoor" },
+      expect.any(Headers)
+    );
 
     // The booking also creates the student record it hangs off.
     const student = inserted.find((row) => row.phone_normalized !== undefined);

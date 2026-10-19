@@ -224,6 +224,36 @@ test("keyboard focus stays inside the booking dialog in both directions", async 
   }
 });
 
+test("booking funnel events carry codes only, never what the student typed", async ({ page }) => {
+  // Keep the dev-mode analytics script out, so events stay in the window.vaq
+  // queue where the test can read them.
+  await page.route("https://va.vercel-scripts.com/**", (route) => route.abort());
+  await mockBookingFlow(page);
+  const picker = await openBookingPicker(page);
+  await picker.getByRole("button", { name: /reserve/i }).click();
+  await expect(page.getByRole("dialog", { name: /you're booked/i })).toBeVisible();
+
+  const events = await page.evaluate(() => {
+    const queue = (window as unknown as { vaq?: [string, { name: string; data?: object }][] }).vaq ?? [];
+    return queue.filter(([kind]) => kind === "event").map(([, event]) => event);
+  });
+  const named = (name: string) => events.filter((event) => event.name === name).map((e) => e.data);
+
+  expect(named("book_cta_click")).toHaveLength(1);
+  expect(["nav", "hero"]).toContain((named("book_cta_click")[0] as { source: string }).source);
+  // Each step counts once per opening, so a straight run is exactly the funnel.
+  expect(named("booking_step_viewed")).toEqual([
+    { step: "details" },
+    { step: "picker", court_setup: "outdoor" },
+    { step: "confirmed" },
+  ]);
+
+  const sent = JSON.stringify(events);
+  for (const typed of ["Jane", "jane@example.com", "371-9220", "Lake Highlands"]) {
+    expect(sent).not.toContain(typed);
+  }
+});
+
 test("payment page exposes a tappable PayPal link and QR large enough to scan", async ({ page }) => {
   await page.goto("/pay");
 

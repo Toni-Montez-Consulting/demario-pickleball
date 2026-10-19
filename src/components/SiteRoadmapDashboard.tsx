@@ -129,7 +129,8 @@ const PHASES: DevRoadmapPhase[] = [
       {
         key: "dev-p2-analytics",
         text: "Add privacy-conscious analytics and conversion events",
-        detail: "Only after consent/cookie policy is settled. Track booking modal opens and successful booking requests.",
+        detail: "Ten cookieless Vercel custom events cover the booking funnel, partner and contact handoffs, and form results, disclosed in the privacy policy. See docs/ANALYTICS.md (October 2026).",
+        shipped: true,
       },
       {
         key: "dev-p2-reminders",
