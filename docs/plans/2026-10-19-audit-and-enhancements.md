@@ -126,13 +126,38 @@ Verification:
 
 ## 7. Remaining
 
+**Shipped 2026-10-19.** #12 to #18 are merged and live in one production deployment
+(`dpl_5scgTq8n43n4uqBxmGYiogUZkDee`, `master` at `30c99be`). After the deploy:
+- Read-only smoke checks passed 30 of 30; the same checks passed 14 of 30 on the old build.
+- A browser pass at 320, 375, and 1280px passed 28 of 28.
+- Vercel showed no runtime errors (checked 18:13 UTC).
+
+#19 fixes the sticky nav's blur outside Safari. The CSS build had dropped it, which predates
+this round; it showed once #16 made the nav stick. It went live at 19:52 UTC in
+`dpl_45DWEAsGRKowFhXRhV63XpuPTAjx` (`master` at `3aabb05`):
+- The smoke checks and browser pass again passed 30 of 30 and 28 of 28.
+- The stuck nav's computed `backdrop-filter` reads `blur(14px)`; it was `none`.
+
+#11, the August launch reconciliation, was brought up to date and merged. It is docs only.
+
+Also done on 2026-10-19: Supabase `rls_auto_enable()` no longer grants `EXECUTE` to
+`public`, `anon`, or `authenticated` (migration `revoke_public_execute_on_rls_auto_enable`),
+which clears two advisor warnings. A probe table created afterwards still got RLS from the
+`ensure_rls` trigger.
+
 For Tonio:
-- Review and merge #13 to #18 in order (#12, this file, any time). Nothing here is merged or
-  deployed.
-- Vercel: confirm Web Analytics is enabled.
-- Vercel: set `LESSON_OUTCOME_SECRET` (Production) and redeploy.
-- Vercel: set the `www` domain to a permanent (308) redirect; it is 307 today.
-- Supabase: enable leaked password protection.
+- Vercel: reconnect Git. Pushes to `master` stopped deploying when the project moved to the
+  Toni Montez Co team, so this round was deployed by hand. Steps: `docs/SETUP.md` section 8.
+- Vercel: confirm Web Analytics is enabled. The analytics API answers "not found" for this
+  project.
+- Vercel: set `LESSON_OUTCOME_SECRET` (Production only) and redeploy. The token used on
+  2026-10-19 could deploy but could not write production env vars or domains.
+- Vercel: add `www.demariomontezpb.com` to the project as a redirect to `demariomontezpb.com`
+  with status 308. `www` is not attached to any project, and Vercel's fallback answers 307.
+- Supabase: turn on leaked password protection in the Auth settings; the Pro plan includes it.
+- Supabase: drop the empty table `public.zz_rls_probe_20261019`, left by the check above. The
+  agent's tool needs a person to confirm a drop. RLS is on with no policies, so nothing can use
+  it meanwhile.
 - Read the three inquiries already in Admin; the newest is 2026-10-18.
 - Later, on a separate tested branch: a CSP, and HSTS `includeSubDomains`.
 - **Waiver version.**
@@ -142,10 +167,10 @@ For Tonio:
     2026".
   - Every booking since then records a version whose text the student did not see.
   - Decide with whoever advises on the waiver before changing either.
-- PR #11's `LAUNCH_OUTSTANDING.md` still calls the "5.0 star, 79 reviews" claim live. It was
-  removed in July (`dad3a06`), and #13 links the sourced 5.0 from 137 ratings instead.
-- Optional: self-host Inter and Space Grotesk with `next/font/local`. That ends the
-  intermittent `next dev` start-up failure caused by Google Fonts responses.
+- Recommended: self-host Inter and Space Grotesk with `next/font/local`. That ends the
+  intermittent `next dev` start-up failure caused by Google Fonts responses, which failed one
+  GitHub CI run on 2026-10-19 (#11; it passed on re-run). Keep today's per-subset
+  `unicode-range` split and check the typography renders the same.
 
 For DeMario:
 - Instagram handle, and which address to use.

@@ -44,7 +44,7 @@ demariomontezpb.com  (Vercel — Next.js App Router)
 ```
 
 **Key services:**
-- **Vercel** — hosts the site, stores environment variables, auto-deploys from GitHub on every push to `master`
+- **Vercel** — hosts the site and stores environment variables. Pushes to `master` do not deploy right now; see section 8
 - **Supabase** — PostgreSQL database + Auth (login/MFA for admin)
 - **Resend** — sends transactional emails (booking confirmations, cancellations)
 - **Node.js 24** — Vercel, CI, `package.json` `engines`, and `.nvmrc` all use 24.x. Local
@@ -482,9 +482,9 @@ ratings instead of hardcoding them.
 
 ## 8. Deployment
 
-**Auto-deploy:** Every push to `master` on GitHub triggers a Vercel production deployment automatically. No manual deploy needed for code changes.
+**Auto-deploy is not working.** Pushes to `master` have not started a deployment since the Vercel project moved from Tonio's personal scope to the Toni Montez Co team (between May and July 2026). The last Git-started production deploy was on 2026-05-05; every production deploy since then was started by hand. To fix it, in Vercel open demario-pickleball → Settings → Git, disconnect the repository, and connect `Toni-Montez-Consulting/demario-pickleball` again. If Vercel doesn't offer the repository, give the Vercel GitHub app access to it: GitHub → Toni-Montez-Consulting → Settings → GitHub Apps → Vercel → Repository access. Then check that the next push to `master` creates a deployment. The repository is public, so a successful API deployment doesn't prove the app can see it.
 
-**Manual redeploy** (needed after adding/changing env vars):
+**Manual deploy** (after every merge to `master` until auto-deploy works, and after adding or changing env vars), from an up-to-date `master`:
 ```bash
 npx vercel --prod
 ```
