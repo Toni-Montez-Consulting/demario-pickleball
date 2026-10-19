@@ -154,6 +154,8 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  // Steps already reported in this opening of the form. See showStep.
+  const viewedStepsRef = useRef<Set<BookingStep>>(new Set());
 
   const fetchAvailability = useCallback(async (
     dateStr: string,
@@ -194,6 +196,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       setDays(freshDays);
       document.body.style.overflow = "hidden";
       setStep("form");
+      viewedStepsRef.current = new Set(["details"]);
       trackEvent("booking_step_viewed", { step: "details" });
       setForm({
         name: "",
@@ -276,12 +279,17 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [isOpen, onClose]);
 
-  // Moves to a step and reports it, so the funnel shows where students stop.
-  // Court setup rides along once it is chosen: routing and the time picker.
+  // Moves to a step and reports its first view in this opening, so the step
+  // totals form a funnel: Back, Try again, and a taken slot return to a step
+  // without counting it twice. Court setup rides along once it is chosen:
+  // routing and the time picker.
   function showStep(next: Exclude<Step, "loading">) {
     setStep(next);
+    const step = STEP_CODES[next];
+    if (viewedStepsRef.current.has(step)) return;
+    viewedStepsRef.current.add(step);
     trackEvent("booking_step_viewed", {
-      step: STEP_CODES[next],
+      step,
       court_setup:
         next === "indoorRouting" || next === "picker" ? courtSetupCode(form.courtSetup) : undefined,
     });
@@ -325,7 +333,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
         trackEvent("booking_failed", { reason: "slot_taken" });
         await fetchAvailability(day.dateStr, times, form.lessonType);
         setPickerError("That time was just taken. Please pick another.");
-        setStep("picker");
+        showStep("picker");
         return;
       }
       if (!res.ok) {
@@ -334,7 +342,9 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Booking failed. Please try again.");
       }
-      const data = await res.json();
+      // The booking is saved once the server answers 201. A body lost to a
+      // dropped connection must not show the error screen or count as a failure.
+      const data = await res.json().catch(() => ({}));
       setBookingId(data.id ?? "");
       showStep("confirmed");
     } catch (err) {

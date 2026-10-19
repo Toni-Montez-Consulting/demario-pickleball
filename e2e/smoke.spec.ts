@@ -241,13 +241,12 @@ test("booking funnel events carry codes only, never what the student typed", asy
 
   expect(named("book_cta_click")).toHaveLength(1);
   expect(["nav", "hero"]).toContain((named("book_cta_click")[0] as { source: string }).source);
-  expect(named("booking_step_viewed")).toEqual(
-    expect.arrayContaining([
-      { step: "details" },
-      { step: "picker", court_setup: "outdoor" },
-      { step: "confirmed" },
-    ])
-  );
+  // Each step counts once per opening, so a straight run is exactly the funnel.
+  expect(named("booking_step_viewed")).toEqual([
+    { step: "details" },
+    { step: "picker", court_setup: "outdoor" },
+    { step: "confirmed" },
+  ]);
 
   const sent = JSON.stringify(events);
   for (const typed of ["Jane", "jane@example.com", "371-9220", "Lake Highlands"]) {
