@@ -121,7 +121,6 @@ markup is ignored for rich results. It produces no stars and is not worth the su
 - Add secure student cancellation/reschedule links using private email tokens, policy-aware UI/API checks, student/admin notifications, ICS cancel/update files, and manual payment/refund handling until Stripe exists.
 - Add Stripe Checkout only after the pickleball business entity and banking setup exist.
 - Add automated DUPR rating sync only after Mario receives official read-only API or partner access from DUPR.
-- Move GitHub Actions to the Node 24 runner default before GitHub's June 2, 2026 default change.
 - Upgrade dependency advisories when compatible patched versions are available; do not use `npm audit fix --force` without a tested migration branch.
 
 ## October 2026 Audit Round
@@ -156,6 +155,25 @@ production. The audit evidence is `docs/plans/2026-10-19-audit-and-enhancements.
   hidden, a mouse could not reach the chips past the edge. Phones keep the swipeable row.
 - **Not added:** Spanish-language lessons. His TeachMe.To profile lists Spanish; add it to the
   site only once DeMario confirms he wants to offer it here.
+
+### 2. `chore/security-patches` — dependency and CI patch round (2026-10-19)
+
+- `next` 16.2.4 -> 16.4.2. 16.2.4 carried 30 advisories, including three critical RCEs (one in
+  the AVIF image optimizer this site enables, one in `next/og`). `npm audit --omit=dev` is now 0.
+- `@sentry/nextjs` 10.50 -> 10.76, `resend` 6.12 -> 6.34, `@supabase/supabase-js` within ^2,
+  `vitest`/`@vitest/coverage-v8` 4.1.5 -> 4.1.12. Removed the `postcss` and `svix` overrides
+  now that upstream carries the fixes.
+- CI moves to Node 24 (matching Vercel) on `actions/checkout@v7` and `actions/setup-node@v7`.
+- `agentRules: false` in `next.config.ts`: Next 16.4's `next dev` otherwise appends a generated
+  block to the hand-maintained `AGENTS.md` every time an AI agent runs the dev server.
+- Node 24.x is declared in `engines` and `.nvmrc`. The new `@supabase/supabase-js` throws on
+  Node 20, so local development needs Node 22 or newer.
+- `next-env.d.ts` is gitignored, and `npm run typecheck` runs `next typegen` first. Next 16.4
+  rewrote the tracked copy on every dev or build run.
+- The Sentry config import moved to `@sentry/nextjs/config`; the Vitest config is now
+  `vitest.config.mts`. Both clear deprecation warnings from this round's upgrades.
+- Details, the remaining dev-only ESLint advisory, and the Sentry 11 to-do:
+  `docs/DEPENDENCY_ADVISORIES.md`.
 
 ## Long-Term Reference
 
