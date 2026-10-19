@@ -126,9 +126,17 @@ Verification:
 
 ## 7. Remaining
 
+**Shipped 2026-10-19.** #12 to #18 are merged and live in one production deployment
+(`dpl_5scgTq8n43n4uqBxmGYiogUZkDee`, `master` at `30c99be`). After the deploy:
+- Read-only smoke checks passed 30 of 30; the same checks passed 14 of 30 on the old build.
+- A browser pass at 320, 375, and 1280px passed 28 of 28.
+- Vercel showed no runtime errors (checked 18:13 UTC).
+
 For Tonio:
-- Review and merge #13 to #18 in order (#12, this file, any time). Nothing here is merged or
-  deployed.
+- Vercel: reconnect Git. Pushes to `master` stopped deploying when the project moved to the
+  Toni Montez Co team, so this round was deployed by hand. Steps: `docs/SETUP.md` section 8.
+- Merge and deploy `fix/nav-blur-prefix-order`. Since #16 made the nav sticky, the page shows
+  through it outside Safari: the CSS build dropped the nav's blur. That predates this round.
 - Vercel: confirm Web Analytics is enabled.
 - Vercel: set `LESSON_OUTCOME_SECRET` (Production) and redeploy.
 - Vercel: set the `www` domain to a permanent (308) redirect; it is 307 today.

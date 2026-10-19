@@ -125,11 +125,12 @@ markup is ignored for rich results. It produces no stars and is not worth the su
 
 ## October 2026 Audit Round
 
-Six stacked PRs, merged in this order: #13 `fix/dupr-rankings`, #14 `chore/security-patches`,
-#15 `fix/lead-alerts`, #16 `fix/a11y-perf-seo`, #17 `feat/conversion-tracking`, #18
-`feat/lesson-outcome-nudge`. Each entry below reaches master with its PR, and master deploys to
-production. The audit evidence is `docs/plans/2026-10-19-audit-and-enhancements.md`, added by
-#12.
+Six stacked PRs, merged on 2026-10-19 in this order: #13 `fix/dupr-rankings`, #14
+`chore/security-patches`, #15 `fix/lead-alerts`, #16 `fix/a11y-perf-seo`, #17
+`feat/conversion-tracking`, #18 `feat/lesson-outcome-nudge`. They reached production the same
+day in one deployment (`dpl_5scgTq8n43n4uqBxmGYiogUZkDee`, master `30c99be`), started by hand
+because pushes to master no longer deploy (`docs/SETUP.md` section 8). The audit evidence is
+`docs/plans/2026-10-19-audit-and-enhancements.md`, added by #12.
 
 ### 1. `fix/dupr-rankings` — credentials update (2026-10-19)
 
