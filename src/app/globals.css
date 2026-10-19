@@ -2442,7 +2442,12 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
 .cookie-btn { white-space: nowrap; padding: 10px 18px; font-size: 13px; flex-shrink: 0; }
 
 @media (max-width: 767px) {
+  /* In the page under the nav, so it scrolls away with the hero. Fixed, it
+     covered 72px of every screen until dismissed. Below the nav's z-index so
+     it slides under the sticky nav rather than over it. */
   .cookie-banner {
+    position: absolute;
+    z-index: 35;
     top: 56px;
     bottom: auto;
     left: 10px;
@@ -2465,6 +2470,11 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
 @media (min-width: 768px) {
   .contact-section { padding: 80px 48px; }
   .cookie-banner { padding: 14px 32px; }
+  /* The notice is one row here, at most ~68px tall. Lift the sticky Book button
+     above it until it is dismissed instead of covering its text. */
+  body:has(.cookie-banner) .sticky-cta {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (min-width: 1100px) {
