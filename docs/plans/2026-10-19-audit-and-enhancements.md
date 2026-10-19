@@ -103,32 +103,53 @@ Findings fixed in `fix/a11y-perf-seo`:
 
 ## 6. Branches, in merge order
 
-Each branch is based on the one before it. Every one passed `npm run ci` and the full
-Playwright suite locally before push. Each merges cleanly with open PR #11 in either order.
+Each branch is based on the one before it and is open as a PR. A code review of every PR on
+2026-10-19 raised 51 findings. The real ones were fixed on the PR they belong to, and each PR
+description lists them.
 
-| # | Branch | What it does |
-|---|---|---|
-| 1 | `fix/dupr-rankings` | The update DeMario asked for: rating, rankings, USPTA, linked TeachMe.To rating, Dallas ISD and Carrollton roles, no Head Pro title |
-| 2 | `chore/security-patches` | Next 16.4.2, production audit to 0, CI on Node 24, `agentRules: false` |
-| 3 | `fix/lead-alerts` | Inquiry emails to Mario; booking emails via `after()`; email title escaping |
-| 4 | `fix/a11y-perf-seo` | Every live-audit finding in section 3 |
-| 5 | `feat/conversion-tracking` | Ten privacy-safe custom events; see `docs/ANALYTICS.md` |
-| 6 | `feat/lesson-outcome-nudge` | Morning digest with one-tap outcomes, which makes the review loop run |
+Verification:
+- Every branch passed `npm run ci` locally with its own lockfile.
+- The Playwright suite passed locally on every branch's code. One run on `fix/lead-alerts` was
+  lost to the Turbopack font start-up failure in `docs/DEPENDENCY_ADVISORIES.md`; its code
+  passed inside the next branch's run.
+- GitHub CI runs the full suite on each PR.
+- Each branch merges cleanly with open PR #11 in either order.
+
+| # | PR | Branch | What it does |
+|---|---|---|---|
+| 1 | #13 | `fix/dupr-rankings` | The update DeMario asked for: rating, rankings, USPTA, linked TeachMe.To rating, Dallas ISD and Carrollton roles, no Head Pro title. The numbers live in `src/lib/dupr.json` |
+| 2 | #14 | `chore/security-patches` | Next 16.4.2, production audit to 0, CI and `engines` on Node 24, `agentRules: false` |
+| 3 | #15 | `fix/lead-alerts` | Inquiry emails to Mario; every email sent in `after()` and failures reported to Sentry; a daily inquiry-alert cap; email title escaping |
+| 4 | #16 | `fix/a11y-perf-seo` | Every live-audit finding in section 3, plus per-page link previews |
+| 5 | #17 | `feat/conversion-tracking` | Ten privacy-safe custom events; see `docs/ANALYTICS.md` |
+| 6 | #18 | `feat/lesson-outcome-nudge` | Morning digest with one-tap outcomes, which makes the review loop run, and a silent "Didn't happen" in Admin |
 
 ## 7. Remaining
 
 For Tonio:
-- Open PRs, review, and merge in order. Nothing here is merged or deployed.
+- Review and merge #13 to #18 in order (#12, this file, any time). Nothing here is merged or
+  deployed.
 - Vercel: confirm Web Analytics is enabled.
 - Vercel: set `LESSON_OUTCOME_SECRET` (Production) and redeploy.
 - Vercel: set the `www` domain to a permanent (308) redirect; it is 307 today.
 - Supabase: enable leaked password protection.
 - Read the three inquiries already in Admin; the newest is 2026-10-18.
 - Later, on a separate tested branch: a CSP, and HSTS `includeSubDomains`.
+- **Waiver version.**
+  - On 2026-04-28 the liability release changed: it now names "host venues, and court
+    providers" instead of Dallas Indoor. A court-fee clause was also added.
+  - `WAIVER_VERSION` is still `2026-04-24`, and the terms page still says "Effective April 23,
+    2026".
+  - Every booking since then records a version whose text the student did not see.
+  - Decide with whoever advises on the waiver before changing either.
+- PR #11's `LAUNCH_OUTSTANDING.md` still calls the "5.0 star, 79 reviews" claim live. It was
+  removed in July (`dad3a06`), and #13 links the sourced 5.0 from 137 ratings instead.
+- Optional: self-host Inter and Space Grotesk with `next/font/local`. That ends the
+  intermittent `next dev` start-up failure caused by Google Fonts responses.
 
 For DeMario:
 - Instagram handle, and which address to use.
 - A 2000px+ hero photo (the current one is 828px wide).
-- Whether 8 AM and three reminders suit him, and how "Didn't happen" fits lessons he moves by
-  text.
+- Whether a 7–8 AM digest (13:00 UTC) and three reminders suit him, and how "Didn't happen"
+  fits lessons he moves by text.
 - Confirm or record the 3 past-dated pending bookings in Admin -> Needs outcome.
