@@ -44,7 +44,7 @@ demariomontezpb.com  (Vercel — Next.js App Router)
 ```
 
 **Key services:**
-- **Vercel** — hosts the site and stores environment variables. Pushes to `master` do not deploy right now; see section 8
+- **Vercel** — hosts the site and stores environment variables. Its Git connection was rebuilt on 2026-10-19 after pushes to `master` stopped deploying; see section 8
 - **Supabase** — PostgreSQL database + Auth (login/MFA for admin)
 - **Resend** — sends transactional emails (booking confirmations, cancellations)
 - **Node.js 24** — Vercel, CI, `package.json` `engines`, and `.nvmrc` all use 24.x. Local
@@ -482,9 +482,20 @@ ratings instead of hardcoding them.
 
 ## 8. Deployment
 
-**Auto-deploy is not working.** Pushes to `master` have not started a deployment since the Vercel project moved from Tonio's personal scope to the Toni Montez Co team (between May and July 2026). The last Git-started production deploy was on 2026-05-05; every production deploy since then was started by hand. To fix it, in Vercel open demario-pickleball → Settings → Git, disconnect the repository, and connect `Toni-Montez-Consulting/demario-pickleball` again. If Vercel doesn't offer the repository, give the Vercel GitHub app access to it: GitHub → Toni-Montez-Consulting → Settings → GitHub Apps → Vercel → Repository access. Then check that the next push to `master` creates a deployment. The repository is public, so a successful API deployment doesn't prove the app can see it.
+**Auto-deploy.** Pushes to `master` stopped starting deployments after the Vercel project moved from Tonio's personal scope to the Toni Montez Co team (between May and July 2026). The last Git-started production deploy was on 2026-05-05, and every production deploy from then to 2026-10-19 was started by hand. The project's Git link still recorded the repository's owner as the GitHub user `toniomon96`, while the repository now belongs to the `Toni-Montez-Consulting` organization.
 
-**Manual deploy** (after every merge to `master` until auto-deploy works, and after adding or changing env vars), from an up-to-date `master`:
+On 2026-10-19 the link was rebuilt from Tonio's Vercel CLI, and it now records the organization:
+
+```bash
+npx vercel git disconnect --yes
+npx vercel git connect https://github.com/Toni-Montez-Consulting/demario-pickleball.git --yes
+```
+
+`vercel git connect` on its own does nothing while the same repository is linked, so a reconnect needs both commands. The dashboard route is the same: demario-pickleball → Settings → Git, disconnect, and connect the repository again. If Vercel doesn't offer the repository, give the Vercel GitHub app access to it: GitHub → Toni-Montez-Consulting → Settings → GitHub Apps → Vercel → Repository access.
+
+After a merge to `master`, `npx vercel ls` should list a new production deployment within a few minutes. If it doesn't, reconnect as above and deploy by hand. The repository is public, so a successful API deployment doesn't prove the app can see it.
+
+**Manual deploy** (when a merge to `master` did not deploy), from an up-to-date `master`:
 ```bash
 npx vercel --prod
 ```

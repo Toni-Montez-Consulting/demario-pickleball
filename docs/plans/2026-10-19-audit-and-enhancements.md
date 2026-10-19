@@ -40,6 +40,7 @@ Reading of the numbers:
 - `@vercel/analytics` has shipped since 2026-07-27 and `/_vercel/insights/script.js` is
   served, but the Vercel query API answered **"Web Analytics not found"** for the project. The
   numbers could not be read from here. **Open Vercel -> Analytics to confirm it is enabled.**
+  Tonio enabled it later that day; see section 7.
 - The team is on Vercel **Pro**: custom events are included, at most 2 properties each.
 - Before this round only pageviews existed. Nothing measured the booking funnel or the
   handoffs to partner platforms.
@@ -80,7 +81,7 @@ Findings fixed in `fix/a11y-perf-seo`:
     SECURITY DEFINER. Low; `set search_path = ''` when next touching them.
   - `btree_gist` is in the public schema. Low.
   - **Leaked password protection disabled.** It is a toggle in Supabase Auth settings, and
-    worth turning on for the admin accounts.
+    worth turning on for the admin accounts. Turned on later that day; see section 7.
   - RLS enabled with no policy on `rate_limit_events`, `reviews`, and `students`. Intended:
     these are service-role only.
   - Unindexed FKs on `reviews`, unused indexes, and duplicate permissive SELECT policies.
@@ -145,19 +146,37 @@ Also done on 2026-10-19: Supabase `rls_auto_enable()` no longer grants `EXECUTE`
 which clears two advisor warnings. A probe table created afterwards still got RLS from the
 `ensure_rls` trigger.
 
+**Vercel follow-ups, done later on 2026-10-19** from Tonio's Vercel CLI, on
+`tonimontezco/demario-pickleball`:
+- `LESSON_OUTCOME_SECRET` is set for Production only, as Sensitive. The value came from
+  `openssl rand -base64 32`, piped on stdin, and was never printed.
+- `www.demariomontezpb.com` is on the project as a 308 redirect to `demariomontezpb.com`. It
+  went in through the project-domains API, because `vercel domains add` has no redirect
+  option.
+- Git is reconnected; see `docs/SETUP.md` section 8.
+- Production was rebuilt with `vercel redeploy` as `dpl_CWMa9KsvXuLGASy9VVe6xk1vt1LQ`. It is
+  the same commit, `3aabb05`; everything merged after it is docs only.
+
+Checked after the redeploy, at about 20:42 UTC:
+- A made-up outcome link reads "This link isn't valid". Before, it read "Lesson outcome links
+  aren't set up yet", so the running build has the secret.
+- `www` answered 307 before. Now `https://www.demariomontezpb.com/pay?x=1` answers 308 to
+  `https://demariomontezpb.com/pay?x=1`.
+- `GET /api/cron/lesson-outcomes` without auth returns 401, and `vercel crons ls` lists both
+  crons.
+- `/`, `/privacy`, `/pay`, and `/sitemap.xml` return 200, and Vercel shows no runtime errors.
+
+Then, the same evening:
+- Tonio enabled Web Analytics; the project records it at 21:04 UTC. Vercel adds the analytics
+  routes with the next deployment after enabling, so data starts with that deployment.
+- Tonio turned on leaked password protection; the security advisor stopped flagging it by
+  21:07 UTC.
+- `public.zz_rls_probe_20261019` was dropped at about 21:26 UTC, at Tonio's request. The
+  Supabase connector's own confirmation could not be answered from this session, so the drop
+  ran through the Supabase CLI (`supabase@2.120.0 db query --linked`) after Tonio approved the
+  command. The other ten tables kept their row counts.
+
 For Tonio:
-- Vercel: reconnect Git. Pushes to `master` stopped deploying when the project moved to the
-  Toni Montez Co team, so this round was deployed by hand. Steps: `docs/SETUP.md` section 8.
-- Vercel: confirm Web Analytics is enabled. The analytics API answers "not found" for this
-  project.
-- Vercel: set `LESSON_OUTCOME_SECRET` (Production only) and redeploy. The token used on
-  2026-10-19 could deploy but could not write production env vars or domains.
-- Vercel: add `www.demariomontezpb.com` to the project as a redirect to `demariomontezpb.com`
-  with status 308. `www` is not attached to any project, and Vercel's fallback answers 307.
-- Supabase: turn on leaked password protection in the Auth settings; the Pro plan includes it.
-- Supabase: drop the empty table `public.zz_rls_probe_20261019`, left by the check above. The
-  agent's tool needs a person to confirm a drop. RLS is on with no policies, so nothing can use
-  it meanwhile.
 - Read the three inquiries already in Admin; the newest is 2026-10-18.
 - Later, on a separate tested branch: a CSP, and HSTS `includeSubDomains`.
 - **Waiver version.**
