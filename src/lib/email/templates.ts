@@ -15,10 +15,13 @@ const LESSON_PRICES: Record<string, string> = {
   clinic: "$50",
 };
 
+// Callers pass raw strings, often with a student's name in the heading, so
+// the title is escaped here. Unescaped, a name like "</title><a href=...>"
+// broke out of <title> and injected markup into Mario's notification.
 function wrap(inner: string, heading: string): string {
   return `<!doctype html>
 <html>
-<head><meta charset="utf-8"><title>${heading}</title></head>
+<head><meta charset="utf-8"><title>${escapeHtml(heading)}</title></head>
 <body style="margin:0;padding:24px;background:#f5f5f5;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#222;">
   <table role="presentation" style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;">
     <tr><td>
@@ -40,7 +43,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
   const court = parseBookingNotes(booking.notes);
   return wrap(
     `
-    <h1 style="font-size:22px;margin:0 0 12px;">You're booked, ${escapeHtml(booking.name.split(" ")[0])}.</h1>
+    <h1 style="font-size:22px;margin:0 0 12px;">You're booked, ${escapeHtml(firstName(booking.name, "there"))}.</h1>
     <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">
       Your lesson time is reserved. Mario will confirm the exact court shortly.
     </p>
@@ -100,6 +103,35 @@ export function adminNotificationHtml(booking: IcsBooking): string {
   );
 }
 
+export function inquiryNotificationHtml({
+  name,
+  email,
+  message,
+}: {
+  name: string;
+  email: string;
+  message: string;
+}): string {
+  const first = firstName(name, "them");
+  return wrap(
+    `
+    <h1 style="font-size:20px;margin:0 0 12px;">New message from the site</h1>
+    <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px;">
+      <tr><td style="padding:6px 0;color:#777;">From</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(name)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#777;">Email</td><td style="padding:6px 0;text-align:right;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
+    </table>
+    <div style="background:#f5f5f5;border-radius:8px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(message)}</div>
+    <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">
+      Reply to this email to answer ${escapeHtml(first)} directly. The contact form promises a reply within 24 hours.
+    </p>
+    <p style="margin:20px 0 0;">
+      <a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open admin dashboard</a>
+    </p>
+    `,
+    `New message — ${name}`
+  );
+}
+
 export function studentCancelledHtml(booking: IcsBooking): string {
   const lesson = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
   return wrap(
@@ -117,6 +149,11 @@ export function studentCancelledHtml(booking: IcsBooking): string {
     `,
     `Lesson cancelled — ${booking.lesson_date}`
   );
+}
+
+/** The first word of a name, or the fallback when there is none. */
+export function firstName(name: string, fallback: string): string {
+  return name.trim().split(/\s+/)[0] || fallback;
 }
 
 function escapeHtml(s: string): string {
@@ -166,7 +203,7 @@ export function reviewRequestHtml({
   lessonDate: string;
   reviewUrl: string;
 }): string {
-  const first = name.trim().split(/\s+/)[0] || "there";
+  const first = firstName(name, "there");
   return wrap(
     `
     <h1 style="font-size:22px;margin:0 0 12px;">How was it, ${escapeHtml(first)}?</h1>

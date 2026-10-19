@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { adminNotificationHtml, studentRequestedHtml, reviewRequestHtml } from "./templates";
+import {
+  adminNotificationHtml,
+  studentRequestedHtml,
+  reviewRequestHtml,
+  inquiryNotificationHtml,
+} from "./templates";
 
 const booking = {
   id: "12345678-1234-1234-1234-123456789abc",
@@ -29,6 +34,16 @@ describe("email templates", () => {
     expect(html).toContain("(469) 371-9220");
     expect(html).toContain("Outdoor public court");
     expect(html).toContain("Text the student to confirm the exact court");
+  });
+
+  it("escapes a student's name everywhere, including the <title>", () => {
+    const html = adminNotificationHtml({
+      ...booking,
+      name: '</title><a href="https://evil.example">Verify payment</a>',
+    });
+    expect(html).not.toContain("</title><a");
+    expect(html).not.toContain('<a href="https://evil.example"');
+    expect(html).toContain("&lt;/title&gt;");
   });
 });
 
@@ -63,5 +78,31 @@ describe("reviewRequestHtml", () => {
       reviewUrl: "https://example.com/review/x",
     });
     expect(html).toContain("How was it, there?");
+  });
+});
+
+describe("inquiryNotificationHtml", () => {
+  it("shows who wrote, how to reach them, and what they asked", () => {
+    const html = inquiryNotificationHtml({
+      name: "Jane Student",
+      email: "jane@example.com",
+      message: "Do you have clinics this weekend?",
+    });
+    expect(html).toContain("Jane Student");
+    expect(html).toContain('href="mailto:jane@example.com"');
+    expect(html).toContain("Do you have clinics this weekend?");
+    expect(html).toContain("Reply to this email to answer Jane directly");
+    expect(html).toContain("/admin");
+  });
+
+  it("escapes markup a stranger typed into the public form", () => {
+    const html = inquiryNotificationHtml({
+      name: '<img src=x onerror="alert(1)">',
+      email: "jane@example.com",
+      message: "<script>alert(1)</script>",
+    });
+    expect(html).not.toContain("<script>");
+    expect(html).not.toContain("<img");
+    expect(html).toContain("&lt;script&gt;");
   });
 });

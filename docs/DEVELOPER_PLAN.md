@@ -175,6 +175,25 @@ production. The audit evidence is `docs/plans/2026-10-19-audit-and-enhancements.
 - Details, the remaining dev-only ESLint advisory, and the Sentry 11 to-do:
   `docs/DEPENDENCY_ADVISORIES.md`.
 
+### 3. `fix/lead-alerts` — Mario hears about every lead (2026-10-19)
+
+- Contact-form inquiries now email Mario (Reply-To is the student). Before this they only
+  appeared in `/admin`, while the form promised a reply within 24 hours.
+- The booking, inquiry, cancellation, and admin-feedback emails run in `after()` instead of a
+  bare un-awaited promise that serverless could freeze after the response. The booking email
+  is Mario's only new-booking alert; the cancellation email is the student's only notice.
+- Failed sends report to Sentry. The Resend SDK returns errors rather than throwing, so a
+  revoked key or spent quota used to fail with only a console line.
+- Mario's alerts retry once without Reply-To when Resend rejects the student's address. The
+  address stays in the body.
+- Inquiry alerts stop after 20 in 24 hours (messages still save to `/admin`, and Sentry gets
+  one warning), so contact-form spam cannot spend the Resend quota booking emails need.
+- Fixed an HTML injection: the email wrapper put the heading (the student's name, on admin
+  notifications) into `<title>` unescaped, so a crafted booking name could inject a link into
+  Mario's inbox. Names are also kept to one line in every subject.
+- **After deploy:** the three inquiries already in production (newest 2026-10-18) were never
+  emailed. Read them in Admin -> Inquiries.
+
 ## Long-Term Reference
 
 - `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it

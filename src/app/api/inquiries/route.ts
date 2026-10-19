@@ -1,8 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendInquiryNotificationEmail } from "@/lib/email/client";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Each alert spends the same Resend quota as booking emails (100 a day on the
+// free plan), and one client may send 10 messages an hour. Past this many in a
+// day, messages still land in /admin but stop emailing, so spam cannot starve
+// the booking alerts.
+const INQUIRY_ALERTS_PER_DAY = 20;
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -58,5 +66,31 @@ export async function POST(req: NextRequest) {
     console.error("[inquiries POST]", error);
     return NextResponse.json({ error: "Failed to send message. Please try again." }, { status: 500 });
   }
+
+  // Inquiries used to land only in /admin, which nobody was watching. Email
+  // Mario after the response so a slow send never holds up the student.
+  after(async () => {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await supabase
+      .from("inquiries")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since);
+    // A failed count leaves `count` null, and the alert still goes out.
+    if (count !== null && count > INQUIRY_ALERTS_PER_DAY) {
+      if (count === INQUIRY_ALERTS_PER_DAY + 1) {
+        Sentry.captureMessage(
+          `Inquiry alerts paused: more than ${INQUIRY_ALERTS_PER_DAY} messages in 24 hours`,
+          "warning"
+        );
+      }
+      return;
+    }
+    await sendInquiryNotificationEmail({
+      name: data.name,
+      email: data.email,
+      message: data.message,
+    }).catch((err) => console.error("[inquiries POST] notification failed", err));
+  });
+
   return NextResponse.json(data, { status: 201 });
 }

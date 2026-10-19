@@ -13,7 +13,21 @@ const mocks = vi.hoisted(() => ({
   serviceClient: undefined as unknown,
   sendBookingCreatedEmails: vi.fn(),
   checkRateLimit: vi.fn(),
+  afterCallbacks: [] as Array<() => unknown>,
 }));
+
+// after() needs a live request scope. Capture the callbacks instead so a test
+// can assert the work is deferred, then run it the way the platform would.
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  after: (callback: () => unknown) => {
+    mocks.afterCallbacks.push(callback);
+  },
+}));
+
+async function runAfterCallbacks() {
+  await Promise.all(mocks.afterCallbacks.map((callback) => callback()));
+}
 
 vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: () => mocks.serviceClient,
@@ -177,10 +191,13 @@ describe("POST /api/bookings", () => {
     mocks.sendBookingCreatedEmails.mockResolvedValue(undefined);
     mocks.checkRateLimit.mockReset();
     mocks.checkRateLimit.mockResolvedValue({ limited: false });
+    mocks.afterCallbacks.length = 0;
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    // Restores console spies even when an assertion fails before a test's own cleanup.
+    vi.restoreAllMocks();
   });
 
   it("creates a booking with waiver metadata after validating availability", async () => {
@@ -209,6 +226,11 @@ describe("POST /api/bookings", () => {
       waiver_version: "2026-04-24",
     });
     expect(typeof inserted[0].waiver_signed_at).toBe("string");
+
+    // Sent after the response, never before it.
+    expect(mocks.sendBookingCreatedEmails).not.toHaveBeenCalled();
+    expect(mocks.afterCallbacks).toHaveLength(1);
+    await runAfterCallbacks();
     expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledOnce();
 
     // The booking also creates the student record it hangs off.
@@ -227,6 +249,31 @@ describe("POST /api/bookings", () => {
     );
   });
 
+  it("keeps the booking when the confirmation emails fail", async () => {
+    mocks.serviceClient = createMockClient(
+      {
+        time_slots: [{ display_label: "9:00 AM", active: true }],
+        bookings: [],
+        blocked_slots: [],
+        recurring_blocks: [],
+      },
+      inserted
+    );
+    mocks.sendBookingCreatedEmails.mockRejectedValue(new Error("Resend is down"));
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await postBooking(VALID_BOOKING_BODY);
+
+    expect(response.status).toBe(201);
+    // The rejection is caught inside the callback, so nothing escapes it.
+    await expect(runAfterCallbacks()).resolves.toBeUndefined();
+    expect(consoleError).toHaveBeenCalledWith(
+      "[bookings POST] email send failed",
+      expect.any(Error)
+    );
+    consoleError.mockRestore();
+  });
+
   it("rejects a recurring blocked slot before insert", async () => {
     mocks.serviceClient = createMockClient(
       {
@@ -243,6 +290,7 @@ describe("POST /api/bookings", () => {
     expect(response.status).toBe(409);
     expect(inserted).toHaveLength(0);
     expect(mocks.sendBookingCreatedEmails).not.toHaveBeenCalled();
+    expect(mocks.afterCallbacks).toHaveLength(0);
   });
 
   it("requires waiver acceptance", async () => {

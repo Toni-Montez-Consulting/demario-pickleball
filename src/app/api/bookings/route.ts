@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createServiceRoleClient, requireAdmin } from "@/lib/supabase/server";
 import { sendBookingCreatedEmails } from "@/lib/email/client";
 import { findOrCreateStudent } from "@/lib/students";
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
     console.warn("[bookings POST] no usable student key for booking", data.id);
   }
 
-  sendBookingCreatedEmails({
+  const emailBooking = {
     id: data.id,
     name: data.name,
     email: data.email,
@@ -139,7 +139,16 @@ export async function POST(req: NextRequest) {
     lesson_date: data.lesson_date,
     lesson_time: data.lesson_time,
     notes: data.notes,
-  }).catch((err) => console.error("[bookings POST] email send failed", err));
+  };
+  // These emails are Mario's only alert that a lesson was booked. A bare
+  // un-awaited promise could be frozen with the serverless function once the
+  // response went out. after() runs it post-response and keeps the function
+  // alive until it settles, without making the student wait on Resend.
+  after(() =>
+    sendBookingCreatedEmails(emailBooking).catch((err) =>
+      console.error("[bookings POST] email send failed", err)
+    )
+  );
 
   return NextResponse.json(data, { status: 201 });
 }

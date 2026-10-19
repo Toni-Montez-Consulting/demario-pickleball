@@ -1,6 +1,7 @@
-import { Resend } from "resend";
+import * as Sentry from "@sentry/nextjs";
+import { Resend, type CreateEmailOptions } from "resend";
 import { generateIcs, type IcsBooking, type IcsMethod } from "./ics";
-import { studentRequestedHtml, adminNotificationHtml, studentCancelledHtml, feedbackNotificationHtml, reviewRequestHtml } from "./templates";
+import { studentRequestedHtml, adminNotificationHtml, studentCancelledHtml, feedbackNotificationHtml, reviewRequestHtml, inquiryNotificationHtml, firstName } from "./templates";
 
 function getResend(): Resend | null {
   const key = process.env.RESEND_API_KEY;
@@ -22,6 +23,37 @@ const LESSON_NAMES: Record<string, string> = {
   advanced: "Strategy Lab",
   clinic: "Group Clinic",
 };
+
+/** Names come from public forms. One line, so they cannot add lines to a subject header. */
+function oneLine(text: string): string {
+  return text.replace(/[\r\n]+/g, " ").trim();
+}
+
+/**
+ * The Resend SDK returns failures instead of throwing, so a revoked key, an
+ * unverified domain, or a spent quota would drop every email with only a
+ * console line. Report each failure to Sentry as well.
+ */
+function reportSendFailure(label: string, error: { name: string; message: string }): void {
+  console.error(`[email] ${label} failed`, error);
+  Sentry.captureException(new Error(`[email] ${label} failed: ${error.name}: ${error.message}`), {
+    tags: { email: label, resend_error: error.name },
+  });
+}
+
+/**
+ * Sends one of Mario's alerts with Reply-To set to the student. Resend rejects
+ * the whole send when it considers that address invalid (a local part over 64
+ * characters passes the forms' checks), so on a validation error the alert goes
+ * again without Reply-To. The student's address is in the body either way.
+ */
+async function sendAlertToMario(resend: Resend, label: string, email: CreateEmailOptions): Promise<void> {
+  let result = await resend.emails.send(email);
+  if (result.error?.name === "validation_error" && email.replyTo) {
+    result = await resend.emails.send({ ...email, replyTo: undefined });
+  }
+  if (result.error) reportSendFailure(label, result.error);
+}
 
 export async function sendBookingCreatedEmails(booking: IcsBooking): Promise<void> {
   const resend = getResend();
@@ -48,20 +80,39 @@ export async function sendBookingCreatedEmails(booking: IcsBooking): Promise<voi
     // sending domain and bounces. Mario never sees the question.
     replyTo: adminEmail(),
   });
-  if (studentResult.error) {
-    console.error("[email] student confirmation failed", studentResult.error);
-  }
+  if (studentResult.error) reportSendFailure("student confirmation", studentResult.error);
 
-  const adminResult = await resend.emails.send({
+  await sendAlertToMario(resend, "booking alert", {
     from: emailFrom(),
     to: adminEmail(),
-    subject: `New booking — ${booking.name} · ${booking.lesson_date} ${booking.lesson_time}`,
+    subject: `New booking — ${oneLine(booking.name)} · ${booking.lesson_date} ${booking.lesson_time}`,
     html: adminNotificationHtml(booking),
     replyTo: booking.email,
   });
-  if (adminResult.error) {
-    console.error("[email] admin notification failed", adminResult.error);
+}
+
+/**
+ * Tells Mario a contact-form message arrived. Before this, inquiries only
+ * appeared in /admin, which Mario rarely opens, while the form promised a
+ * reply within 24 hours. Reply-To is the student, so answering is one tap.
+ */
+export async function sendInquiryNotificationEmail(inquiry: {
+  name: string;
+  email: string;
+  message: string;
+}): Promise<void> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping inquiry notification");
+    return;
   }
+  await sendAlertToMario(resend, "inquiry alert", {
+    from: emailFrom(),
+    to: adminEmail(),
+    subject: `New message — ${oneLine(inquiry.name)}`,
+    html: inquiryNotificationHtml(inquiry),
+    replyTo: inquiry.email,
+  });
 }
 
 export async function sendBookingCancelledEmail(booking: IcsBooking): Promise<void> {
@@ -86,9 +137,7 @@ export async function sendBookingCancelledEmail(booking: IcsBooking): Promise<vo
     attachments: [{ filename, content: icsContent, contentType: "text/calendar; method=CANCEL" }],
     replyTo: adminEmail(),
   });
-  if (result.error) {
-    console.error("[email] cancellation email failed", result.error);
-  }
+  if (result.error) reportSendFailure("cancellation", result.error);
 }
 
 export async function sendFeedbackEmail({
@@ -110,12 +159,10 @@ export async function sendFeedbackEmail({
   const result = await resend.emails.send({
     from: emailFrom(),
     to: adminEmail(),
-    subject: `[Feedback: ${type}] ${title}`,
+    subject: `[Feedback: ${oneLine(type)}] ${oneLine(title)}`,
     html: feedbackNotificationHtml({ type, title, description, submitter }),
   });
-  if (result.error) {
-    console.error("[email] feedback notification failed", result.error);
-  }
+  if (result.error) reportSendFailure("feedback alert", result.error);
 }
 
 export type { IcsBooking, IcsMethod };
@@ -138,16 +185,15 @@ export async function sendReviewRequestEmail({
     console.warn("[email] RESEND_API_KEY not set; skipping review request");
     return false;
   }
-  const first = name.trim().split(/\s+/)[0] || "there";
   const result = await resend.emails.send({
     from: emailFrom(),
     to,
-    subject: `How was your lesson, ${first}?`,
+    subject: `How was your lesson, ${firstName(name, "there")}?`,
     html: reviewRequestHtml({ name, lessonName, lessonDate, reviewUrl }),
     replyTo: adminEmail(),
   });
   if (result.error) {
-    console.error("[email] review request failed", result.error);
+    reportSendFailure("review request", result.error);
     return false;
   }
   return true;
