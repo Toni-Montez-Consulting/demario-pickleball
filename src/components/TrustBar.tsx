@@ -88,7 +88,13 @@ export default function TrustBar() {
         <div className="trust-chip">
           <StarIcon />
           <span>
-            <strong>Dallas Indoor</strong> · Head Pro
+            <strong>Dallas ISD</strong> · Pickleball Instructor
+          </span>
+        </div>
+        <div className="trust-chip">
+          <StarIcon />
+          <span>
+            <strong>City of Carrollton</strong> · Pickleball Instructor
           </span>
         </div>
         <div className="trust-chip rating">
