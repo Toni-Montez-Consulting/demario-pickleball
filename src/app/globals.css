@@ -3241,3 +3241,31 @@ a.pay-card:focus-visible {
   color: var(--fg-dim);
   margin-bottom: 2rem;
 }
+
+/* ====== LESSON OUTCOME (Mario's one-tap confirmation page) ====== */
+.outcome-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 6rem 1.25rem 4rem;
+}
+.outcome-page h1 {
+  font-size: clamp(1.75rem, 6vw, 2.25rem);
+  margin: 0.5rem 0 1.5rem;
+}
+.outcome-facts {
+  margin: 0 0 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.outcome-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+}
+.outcome-facts > div + div { border-top: 1px solid var(--line); }
+.outcome-facts dt { color: var(--fg-muted); font-size: 13px; }
+.outcome-facts dd { margin: 0; font-weight: 600; text-align: right; }
+.outcome-page form { margin: 0 0 12px; }
+.outcome-note { color: var(--fg-dim); margin: 0 0 1.5rem; }
