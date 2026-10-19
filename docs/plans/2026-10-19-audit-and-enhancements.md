@@ -40,6 +40,7 @@ Reading of the numbers:
 - `@vercel/analytics` has shipped since 2026-07-27 and `/_vercel/insights/script.js` is
   served, but the Vercel query API answered **"Web Analytics not found"** for the project. The
   numbers could not be read from here. **Open Vercel -> Analytics to confirm it is enabled.**
+  Tonio enabled it later that day; see section 7.
 - The team is on Vercel **Pro**: custom events are included, at most 2 properties each.
 - Before this round only pageviews existed. Nothing measured the booking funnel or the
   handoffs to partner platforms.
@@ -80,7 +81,7 @@ Findings fixed in `fix/a11y-perf-seo`:
     SECURITY DEFINER. Low; `set search_path = ''` when next touching them.
   - `btree_gist` is in the public schema. Low.
   - **Leaked password protection disabled.** It is a toggle in Supabase Auth settings, and
-    worth turning on for the admin accounts.
+    worth turning on for the admin accounts. Turned on later that day; see section 7.
   - RLS enabled with no policy on `rate_limit_events`, `reviews`, and `students`. Intended:
     these are service-role only.
   - Unindexed FKs on `reviews`, unused indexes, and duplicate permissive SELECT policies.
@@ -165,17 +166,17 @@ Checked after the redeploy, at about 20:42 UTC:
   crons.
 - `/`, `/privacy`, `/pay`, and `/sitemap.xml` return 200, and Vercel shows no runtime errors.
 
+Then, the same evening:
+- Tonio enabled Web Analytics; the project records it at 21:04 UTC. Vercel adds the analytics
+  routes with the next deployment after enabling, so data starts with that deployment.
+- Tonio turned on leaked password protection; the security advisor stopped flagging it by
+  21:07 UTC.
+- `public.zz_rls_probe_20261019` was dropped at about 21:26 UTC, at Tonio's request. The
+  Supabase connector's own confirmation could not be answered from this session, so the drop
+  ran through the Supabase CLI (`supabase@2.120.0 db query --linked`) after Tonio approved the
+  command. The other ten tables kept their row counts.
+
 For Tonio:
-- Vercel: confirm Web Analytics is enabled (Vercel -> Analytics -> this project -> Enable). At
-  20:43 UTC the analytics API still answered "Web Analytics not found". The script route proves
-  nothing: `/_vercel/insights/script.js` answers 200, but so does
-  `/_vercel/speed-insights/script.js`, and the site does not load Speed Insights. Vercel adds
-  the analytics routes with the next deployment after enabling.
-- Supabase: turn on leaked password protection in the Auth settings; the Pro plan includes it.
-  The security advisor still flagged it at 20:43 UTC.
-- Supabase: drop the empty table `public.zz_rls_probe_20261019`, left by the check above. The
-  agent's tool needs a person to confirm a drop. RLS is on with no policies, so nothing can use
-  it meanwhile. It was still there, with 0 rows, at 20:43 UTC.
 - Read the three inquiries already in Admin; the newest is 2026-10-18.
 - Later, on a separate tested branch: a CSP, and HSTS `includeSubDomains`.
 - **Waiver version.**

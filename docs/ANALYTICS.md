@@ -8,9 +8,11 @@ Cookieless Vercel Web Analytics: page views plus the custom events below. Define
 Vercel dashboard -> project `demario-pickleball` -> **Analytics** -> **Events**. Filter by event
 name, then break down by a property (for example `booking_step_viewed` by `step`).
 
-As of 2026-10-19 the Vercel query API answered "Web Analytics not found" for this project,
-even though `/_vercel/insights/script.js` is served. Open the Analytics tab once to confirm
-Web Analytics is enabled and showing data. If it is not enabled, nothing below is recorded.
+Web Analytics was enabled for the project on 2026-10-19 at 21:04 UTC. Before that, the Vercel
+query API answered "Web Analytics not found" even though `/_vercel/insights/script.js` was
+served. So a 200 from that script does not show Analytics is on: the Speed Insights script
+answers 200 too, and the site does not use Speed Insights. Vercel adds the analytics routes
+with the first deployment after enabling, and nothing below was recorded before it was on.
 
 ## Plan limits
 

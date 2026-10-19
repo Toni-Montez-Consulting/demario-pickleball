@@ -302,8 +302,8 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
   partner venue's name stops mapping to a code.
 - Privacy policy (now "Updated October 19, 2026") and cookie notice disclose the interaction
   counts. The site roadmap marks analytics shipped.
-- **Before relying on it:** open Vercel -> Analytics and confirm Web Analytics is enabled. The
-  query API said "not found" for this project on 2026-10-19.
+- **Web Analytics was enabled on 2026-10-19 at 21:04 UTC,** after the query API had said "not
+  found" for this project earlier that day. Data starts with the first deployment after that.
 
 ### 6. `feat/lesson-outcome-nudge` — make the review loop run (2026-10-19)
 
