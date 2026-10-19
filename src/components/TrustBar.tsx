@@ -24,7 +24,7 @@ export default function TrustBar() {
         <div className="trust-chip">
           <StarIcon />
           <span>
-            <strong>USTA</strong> · Certified Coach
+            <strong>USPTA</strong> · Certified Coach
           </span>
         </div>
         <div className="trust-chip">

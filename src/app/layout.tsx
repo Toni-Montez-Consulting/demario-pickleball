@@ -20,7 +20,7 @@ const spaceGrotesk = Space_Grotesk({
 // places before, which is how a stale rating survives an update. Kept under
 // ~155 characters so Google does not truncate it.
 const SITE_DESCRIPTION =
-  "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book DeMario Montez — 4.97 doubles DUPR, top 1% worldwide, top 40 in DFW, USTA certified.";
+  "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book DeMario Montez — 4.97 doubles DUPR, top 1% worldwide, top 40 in DFW, USPTA certified.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
