@@ -202,13 +202,25 @@ test("keyboard focus stays inside the booking dialog in both directions", async 
 
   // More presses than the dialog has stops, so the walk must wrap at least once.
   for (const key of ["Tab", "Shift+Tab"]) {
+    let previous: string | undefined;
+    const visited = new Set<string>();
     for (let i = 0; i < 30; i++) {
       await page.keyboard.press(key);
-      const inside = await page.evaluate(
-        () => !!document.activeElement?.closest('[role="dialog"]')
-      );
-      expect(inside, `${key} press ${i + 1} left the dialog`).toBe(true);
+      const focus = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        if (!el) return { inside: false, id: "" };
+        // Tag each element once so the test can tell whether focus moved.
+        el.dataset.focusProbe ??= String(document.querySelectorAll("[data-focus-probe]").length);
+        return { inside: !!el.closest('[role="dialog"]'), id: el.dataset.focusProbe };
+      });
+      expect(focus.inside, `${key} press ${i + 1} left the dialog`).toBe(true);
+      // Focus stranded on one control stays "inside" but is just as broken. The
+      // old Shift+Tab bug did exactly that.
+      expect(focus.id, `${key} press ${i + 1} did not move focus`).not.toBe(previous);
+      previous = focus.id;
+      visited.add(focus.id);
     }
+    expect(visited.size, `${key} reached too few controls`).toBeGreaterThan(2);
   }
 });
 
@@ -229,13 +241,12 @@ test("booking funnel events carry codes only, never what the student typed", asy
 
   expect(named("book_cta_click")).toHaveLength(1);
   expect(["nav", "hero"]).toContain((named("book_cta_click")[0] as { source: string }).source);
-  expect(named("booking_step_viewed")).toEqual(
-    expect.arrayContaining([
-      { step: "details" },
-      { step: "picker", court_setup: "outdoor" },
-      { step: "confirmed" },
-    ])
-  );
+  // Each step counts once per opening, so a straight run is exactly the funnel.
+  expect(named("booking_step_viewed")).toEqual([
+    { step: "details" },
+    { step: "picker", court_setup: "outdoor" },
+    { step: "confirmed" },
+  ]);
 
   const sent = JSON.stringify(events);
   for (const typed of ["Jane", "jane@example.com", "371-9220", "Lake Highlands"]) {

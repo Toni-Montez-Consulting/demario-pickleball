@@ -1,5 +1,20 @@
 import { track } from "@vercel/analytics/server";
+import { SITE_URL } from "@/lib/site";
 import type { AnalyticsEventName, AnalyticsEvents } from "./analytics";
+
+/**
+ * track() posts to VERCEL_URL, the deployment's generated *.vercel.app address.
+ * Vercel Authentication protects those addresses on this project, so the post
+ * was redirected to a login page and the event dropped without an error (the
+ * library never checks the status). The custom domain is exempt, and it is where
+ * the browser's events already go. An explicit VERCEL_WEB_ANALYTICS_ENDPOINT
+ * still wins, and previews keep the default.
+ */
+function pointAtCustomDomain(): void {
+  if (process.env.VERCEL_ENV === "production" && !process.env.VERCEL_WEB_ANALYTICS_ENDPOINT) {
+    process.env.VERCEL_WEB_ANALYTICS_ENDPOINT = new URL("/_vercel/insights/event", SITE_URL).toString();
+  }
+}
 
 /**
  * Server-side event, for outcomes only the server can confirm, such as a
@@ -19,6 +34,7 @@ export async function trackServerEvent<E extends AnalyticsEventName>(
   requestHeaders: Headers
 ): Promise<void> {
   try {
+    pointAtCustomDomain();
     await track(name, props as Record<string, string>, {
       headers: {
         "user-agent": requestHeaders.get("user-agent") ?? "",

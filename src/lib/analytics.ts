@@ -1,5 +1,5 @@
 import { track as vercelTrack } from "@vercel/analytics";
-import type { CourtSetup } from "@/lib/booking-notes";
+import { isCourtSetup, type CourtSetup } from "@/lib/booking-notes";
 import type { LessonKey } from "@/lib/data";
 
 /**
@@ -64,24 +64,33 @@ export interface AnalyticsEvents {
 
 export type AnalyticsEventName = keyof AnalyticsEvents;
 
-const EVENT_NAMES: ReadonlySet<string> = new Set<AnalyticsEventName>([
-  "book_cta_click",
-  "booking_step_viewed",
-  "booking_failed",
-  "booking_created",
-  "venue_link_click",
-  "contact_click",
-  "payment_link_click",
-  "inquiry_submit",
-  "review_submit",
-  "outbound_click",
-]);
+// A Record over every event name, so an event added to AnalyticsEvents but not
+// here is a type error. A hand-kept list let it compile and then dropped its
+// data-evt clicks without a word.
+const EVENTS: Record<AnalyticsEventName, true> = {
+  book_cta_click: true,
+  booking_step_viewed: true,
+  booking_failed: true,
+  booking_created: true,
+  venue_link_click: true,
+  contact_click: true,
+  payment_link_click: true,
+  inquiry_submit: true,
+  review_submit: true,
+  outbound_click: true,
+};
+const EVENT_NAMES: ReadonlySet<string> = new Set(Object.keys(EVENTS));
+
+// Keyed by the option labels themselves, so renaming one in booking-notes.ts
+// is a type error here instead of every event quietly reporting "none".
+const COURT_SETUP_CODES: Record<CourtSetup, CourtSetupCode> = {
+  "Indoor / weather-proof": "indoor",
+  "Outdoor public court": "outdoor",
+  "Help me choose": "help",
+};
 
 export function courtSetupCode(value: CourtSetup | string | null | undefined): CourtSetupCode {
-  if (value === "Indoor / weather-proof") return "indoor";
-  if (value === "Outdoor public court") return "outdoor";
-  if (value === "Help me choose") return "help";
-  return "none";
+  return isCourtSetup(value) ? COURT_SETUP_CODES[value] : "none";
 }
 
 const VENUE_CODES: Record<string, VenueCode> = {

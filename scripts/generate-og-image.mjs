@@ -5,9 +5,8 @@
 // installs. If the installed build does not match, point at one:
 //   CHROMIUM_PATH=/path/to/chrome node scripts/generate-og-image.mjs
 //
-// Re-run whenever the numbers below change. They mirror the hero and About
-// sections (src/components/Hero.tsx, About.tsx) and must stay in step with
-// them. Kept inline so this script has no build step.
+// Re-run whenever src/lib/dupr.json changes. The card reads its numbers from
+// there, as the hero, trust strip, and About section do.
 //
 // A static file rather than a next/og route: the card uses the site's own
 // fonts and photo at full fidelity, and nothing renders at request time.
@@ -16,13 +15,13 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-const STATS = [
-  ["4.97", "Doubles DUPR"],
-  ["Top 1%", "DUPR worldwide"],
-  ["Top 40", "DFW players"],
-];
-
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const dupr = JSON.parse(await readFile(path.join(root, "src/lib/dupr.json"), "utf8"));
+const STATS = [
+  [dupr.doublesShort, "Doubles DUPR"],
+  [`Top ${dupr.topPercent}%`, "DUPR worldwide"],
+  [`Top ${dupr.dfwTop}`, "DFW players"],
+];
 const photo = await readFile(path.join(root, "public/img/hero-ready.jpg"));
 const out = path.join(root, "public/img/og-card.jpg");
 
@@ -88,9 +87,16 @@ try {
   const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
   await page.setContent(html, { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
-  const missing = await page.evaluate(() =>
-    ["600 20px 'Space Grotesk'", "600 20px Inter"].filter((f) => !document.fonts.check(f))
-  );
+  // check() is true when no face is registered at all, which is what a failed
+  // Google Fonts request leaves. load() returns only faces that really loaded.
+  const missing = await page.evaluate(async (wanted) => {
+    const failed = [];
+    for (const font of wanted) {
+      const faces = await document.fonts.load(font).catch(() => []);
+      if (!faces.length || faces.some((face) => face.status !== "loaded")) failed.push(font);
+    }
+    return failed;
+  }, ["600 20px 'Space Grotesk'", "600 20px Inter", "500 20px Inter"]);
   // A fallback font would ship a card that does not look like the site.
   if (missing.length) throw new Error(`Fonts failed to load: ${missing.join(", ")}`);
   await page.screenshot({ path: out, type: "jpeg", quality: 88 });

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import SiteAnalytics from "@/components/SiteAnalytics";
 import { SITE_URL } from "@/lib/site";
-import { OG_IMAGE } from "@/lib/metadata";
+import { OG_IMAGE, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,23 +17,18 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
 });
 
-// One source for the search and link-preview snippet. It was pasted into two
-// places before, which is how a stale rating survives an update. Kept under
-// ~155 characters so Google does not truncate it.
-const SITE_DESCRIPTION =
-  "Strategic 1:1 pickleball coaching in Dallas–Fort Worth. Book DeMario Montez — 4.97 doubles DUPR, top 1% worldwide, top 40 in DFW, USPTA certified.";
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
+  title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   // Icons come from the file conventions in this folder: icon.svg, favicon.ico,
   // and apple-icon.png (the last two made by scripts/generate-icons.mjs).
+  // Site-wide preview fields only. A page without its own openGraph keeps this
+  // object, so a url or title here would make it preview as the homepage; Next
+  // fills og:title and og:description from the page's own metadata instead.
+  // The homepage sets its own in src/app/page.tsx.
   openGraph: {
     type: "website",
-    url: SITE_URL,
-    title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
-    description: SITE_DESCRIPTION,
     // 1200x630 card made by scripts/generate-og-image.mjs. The portrait hero
     // photo used before was cropped or shrunk by iMessage, WhatsApp, and
     // Facebook, which is where students share coaches with each other.
@@ -41,8 +36,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
-    description: SITE_DESCRIPTION,
     images: [OG_IMAGE.url],
   },
 };

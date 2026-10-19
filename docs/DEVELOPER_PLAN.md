@@ -123,11 +123,13 @@ markup is ignored for rich results. It produces no stars and is not worth the su
 - Add automated DUPR rating sync only after Mario receives official read-only API or partner access from DUPR.
 - Upgrade dependency advisories when compatible patched versions are available; do not use `npm audit fix --force` without a tested migration branch.
 
-## In Review: October 2026 Audit Round
+## October 2026 Audit Round
 
-Branches stacked in merge order, each based on the one before. Not merged or deployed until
-Tonio reviews them. The audit evidence behind them is in
-`docs/plans/2026-10-19-audit-and-enhancements.md` (branch `docs/october-2026-audit`).
+Six stacked PRs, merged in this order: #13 `fix/dupr-rankings`, #14 `chore/security-patches`,
+#15 `fix/lead-alerts`, #16 `fix/a11y-perf-seo`, #17 `feat/conversion-tracking`, #18
+`feat/lesson-outcome-nudge`. Each entry below reaches master with its PR, and master deploys to
+production. The audit evidence is `docs/plans/2026-10-19-audit-and-enhancements.md`, added by
+#12.
 
 ### 1. `fix/dupr-rankings` — credentials update (2026-10-19)
 
@@ -135,8 +137,12 @@ Tonio reviews them. The audit evidence behind them is in
   DeMario's own TikTok reads "4.973 currently", which matches his update.
 - Added his rankings: top 1% of DUPR-rated players worldwide and in Texas (hero), top 100 in
   Texas and top 40 in DFW (trust strip, bio, About stat), with an "as of October 2026" note.
-- Dropped the 4.579 singles rating in its own commit. DeMario confirmed doubles only for now.
-  Revert that commit to restore the layout if he gets back into singles.
+- The rating, rankings, and as-of date live in `src/lib/dupr.json`. Every surface reads from
+  it, so a new rating is one edit there.
+- Dropped the 4.579 singles rating in its own commit (`ccb49b7`). DeMario confirmed doubles only
+  for now. If he gets back into singles, re-add the stat by hand using that commit as the layout
+  reference. Do not `git revert` it: later commits rewrote the same bio paragraph, and the
+  revert's side of the conflict brings back "USTA" and "Head Pro".
 - Corrected USTA -> USPTA (confirmed by Tonio).
 - The trust strip's first chip links to his TeachMe.To reviews: 5.0 from 137+ ratings,
   checked October 2026. It replaces the unsourced "5.0 / 79 reviews" claim removed in July.
@@ -145,6 +151,8 @@ Tonio reviews them. The audit evidence behind them is in
   clause and trust chip are gone. Dallas Indoor stays on the site as a PodPlay venue.
 - Added his instructor roles for Dallas ISD and the City of Carrollton, at his request: one
   sentence in the bio and two trust chips in the old Dallas Indoor slot.
+- The trust strip now wraps into centered rows from 768px up. At nine chips, with its scrollbar
+  hidden, a mouse could not reach the chips past the edge. Phones keep the swipeable row.
 - **Not added:** Spanish-language lessons. His TeachMe.To profile lists Spanish; add it to the
   site only once DeMario confirms he wants to offer it here.
 
@@ -158,17 +166,31 @@ Tonio reviews them. The audit evidence behind them is in
 - CI moves to Node 24 (matching Vercel) on `actions/checkout@v7` and `actions/setup-node@v7`.
 - `agentRules: false` in `next.config.ts`: Next 16.4's `next dev` otherwise appends a generated
   block to the hand-maintained `AGENTS.md` every time an AI agent runs the dev server.
-- Details and the remaining dev-only ESLint advisories: `docs/DEPENDENCY_ADVISORIES.md`.
+- Node 24.x is declared in `engines` and `.nvmrc`. The new `@supabase/supabase-js` throws on
+  Node 20, so local development needs Node 22 or newer.
+- `next-env.d.ts` is gitignored, and `npm run typecheck` runs `next typegen` first. Next 16.4
+  rewrote the tracked copy on every dev or build run.
+- The Sentry config import moved to `@sentry/nextjs/config`; the Vitest config is now
+  `vitest.config.mts`. Both clear deprecation warnings from this round's upgrades.
+- Details, the remaining dev-only ESLint advisory, and the Sentry 11 to-do:
+  `docs/DEPENDENCY_ADVISORIES.md`.
 
 ### 3. `fix/lead-alerts` — Mario hears about every lead (2026-10-19)
 
 - Contact-form inquiries now email Mario (Reply-To is the student). Before this they only
   appeared in `/admin`, while the form promised a reply within 24 hours.
-- Booking emails run in `after()` instead of a bare un-awaited promise that serverless could
-  freeze after the response. That email is Mario's only new-booking alert.
+- The booking, inquiry, cancellation, and admin-feedback emails run in `after()` instead of a
+  bare un-awaited promise that serverless could freeze after the response. The booking email
+  is Mario's only new-booking alert; the cancellation email is the student's only notice.
+- Failed sends report to Sentry. The Resend SDK returns errors rather than throwing, so a
+  revoked key or spent quota used to fail with only a console line.
+- Mario's alerts retry once without Reply-To when Resend rejects the student's address. The
+  address stays in the body.
+- Inquiry alerts stop after 20 in 24 hours (messages still save to `/admin`, and Sentry gets
+  one warning), so contact-form spam cannot spend the Resend quota booking emails need.
 - Fixed an HTML injection: the email wrapper put the heading (the student's name, on admin
   notifications) into `<title>` unescaped, so a crafted booking name could inject a link into
-  Mario's inbox.
+  Mario's inbox. Names are also kept to one line in every subject.
 - **After deploy:** the three inquiries already in production (newest 2026-10-18) were never
   emailed. Read them in Admin -> Inquiries.
 
@@ -187,10 +209,13 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
 - **LCP:** the hero uses `loading="eager"` + `fetchPriority="high"` (Next 16 deprecated
   `priority`); the offscreen About portrait is no longer preloaded; every `sizes` value
   matches its measured render width.
-- **Link previews:** 1200x630 card at `public/img/og-card.jpg`. Regenerate it with
-  `node scripts/generate-og-image.mjs` whenever the DUPR numbers change.
-- **SEO:** per-page title, canonical, and og:url via `src/lib/metadata.ts`. `/pay` is noindex
-  and out of the sitemap, and the legal pages carry fixed lastmod dates.
+- **Link previews:** 1200x630 card at `public/img/og-card.jpg`. The script reads
+  `src/lib/dupr.json`, so rerun `node scripts/generate-og-image.mjs` after any rating update.
+  Both image scripts refuse to write if the brand fonts fail to load.
+- **SEO:** per-page title, canonical, and og:url via `src/lib/metadata.ts`. The root layout
+  keeps only site-wide preview fields, so pages without their own (a `/review` link, the 404)
+  no longer preview as the homepage. `/pay` is noindex and out of the sitemap. The legal
+  pages' lastmod dates are the dates their text last changed, set in `src/app/sitemap.ts`.
 - **Accessibility:** `<main>` landmarks, `/pay` heading order, 24px tap targets on the review
   dots and footer links, and the sticky bar is inert while hidden. axe-core: 0 violations on
   `/`, `/pay`, `/privacy`, `/terms`.
@@ -214,9 +239,16 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
   Pro limit). An e2e test proves the booking funnel's events never contain what the student
   typed.
 - `booking_created` is server-side, so only saved bookings count. It sends no cookies, unlike
-  the library default.
+  the library default. In production it posts to the custom domain: the library's default
+  `*.vercel.app` target sits behind Vercel Authentication on this project, which silently
+  dropped every server event.
+- Each booking step counts once per opening of the form, so step totals read as a funnel.
+  Middle clicks count as link clicks; a saved booking whose response body is lost still shows
+  the confirmation.
+- The event list and court-setup codes are compiler-checked, and a unit test fails if a
+  partner venue's name stops mapping to a code.
 - Privacy policy (now "Updated October 19, 2026") and cookie notice disclose the interaction
-  counts.
+  counts. The site roadmap marks analytics shipped.
 - **Before relying on it:** open Vercel -> Analytics and confirm Web Analytics is enabled. The
   query API said "not found" for this project on 2026-10-19.
 

@@ -213,6 +213,11 @@ h1.hero-title .italic {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* A 320px screen leaves each column 92px, too narrow for the longer labels.
+   Wrap them there rather than cut a claim off mid-word. */
+@media (max-width: 359px) {
+  .hero-stat .label { white-space: normal; }
+}
 
 /* ====== TRUST BAR ====== */
 .trust {
@@ -249,8 +254,9 @@ h1.hero-title .italic {
 a.trust-chip { transition: border-color 0.2s; }
 a.trust-chip:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--line)); }
 /* The strip scrolls, so it clips anything outside its 4px padding. The global
-   3px offset plus a 2px ring would lose the ring's outer edge. */
-a.trust-chip:focus-visible { outline-offset: 1px; }
+   3px offset plus a 2px ring would lose the ring's outer edge, and the global
+   4px radius would square off the chip while it has focus. */
+a.trust-chip:focus-visible { outline-offset: 1px; border-radius: 12px; }
 
 /* ====== SECTION ====== */
 section.block { padding: 64px 22px; position: relative; }
@@ -369,23 +375,28 @@ section.block { padding: 64px 22px; position: relative; }
 }
 
 .review-pager {
-  /* 7.5px + the buttons' 10.5px top padding keeps the bars where an 18px
-     margin put them before the tap targets grew. */
+  /* 7.5px + the bars' 10.5px offset inside each button keeps them where an
+     18px margin put them before the tap targets grew. */
   display: flex; gap: 6px; margin-top: 7.5px; justify-content: center;
 }
-/* The visible bar stays 3px tall. Padding plus content-box clipping gives each
-   button a 24px-tall tap target (WCAG 2.5.8); before, it was the 3px bar. */
+/* Each button is a 24px-tall tap target (WCAG 2.5.8); before, it was the 3px
+   bar. The bar is drawn by ::before so it keeps its rounded ends. */
 .review-pager button {
-  width: 20px; height: 3px; border-radius: 2px;
-  box-sizing: content-box;
-  padding: 10.5px 0;
-  background-color: var(--line);
-  background-clip: content-box;
-  transition: background-color .2s, width .2s;
+  position: relative;
+  width: 20px; height: 24px;
+  padding: 0;
+  transition: width .2s;
 }
-/* background-color, not the shorthand: the shorthand resets background-clip
-   and would paint the whole 24px target. */
-.review-pager button.active { background-color: var(--accent); width: 34px; }
+.review-pager button::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 10.5px;
+  height: 3px; border-radius: 2px;
+  background-color: var(--line);
+  transition: background-color .2s;
+}
+.review-pager button.active { width: 34px; }
+.review-pager button.active::before { background-color: var(--accent); }
 .proof-panel {
   display: flex;
   flex-direction: column;
@@ -1563,6 +1574,9 @@ footer .contact-line a:hover { color: var(--fg); }
   .final-cta { padding: 80px 48px 140px; }
   footer { padding: 36px 48px 80px; }
   .trust { padding: 20px 32px; }
+  /* The strip's scrollbar is hidden and a mouse wheel scrolls vertically, so
+     chips past the edge were unreachable on desktop. Show them all instead. */
+  .trust-marquee { flex-wrap: wrap; justify-content: center; row-gap: 12px; }
 
   .hero { min-height: 640px; padding: 80px 48px 48px; }
   .hero-content { margin-top: 260px; max-width: 560px; }
@@ -2458,7 +2472,8 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
   .cookie-banner {
     position: absolute;
     z-index: 35;
-    top: 56px;
+    /* Clears the 65px nav with a small gap. */
+    top: 72px;
     bottom: auto;
     left: 10px;
     right: 10px;

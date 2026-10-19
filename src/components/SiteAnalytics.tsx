@@ -25,6 +25,9 @@ import { parseEventAttributes, trackEvent } from "@/lib/analytics";
 export default function SiteAnalytics() {
   useEffect(() => {
     function onClick(e: MouseEvent) {
+      // A middle click opens the link in a new tab and fires auxclick, not
+      // click. Other buttons (a right click) never follow the link.
+      if (e.type === "auxclick" && e.button !== 1) return;
       const target = e.target instanceof Element ? e.target.closest<HTMLElement>("[data-evt]") : null;
       if (!target) return;
       const event = parseEventAttributes(target.dataset);
@@ -34,7 +37,11 @@ export default function SiteAnalytics() {
       }
     }
     document.addEventListener("click", onClick, { capture: true });
-    return () => document.removeEventListener("click", onClick, { capture: true });
+    document.addEventListener("auxclick", onClick, { capture: true });
+    return () => {
+      document.removeEventListener("click", onClick, { capture: true });
+      document.removeEventListener("auxclick", onClick, { capture: true });
+    };
   }, []);
 
   return (

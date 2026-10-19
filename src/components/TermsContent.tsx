@@ -1,5 +1,6 @@
 import { eventAttributes } from "@/lib/analytics";
 
+// Editing these terms? Bump their date in LEGAL_LAST_MODIFIED (src/app/sitemap.ts).
 export const TERMS_EFFECTIVE_DATE = "Effective April 23, 2026";
 
 export default function TermsContent() {

@@ -43,7 +43,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
   const court = parseBookingNotes(booking.notes);
   return wrap(
     `
-    <h1 style="font-size:22px;margin:0 0 12px;">You're booked, ${escapeHtml(booking.name.split(" ")[0])}.</h1>
+    <h1 style="font-size:22px;margin:0 0 12px;">You're booked, ${escapeHtml(firstName(booking.name, "there"))}.</h1>
     <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">
       Your lesson time is reserved. Mario will confirm the exact court shortly.
     </p>
@@ -112,7 +112,7 @@ export function inquiryNotificationHtml({
   email: string;
   message: string;
 }): string {
-  const first = name.trim().split(/\s+/)[0] || "them";
+  const first = firstName(name, "them");
   return wrap(
     `
     <h1 style="font-size:20px;margin:0 0 12px;">New message from the site</h1>
@@ -202,6 +202,11 @@ export function studentCancelledHtml(booking: IcsBooking): string {
   );
 }
 
+/** The first word of a name, or the fallback when there is none. */
+export function firstName(name: string, fallback: string): string {
+  return name.trim().split(/\s+/)[0] || fallback;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -249,7 +254,7 @@ export function reviewRequestHtml({
   lessonDate: string;
   reviewUrl: string;
 }): string {
-  const first = name.trim().split(/\s+/)[0] || "there";
+  const first = firstName(name, "there");
   return wrap(
     `
     <h1 style="font-size:22px;margin:0 0 12px;">How was it, ${escapeHtml(first)}?</h1>

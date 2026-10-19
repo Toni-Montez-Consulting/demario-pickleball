@@ -27,6 +27,10 @@ within two properties. Web Analytics Plus ($10/month) raises the limit to 8 prop
   short-code pattern before sending.
 - `booking_created` is sent from the server, which passes only the user agent and client IP.
   Without explicit headers the library forwards the request's cookies.
+- In production that server event posts to `https://demariomontezpb.com/_vercel/insights/event`.
+  The library's default target is the deployment's `*.vercel.app` address, which Vercel
+  Authentication protects on this project; the post was redirected to a login page and the
+  event silently lost. Set `VERCEL_WEB_ANALYTICS_ENDPOINT` to override.
 - `/review/<token>` URLs are reported as `/review/[token]`.
 - The privacy policy and cookie notice disclose the interaction counts.
 
@@ -35,7 +39,7 @@ within two properties. Web Analytics Plus ($10/month) raises the limit to 8 prop
 | Event | Properties | Question |
 |---|---|---|
 | `book_cta_click` | `source` (nav, hero, testimonials, lessons, final_cta, sticky), `lesson_type` | Which Book button starts bookings? |
-| `booking_step_viewed` | `step` (details, terms, indoor_routing, picker, error, confirmed), `court_setup` | Where does the booking form lose people? |
+| `booking_step_viewed` | `step` (details, terms, indoor_routing, picker, error, confirmed), `court_setup` | Where does the booking form lose people? Sent once per step per opening of the form, so Back, Try again, and a taken slot do not count a step twice. |
 | `booking_failed` | `reason` (slot_taken, rate_limited, invalid, server, network) | Are bookings failing, and why? |
 | `booking_created` | `lesson_type`, `court_setup` | How many bookings were actually saved (server-side)? |
 | `venue_link_click` | `venue` (dallas_indoor, the_grove, teachme_to, ...), `surface` | How many students leave for PodPlay or TeachMe.To? |
@@ -46,7 +50,8 @@ within two properties. Web Analytics Plus ($10/month) raises the limit to 8 prop
 | `outbound_click` | `dest` (instagram, tiktok, facebook, google_review, teachme_reviews) | Do visitors check the social and review profiles? |
 
 The funnel to watch is `book_cta_click` -> `booking_step_viewed` (details -> picker or
-indoor_routing -> confirmed) -> `booking_created`. Indoor students finish on a partner
+indoor_routing -> confirmed) -> `booking_created`. Link clicks count left and middle clicks;
+a link opened from the right-click menu is not counted. Indoor students finish on a partner
 platform, so for them `venue_link_click` is the conversion.
 
 Adding an event: add it to `AnalyticsEvents` with closed-set property types, keep it to two

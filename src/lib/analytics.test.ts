@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { HYBRID_BY_REQUEST_VENUES, PLATFORM_REQUIRED_VENUES } from "@/lib/venue-rules";
 import {
   bookingFailure,
   courtSetupCode,
@@ -103,5 +104,11 @@ describe("code helpers", () => {
     expect(venueCode("The Grove")).toBe("the_grove");
     expect(venueCode("TeachMe.To")).toBe("teachme_to");
     expect(venueCode("Some New Club")).toBeNull();
+  });
+
+  it("has a code for every partner venue, so renaming one cannot silently stop its clicks", () => {
+    for (const rule of [...PLATFORM_REQUIRED_VENUES, ...HYBRID_BY_REQUEST_VENUES]) {
+      expect(venueCode(rule.shortName), rule.name).not.toBeNull();
+    }
   });
 });
