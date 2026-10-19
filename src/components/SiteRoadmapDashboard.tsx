@@ -117,13 +117,14 @@ const PHASES: DevRoadmapPhase[] = [
       {
         key: "dev-p2-dependency-watch",
         text: "Track dependency advisories without forcing unsafe upgrades",
-        detail: "docs/DEPENDENCY_ADVISORIES.md tracks current advisories and the GitHub Actions Node transition.",
+        detail: "docs/DEPENDENCY_ADVISORIES.md tracks current advisories, overrides, and tooling notes.",
         shipped: true,
       },
       {
         key: "dev-p2-github-actions-node24",
         text: "Move GitHub Actions to the Node 24 runner default",
-        detail: "GitHub is moving JavaScript actions from Node 20 to Node 24 defaults in 2026. Update/verify checkout and setup-node before the runner cutoff, then run the full CI and e2e suite.",
+        detail: "CI runs on Node 24 with actions/checkout@v7 and actions/setup-node@v7, matching Vercel's Node 24.x runtime (October 2026).",
+        shipped: true,
       },
       {
         key: "dev-p2-analytics",
