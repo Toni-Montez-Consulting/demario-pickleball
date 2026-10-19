@@ -21,7 +21,8 @@ export default function CookieBanner() {
   return (
     <div className="cookie-banner" role="region" aria-label="Cookie notice">
       <p className="cookie-text">
-        Session cookies for admin login, plus cookieless page-view analytics. No advertising, no cross-site tracking.{" "}
+        Session cookies for admin login, plus cookieless analytics: page views and anonymous
+        button taps. No advertising, no cross-site tracking.{" "}
         <a href="/privacy">Privacy Policy</a>
       </p>
       <button type="button" className="btn btn-primary cookie-btn" onClick={dismiss}>
