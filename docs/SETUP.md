@@ -47,6 +47,8 @@ demariomontezpb.com  (Vercel — Next.js App Router)
 - **Vercel** — hosts the site, stores environment variables, auto-deploys from GitHub on every push to `master`
 - **Supabase** — PostgreSQL database + Auth (login/MFA for admin)
 - **Resend** — sends transactional emails (booking confirmations, cancellations)
+- **Node.js 24** — Vercel, CI, `package.json` `engines`, and `.nvmrc` all use 24.x. Local
+  development needs at least Node 22: `@supabase/supabase-js` no longer starts on Node 20.
 
 ---
 
