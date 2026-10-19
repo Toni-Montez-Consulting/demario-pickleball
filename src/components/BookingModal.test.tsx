@@ -93,7 +93,11 @@ describe("BookingModal", () => {
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(continueButton);
 
-    fireEvent.click(await screen.findByRole("button", { name: /reserve/i }));
+    // Reserve renders disabled until availability loads. A click before then is
+    // ignored, which made this test fail whenever the runner was slow.
+    const reserve = await screen.findByRole("button", { name: /reserve/i });
+    await waitFor(() => expect(reserve).toBeEnabled());
+    fireEvent.click(reserve);
 
     await screen.findByText(/you're booked/i);
     expect(screen.getByText(/Lesson 12345678/i)).toBeInTheDocument();
