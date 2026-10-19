@@ -32,6 +32,29 @@ describe("SiteAnalytics click reporting", () => {
     unmount();
   });
 
+  it("reports a middle click, which opens the link in a new tab, but not a right click", () => {
+    mocks.vercelTrack.mockClear();
+    const { unmount } = render(<SiteAnalytics />);
+    const link = document.createElement("a");
+    link.href = "#";
+    for (const [k, v] of Object.entries(
+      eventAttributes("venue_link_click", { venue: "the_grove", surface: "modal" })
+    )) {
+      link.setAttribute(k, v);
+    }
+    document.body.appendChild(link);
+
+    link.dispatchEvent(new MouseEvent("auxclick", { button: 2, bubbles: true }));
+    expect(mocks.vercelTrack).not.toHaveBeenCalled();
+    link.dispatchEvent(new MouseEvent("auxclick", { button: 1, bubbles: true }));
+    expect(mocks.vercelTrack).toHaveBeenCalledWith("venue_link_click", {
+      venue: "the_grove",
+      surface: "modal",
+    });
+    link.remove();
+    unmount();
+  });
+
   it("ignores clicks on unmarked elements", () => {
     mocks.vercelTrack.mockClear();
     const { unmount } = render(<SiteAnalytics />);
