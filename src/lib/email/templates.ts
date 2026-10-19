@@ -15,10 +15,13 @@ const LESSON_PRICES: Record<string, string> = {
   clinic: "$50",
 };
 
+// Callers pass raw strings, often with a student's name in the heading, so
+// the title is escaped here. Unescaped, a name like "</title><a href=...>"
+// broke out of <title> and injected markup into Mario's notification.
 function wrap(inner: string, heading: string): string {
   return `<!doctype html>
 <html>
-<head><meta charset="utf-8"><title>${heading}</title></head>
+<head><meta charset="utf-8"><title>${escapeHtml(heading)}</title></head>
 <body style="margin:0;padding:24px;background:#f5f5f5;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#222;">
   <table role="presentation" style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;">
     <tr><td>

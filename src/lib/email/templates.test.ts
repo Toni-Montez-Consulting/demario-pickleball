@@ -30,6 +30,16 @@ describe("email templates", () => {
     expect(html).toContain("Outdoor public court");
     expect(html).toContain("Text the student to confirm the exact court");
   });
+
+  it("escapes a student's name everywhere, including the <title>", () => {
+    const html = adminNotificationHtml({
+      ...booking,
+      name: '</title><a href="https://evil.example">Verify payment</a>',
+    });
+    expect(html).not.toContain("</title><a");
+    expect(html).not.toContain('<a href="https://evil.example"');
+    expect(html).toContain("&lt;/title&gt;");
+  });
 });
 
 describe("reviewRequestHtml", () => {
