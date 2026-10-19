@@ -213,10 +213,19 @@ h1.hero-title .italic {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* A 320px screen leaves each column 92px, too narrow for the longer labels.
-   Wrap them there rather than cut a claim off mid-word. */
+/* A 320px screen leaves each column 92px, too narrow for the longer labels
+   and for "4.97 DUPR" at full size. Wrap the labels and shrink the numbers a
+   little there, rather than cut a claim off mid-word. */
 @media (max-width: 359px) {
   .hero-stat .label { white-space: normal; }
+  .hero-stat .num { font-size: 23px; }
+  .hero-stat .num .unit { font-size: 13px; }
+}
+/* "Dallas–Fort Worth · Pickleball Coach" is 6px too wide for a 375px phone at
+   the default tracking. Slightly tighter tracking keeps it on one line down to
+   360px; narrower screens wrap it. */
+@media (max-width: 389px) {
+  .eyebrow { letter-spacing: 0.08em; }
 }
 
 /* ====== TRUST BAR ====== */
