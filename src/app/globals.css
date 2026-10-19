@@ -238,6 +238,12 @@ h1.hero-title .italic {
 .trust-chip strong { color: var(--fg); font-weight: 600; }
 .trust-chip .ico { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
 .trust-chip.rating strong { font-family: var(--font-space-grotesk); font-size: 15px; }
+.trust-chip .ext { width: 12px; height: 12px; color: var(--fg-muted); flex-shrink: 0; }
+a.trust-chip { transition: border-color 0.2s; }
+a.trust-chip:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--line)); }
+/* The strip scrolls, so it clips anything outside its 4px padding. The global
+   3px offset plus a 2px ring would lose the ring's outer edge. */
+a.trust-chip:focus-visible { outline-offset: 1px; }
 
 /* ====== SECTION ====== */
 section.block { padding: 64px 22px; position: relative; }
