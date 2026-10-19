@@ -203,6 +203,8 @@ describe("POST /api/bookings", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    // Restores console spies even when an assertion fails before a test's own cleanup.
+    vi.restoreAllMocks();
   });
 
   it("creates a booking with waiver metadata after validating availability", async () => {

@@ -63,7 +63,7 @@ demario-pickleball-1/
 ├── scripts/                  PowerShell launch/config helpers + one-off backfills
 ├── public/img/               Static images served at /img/
 ├── next.config.ts
-├── vitest.config.ts
+├── vitest.config.mts
 ├── playwright.config.ts
 └── package.json
 ```

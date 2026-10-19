@@ -62,7 +62,13 @@ try {
     const page = await browser.newPage({ viewport: { width: size, height: size } });
     await page.setContent(markHtml(size, rounded), { waitUntil: "networkidle" });
     await page.evaluate(() => document.fonts.ready);
-    if (!(await page.evaluate(() => document.fonts.check("700 20px 'Space Grotesk'")))) {
+    // check() is true when no face is registered at all, which is what a failed
+    // Google Fonts request leaves. load() returns only faces that really loaded.
+    const loaded = await page.evaluate(async () => {
+      const faces = await document.fonts.load("700 20px 'Space Grotesk'").catch(() => []);
+      return faces.length > 0 && faces.every((face) => face.status === "loaded");
+    });
+    if (!loaded) {
       throw new Error("Space Grotesk failed to load; refusing to ship a fallback-font icon");
     }
     const data = await page.screenshot({ type: "png", omitBackground: true });

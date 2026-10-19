@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { requireAdmin } from "@/lib/supabase/server";
 import { sendFeedbackEmail } from "@/lib/email/client";
 
@@ -49,9 +49,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to submit feedback." }, { status: 500 });
   }
 
-  // Email failure is non-fatal — task was already created
-  sendFeedbackEmail({ type, title, description, submitter }).catch((err) =>
-    console.error("[feedback email]", err)
+  // Email failure is non-fatal — task was already created. after() keeps the
+  // function alive until the send finishes.
+  after(() =>
+    sendFeedbackEmail({ type, title, description, submitter }).catch((err) =>
+      console.error("[feedback email]", err)
+    )
   );
 
   return NextResponse.json(data, { status: 201 });

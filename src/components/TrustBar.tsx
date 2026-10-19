@@ -1,5 +1,6 @@
 import { TEACHMETO_REVIEWS_URL } from "@/lib/business";
 import { eventAttributes } from "@/lib/analytics";
+import { DUPR } from "@/lib/dupr";
 
 const StarIcon = () => (
   <svg
@@ -72,19 +73,19 @@ export default function TrustBar() {
         <div className="trust-chip">
           <StarIcon />
           <span>
-            <strong>DUPR</strong> · 4.97 Doubles
+            <strong>DUPR</strong> · {DUPR.doublesShort} Doubles
           </span>
         </div>
         <div className="trust-chip">
           <StarIcon />
           <span>
-            <strong>Top 40</strong> · DFW Metroplex
+            <strong>Top {DUPR.dfwTop}</strong> · DFW Metroplex
           </span>
         </div>
         <div className="trust-chip">
           <StarIcon />
           <span>
-            <strong>Top 100</strong> · Texas DUPR
+            <strong>Top {DUPR.texasTop}</strong> · Texas DUPR
           </span>
         </div>
         <div className="trust-chip">

@@ -6,6 +6,8 @@ node_modules/
 .next/
 out/
 *.tsbuildinfo
+# Generated: next dev, next build, and next typegen each rewrite it with different paths.
+next-env.d.ts
 .playwright-mcp/
 .vercel
 .env*.local
