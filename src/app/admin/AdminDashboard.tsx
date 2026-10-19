@@ -65,7 +65,7 @@ interface Props {
   initialInquiries: Inquiry[];
 }
 
-type BookingFilter = "all" | "upcoming" | "pending" | "unpaid" | "cancelled";
+type BookingFilter = "all" | "upcoming" | "needs_outcome" | "pending" | "unpaid" | "cancelled";
 
 const LESSON_NAMES: Record<string, string> = {
   beginner: "Foundations",
@@ -78,6 +78,7 @@ const BOOKING_TIME_ZONE = "America/Chicago";
 const BOOKING_FILTERS: Array<{ value: BookingFilter; label: string }> = [
   { value: "all", label: "All" },
   { value: "upcoming", label: "Upcoming" },
+  { value: "needs_outcome", label: "Needs outcome" },
   { value: "pending", label: "Pending" },
   { value: "unpaid", label: "Unpaid" },
   { value: "cancelled", label: "Cancelled" },
@@ -166,21 +167,20 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
   const hiddenTimeSlots = timeSlots.filter((s) => !s.active);
   const groupedBlockedSlots = groupBlockedSlots(blockedSlots);
   const today = todayDateString();
-  const bookingFilterCount = (filter: BookingFilter) =>
-    bookings.filter((booking) => {
-      if (filter === "all") return true;
-      if (filter === "upcoming") return booking.lesson_date >= today && booking.status !== "cancelled";
-      if (filter === "pending") return booking.status === "pending";
-      if (filter === "unpaid") return !booking.paid_at && booking.status !== "cancelled";
-      return booking.status === "cancelled";
-    }).length;
-  const visibleBookings = bookings.filter((booking) => {
-    if (bookingFilter === "all") return true;
-    if (bookingFilter === "upcoming") return booking.lesson_date >= today && booking.status !== "cancelled";
-    if (bookingFilter === "pending") return booking.status === "pending";
-    if (bookingFilter === "unpaid") return !booking.paid_at && booking.status !== "cancelled";
+  // One definition for the chip counts and the list, so they cannot disagree.
+  // "Needs outcome": the lesson date has passed and nobody has recorded what
+  // happened. The review-request cron skips these until they are confirmed.
+  const matchesFilter = (booking: Booking, filter: BookingFilter) => {
+    if (filter === "all") return true;
+    if (filter === "upcoming") return booking.lesson_date >= today && booking.status !== "cancelled";
+    if (filter === "needs_outcome") return booking.status === "pending" && booking.lesson_date < today;
+    if (filter === "pending") return booking.status === "pending";
+    if (filter === "unpaid") return !booking.paid_at && booking.status !== "cancelled";
     return booking.status === "cancelled";
-  });
+  };
+  const bookingFilterCount = (filter: BookingFilter) =>
+    bookings.filter((booking) => matchesFilter(booking, filter)).length;
+  const visibleBookings = bookings.filter((booking) => matchesFilter(booking, bookingFilter));
   const calendarStatusLabel = calendarSync
     ? calendarSync.enabled
       ? calendarSync.configured

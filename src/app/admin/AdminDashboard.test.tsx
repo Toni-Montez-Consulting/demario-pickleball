@@ -106,6 +106,36 @@ describe("AdminDashboard availability", () => {
     expect(screen.getByText("Cancelled Student")).toBeVisible();
   });
 
+  it("lists past lessons nobody has recorded under Needs outcome", async () => {
+    const user = userEvent.setup();
+    const booking = {
+      created_at: "2026-04-27T12:00:00Z",
+      email: "student@example.com",
+      phone: "(469) 371-9220",
+      lesson_type: "beginner",
+      lesson_time: "9:00 AM",
+      notes: "Preferred court setup: Outdoor public court",
+      paid_at: null,
+    };
+
+    render(
+      <AdminDashboard
+        initialBookings={[
+          { ...booking, id: "past-pending", name: "Forgotten Lesson", lesson_date: "2020-05-05", status: "pending" },
+          { ...booking, id: "past-confirmed", name: "Recorded Lesson", lesson_date: "2020-05-06", status: "confirmed" },
+          { ...booking, id: "future-pending", name: "Upcoming Lesson", lesson_date: "2099-05-07", status: "pending" },
+        ]}
+        initialInquiries={[]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /needs outcome bookings \(1\)/i }));
+
+    expect(screen.getByText("Forgotten Lesson")).toBeVisible();
+    expect(screen.queryByText("Recorded Lesson")).not.toBeInTheDocument();
+    expect(screen.queryByText("Upcoming Lesson")).not.toBeInTheDocument();
+  });
+
   it("does not allow a cancelled booking to be confirmed again", () => {
     render(
       <AdminDashboard
