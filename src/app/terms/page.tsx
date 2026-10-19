@@ -1,5 +1,13 @@
 import Link from "next/link";
 import TermsContent, { TERMS_EFFECTIVE_DATE } from "@/components/TermsContent";
+import { pageMetadata } from "@/lib/metadata";
+
+export const metadata = pageMetadata({
+  path: "/terms",
+  title: "Coaching Agreement & Terms · DeMario Montez Pickleball",
+  description:
+    "The coaching agreement students accept when booking with DeMario Montez: pricing, cancellation and rescheduling, refunds, and the liability waiver.",
+});
 
 export default function TermsPage() {
   return (

@@ -2,9 +2,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { COACH_PHONE_TEL } from "@/lib/business";
 
+// No robots entry: Next adds <meta name="robots" content="noindex"> to every
+// not-found response itself, and a second tag here only duplicated it.
 export const metadata: Metadata = {
   title: "Page not found · DeMario Montez Pickleball",
-  robots: { index: false, follow: false },
 };
 
 /**

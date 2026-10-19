@@ -1,4 +1,12 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/metadata";
+
+export const metadata = pageMetadata({
+  path: "/privacy",
+  title: "Privacy Policy · DeMario Montez Pickleball",
+  description:
+    "How DeMario Montez Pickleball Coaching collects, uses, and protects booking details, including the Google Calendar availability check.",
+});
 
 export default function PrivacyPage() {
   return (

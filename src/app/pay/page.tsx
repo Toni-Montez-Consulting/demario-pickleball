@@ -1,12 +1,16 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import PaymentOptions from "@/components/PaymentOptions";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+// Not indexed: students arrive from their confirmation email, and payment
+// handles in search results add risk without bringing anyone new.
+export const metadata = pageMetadata({
+  path: "/pay",
   title: "Pay DeMario Montez — Pickleball Coach",
   description:
     "Send payment to DeMario Montez via Cash App, Zelle, or PayPal. Include your booking ID in the memo.",
-};
+  index: false,
+});
 
 export default function PayPage() {
   return (

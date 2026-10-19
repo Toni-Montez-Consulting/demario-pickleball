@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import SiteAnalytics from "@/components/SiteAnalytics";
 import { SITE_URL } from "@/lib/site";
+import { OG_IMAGE } from "@/lib/metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,20 +36,13 @@ export const metadata: Metadata = {
     // 1200x630 card made by scripts/generate-og-image.mjs. The portrait hero
     // photo used before was cropped or shrunk by iMessage, WhatsApp, and
     // Facebook, which is where students share coaches with each other.
-    images: [
-      {
-        url: "/img/og-card.jpg",
-        width: 1200,
-        height: 630,
-        alt: "DeMario Montez, pickleball coach in Dallas–Fort Worth: 4.97 doubles DUPR, top 1% worldwide, top 40 in DFW",
-      },
-    ],
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
     description: SITE_DESCRIPTION,
-    images: ["/img/og-card.jpg"],
+    images: [OG_IMAGE.url],
   },
 };
 
