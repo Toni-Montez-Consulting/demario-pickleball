@@ -170,6 +170,39 @@ Tonio reviews them. The audit evidence behind them is in
 - **After deploy:** the three inquiries already in production (newest 2026-10-18) were never
   emailed. Read them in Admin -> Inquiries.
 
+### 4. `fix/a11y-perf-seo` — live-audit fixes (2026-10-19)
+
+From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; axe; Playwright).
+
+- **Booking dialog focus trap:** the honeypot input (tabIndex -1, aria-hidden) was the trap's
+  "last" element, so Tab walked out of the open dialog. Fixed, with an e2e test that fails on
+  the old code.
+- **Sticky nav never stuck:** `.device { overflow: hidden }` made `.device` the sticky
+  container. `overflow: clip` fixes it with identical layout (measured), and
+  `scroll-padding-top` keeps `#lessons` / `#about` / `#contact` below the nav.
+- **Cookie notice:** the desktop Book pill no longer covers it; on mobile it scrolls away
+  instead of covering 72px of every screen.
+- **LCP:** the hero uses `loading="eager"` + `fetchPriority="high"` (Next 16 deprecated
+  `priority`); the offscreen About portrait is no longer preloaded; every `sizes` value
+  matches its measured render width.
+- **Link previews:** 1200x630 card at `public/img/og-card.jpg`. Regenerate it with
+  `node scripts/generate-og-image.mjs` whenever the DUPR numbers change.
+- **SEO:** per-page title, canonical, and og:url via `src/lib/metadata.ts`. `/pay` is noindex
+  and out of the sitemap, and the legal pages carry fixed lastmod dates.
+- **Accessibility:** `<main>` landmarks, `/pay` heading order, 24px tap targets on the review
+  dots and footer links, and the sticky bar is inert while hidden. axe-core: 0 violations on
+  `/`, `/pay`, `/privacy`, `/terms`.
+- **Icons:** `favicon.ico` and the Apple touch icon (`node scripts/generate-icons.mjs`).
+- **Not done here:**
+  - The hero photo is only 828px wide; it needs a 2000px+ original from DeMario.
+  - `www` -> apex returns 307. Set a permanent (308) redirect in Vercel Domains.
+  - No CSP, and HSTS lacks `includeSubDomains`. Both need their own tested branch, because a
+    CSP has to allow Next's inline scripts, Vercel Analytics, and Sentry.
+  - `tel:` links have no `+1`; US numbers dial fine, so they were left alone.
+  - JSON-LD says Farmers Branch while the footer says Dallas. Mario should pick the address
+    for local search.
+  - The Instagram link (`@Alexanderiio`) does not match his name. Mario should confirm it.
+
 ## Long-Term Reference
 
 - `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it
