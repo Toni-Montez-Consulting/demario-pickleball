@@ -58,7 +58,10 @@ describe("POST /api/lesson-outcome", () => {
     mocks.checkRateLimit.mockResolvedValue({ limited: false });
   });
 
-  afterEach(() => vi.unstubAllEnvs());
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
 
   it("records the outcome only if the booking is still pending, then returns to the page", async () => {
     const token = signOutcomeToken({ bookingId: BOOKING_ID, outcome: "no_show", secret: SECRET });
@@ -88,31 +91,49 @@ describe("POST /api/lesson-outcome", () => {
     expect(mocks.updates).toHaveLength(0);
   });
 
-  it("is rate limited before any token work", async () => {
+  it("rejects anything not shaped like a real link before it goes into a URL", async () => {
+    // A lone surrogate made encodeURIComponent throw, a 500 anyone could repeat.
+    for (const token of ["\ud800abc", "a.b.c", "abc", "a b.c"]) {
+      expect((await post(token)).status, token).toBe(400);
+    }
+    expect(mocks.updates).toHaveLength(0);
+  });
+
+  it("is rate limited before any token work, and says so on the page", async () => {
     mocks.checkRateLimit.mockResolvedValue({ limited: true, retryAfterSeconds: 3600 });
     const token = signOutcomeToken({ bookingId: BOOKING_ID, outcome: "confirmed", secret: SECRET });
 
     const response = await post(token);
 
-    expect(response.status).toBe(429);
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(
+      `https://demariomontezpb.com/lesson-outcome/${token}?failed=busy`
+    );
     expect(mocks.updates).toHaveLength(0);
   });
 
-  it("is a 503 when outcome links are not configured", async () => {
+  it("returns to the page, which explains it, when outcome links are not configured", async () => {
     vi.stubEnv("LESSON_OUTCOME_SECRET", "");
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-
-    expect((await post("anything")).status).toBe(503);
-    expect(mocks.updates).toHaveLength(0);
-    consoleError.mockRestore();
-  });
-
-  it("reports a database failure instead of pretending it worked", async () => {
-    mocks.updateError = { message: "boom" };
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
     const token = signOutcomeToken({ bookingId: BOOKING_ID, outcome: "confirmed", secret: SECRET });
 
-    expect((await post(token)).status).toBe(500);
-    consoleError.mockRestore();
+    const response = await post(token);
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(`https://demariomontezpb.com/lesson-outcome/${token}`);
+    expect(mocks.updates).toHaveLength(0);
+  });
+
+  it("tells the page a database failure did not save, instead of showing raw JSON", async () => {
+    mocks.updateError = { message: "boom" };
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const token = signOutcomeToken({ bookingId: BOOKING_ID, outcome: "confirmed", secret: SECRET });
+
+    const response = await post(token);
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(
+      `https://demariomontezpb.com/lesson-outcome/${token}?failed=save`
+    );
   });
 });

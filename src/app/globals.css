@@ -3284,3 +3284,12 @@ a.pay-card:focus-visible {
 .outcome-facts dd { margin: 0; font-weight: 600; text-align: right; }
 .outcome-page form { margin: 0 0 12px; }
 .outcome-note { color: var(--fg-dim); margin: 0 0 1.5rem; }
+/* A tap that did not save. Same treatment as the booking form's errors. */
+.outcome-alert {
+  margin: 0 0 1rem;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--danger) 15%, var(--bg-3));
+  border: 1px solid color-mix(in oklab, var(--danger) 40%, transparent);
+  color: var(--danger);
+}

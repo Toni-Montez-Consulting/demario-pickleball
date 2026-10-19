@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { defaultDisplayName } from "@/lib/reviews";
 import { addDays, dateInTimeZone } from "@/lib/time";
 
 /**
@@ -106,10 +107,7 @@ export function formatLessonDate(date: string): string {
 
 /** "Jane S." — the most the public confirmation page shows of a student. */
 export function shortName(fullName: string): string {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "Your student";
-  if (parts.length === 1) return parts[0];
-  return `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.`;
+  return defaultDisplayName(fullName) || "Your student";
 }
 
 const ACTION_COPY: Record<LessonOutcome, { question: (name: string) => string; button: string }> = {
@@ -129,6 +127,8 @@ export interface OutcomeBooking {
   lesson_date: string;
   lesson_time: string;
   status: string;
+  /** The review cron only asks about bookings linked to a student. */
+  student_id?: string | null;
 }
 
 export type OutcomeView =
@@ -138,6 +138,8 @@ export type OutcomeView =
       button: string;
       facts: Array<{ label: string; value: string }>;
       note: string;
+      /** Set when the last tap did not save. */
+      alert?: string;
     }
   | {
       state: "recorded" | "expired" | "invalid" | "missing" | "unavailable" | "not_configured";
@@ -145,10 +147,18 @@ export type OutcomeView =
       body: string;
     };
 
-const LESSON_NAMES: Record<string, string> = {
+export const LESSON_NAMES: Record<string, string> = {
   beginner: "Foundations",
   advanced: "Strategy Lab",
   clinic: "Group Clinic",
+};
+
+/** Why the last tap did not save, from the endpoint's ?failed= redirect. */
+export type OutcomeFailure = "save" | "busy";
+
+const FAILURE_ALERTS: Record<OutcomeFailure, string> = {
+  save: "That didn't save, and nothing was changed. Try the button again.",
+  busy: "Too many tries in the last hour, and nothing was changed. Try again later.",
 };
 
 /**
@@ -161,12 +171,14 @@ export function outcomeView({
   check,
   booking,
   loadFailed = false,
+  failed = null,
 }: {
   configured: boolean;
   check: TokenCheck | null;
   booking: OutcomeBooking | null;
   /** The booking lookup errored, which is not the same as the booking being gone. */
   loadFailed?: boolean;
+  failed?: OutcomeFailure | null;
 }): OutcomeView {
   if (!configured || !check) {
     return {
@@ -204,15 +216,21 @@ export function outcomeView({
   }
 
   const name = shortName(booking.name);
+  // A review request also needs a student record; a few bookings never get one.
+  const reviewNote = booking.student_id
+    ? null
+    : `This booking isn't linked to a student record, so the site can't ask ${name} for a review.`;
   if (booking.status !== "pending") {
     const label = STATUS_LABELS[booking.status] ?? booking.status;
+    // No promise that it can be changed: Admin cannot turn a no-show or a
+    // lesson that didn't happen back into one that did.
     return {
       state: "recorded",
       heading: `Recorded: ${label.toLowerCase()}`,
       body:
         booking.status === "confirmed"
-          ? `The site can now ask ${name} for a review. You can change this in Admin.`
-          : `Nothing is sent to ${name}. You can change this in Admin.`,
+          ? (reviewNote ?? `The site can now ask ${name} for a review.`)
+          : `${name} is not emailed.`,
     };
   }
 
@@ -227,7 +245,8 @@ export function outcomeView({
     ],
     note:
       check.outcome === "confirmed"
-        ? `Recording this lets the site ask ${name} for a review.`
-        : `Nothing is sent to ${name}.`,
+        ? (reviewNote ?? `Recording this lets the site ask ${name} for a review.`)
+        : `${name} is not emailed. Once recorded, this can't be changed to a lesson that happened.`,
+    ...(failed ? { alert: FAILURE_ALERTS[failed] } : {}),
   };
 }

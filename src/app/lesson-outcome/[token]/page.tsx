@@ -21,10 +21,15 @@ export const metadata: Metadata = {
  */
 export default async function LessonOutcomePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ failed?: string | string[] }>;
 }) {
   const { token: raw } = await params;
+  // Set by the endpoint when a tap did not save.
+  const { failed: failedParam } = await searchParams;
+  const failed = failedParam === "save" || failedParam === "busy" ? failedParam : null;
   // A malformed %-sequence must render "isn't valid", not a server error.
   let token = raw;
   try {
@@ -40,7 +45,7 @@ export default async function LessonOutcomePage({
   if (check?.ok) {
     const { data, error } = await createServiceRoleClient()
       .from("bookings")
-      .select("name,lesson_type,lesson_date,lesson_time,status")
+      .select("name,lesson_type,lesson_date,lesson_time,status,student_id")
       .eq("id", check.bookingId)
       .maybeSingle();
     if (error) {
@@ -50,7 +55,7 @@ export default async function LessonOutcomePage({
     booking = data;
   }
 
-  const view = outcomeView({ configured: Boolean(secret), check, booking, loadFailed });
+  const view = outcomeView({ configured: Boolean(secret), check, booking, loadFailed, failed });
 
   return (
     <main className="outcome-page">
@@ -58,6 +63,11 @@ export default async function LessonOutcomePage({
       <h1>{view.heading}</h1>
       {view.state === "pending" ? (
         <>
+          {view.alert && (
+            <p className="outcome-alert" role="alert">
+              {view.alert}
+            </p>
+          )}
           <dl className="outcome-facts">
             {view.facts.map((fact) => (
               <div key={fact.label}>

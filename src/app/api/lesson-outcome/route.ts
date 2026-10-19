@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { outcomeSecret, verifyOutcomeToken } from "@/lib/lesson-outcomes";
+import { outcomeSecret, verifyOutcomeToken, type OutcomeFailure } from "@/lib/lesson-outcomes";
 
-/** The confirmation page posts a form; JSON is accepted for tests and scripts. */
+// base64url payload, a dot, base64url signature: the only shape a real link
+// has. Checked before the token goes into a URL.
+const TOKEN_SHAPE = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
+
+/** The token from the confirmation page's form. */
 async function readToken(req: NextRequest): Promise<string> {
-  if ((req.headers.get("content-type") ?? "").includes("application/json")) {
-    const body = await req.json().catch(() => null);
-    return typeof body?.token === "string" ? body.token.trim() : "";
-  }
   const form = await req.formData().catch(() => null);
   const value = form?.get("token");
   return typeof value === "string" ? value.trim() : "";
@@ -25,15 +25,26 @@ async function readToken(req: NextRequest): Promise<string> {
  * `pending`. No email is sent from here.
  */
 export async function POST(req: NextRequest) {
-  const secret = outcomeSecret();
-  if (!secret) {
-    console.error("[lesson-outcome POST] LESSON_OUTCOME_SECRET is not set");
-    return NextResponse.json({ error: "Outcome links are not configured" }, { status: 503 });
+  const token = await readToken(req);
+  if (!token || token.length > 512 || !TOKEN_SHAPE.test(token)) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 400 });
   }
 
-  const token = await readToken(req);
-  if (!token || token.length > 512) {
-    return NextResponse.json({ error: "Invalid token" }, { status: 400 });
+  // This is a browser form post, so every result goes back to the page rather
+  // than leaving Mario on raw JSON. The page re-checks the token and the booking
+  // and explains the result; ?failed= tells it nothing was saved. 303 turns the
+  // POST into a GET.
+  const backToPage = (failed?: OutcomeFailure) => {
+    const url = new URL(`/lesson-outcome/${token}`, req.url);
+    if (failed) url.searchParams.set("failed", failed);
+    return NextResponse.redirect(url, 303);
+  };
+
+  const secret = outcomeSecret();
+  if (!secret) {
+    // The page says outcome links are not set up yet.
+    console.error("[lesson-outcome POST] LESSON_OUTCOME_SECRET is not set");
+    return backToPage();
   }
 
   const supabase = createServiceRoleClient();
@@ -42,27 +53,10 @@ export async function POST(req: NextRequest) {
     limit: 30,
     windowMs: 60 * 60 * 1000,
   });
-  if (rateLimit.limited) {
-    return NextResponse.json(
-      { error: "Too many requests. Please try again later." },
-      {
-        status: 429,
-        headers: rateLimit.retryAfterSeconds
-          ? { "Retry-After": String(rateLimit.retryAfterSeconds) }
-          : undefined,
-      }
-    );
-  }
-
-  // The page re-checks the token and the booking and explains the result, so
-  // every outcome goes back there. 303 turns the POST into a GET.
-  const backToPage = NextResponse.redirect(
-    new URL(`/lesson-outcome/${encodeURIComponent(token)}`, req.url),
-    303
-  );
+  if (rateLimit.limited) return backToPage("busy");
 
   const check = verifyOutcomeToken(token, secret);
-  if (!check.ok) return backToPage;
+  if (!check.ok) return backToPage();
 
   // Only a pending booking moves. A replayed link, or a second button tapped
   // from the same email, finds no pending row and changes nothing.
@@ -74,7 +68,7 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error("[lesson-outcome POST] update failed", check.bookingId, error);
-    return NextResponse.json({ error: "Could not record the outcome" }, { status: 500 });
+    return backToPage("save");
   }
-  return backToPage;
+  return backToPage();
 }

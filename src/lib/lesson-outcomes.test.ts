@@ -86,6 +86,7 @@ describe("outcomeView", () => {
     lesson_date: "2026-10-18",
     lesson_time: "9:00 AM",
     status: "pending",
+    student_id: "22222222-2222-2222-2222-222222222222",
   };
   const valid = (outcome: "confirmed" | "no_show" | "cancelled") =>
     ({ ok: true, bookingId: BOOKING_ID, outcome, expiresAt: NOW }) as const;
@@ -121,6 +122,45 @@ describe("outcomeView", () => {
     expect(outcomeView({ configured: true, check: { ok: false, reason: "expired" }, booking: null }).state).toBe("expired");
     expect(outcomeView({ configured: true, check: { ok: false, reason: "bad_signature" }, booking: null }).state).toBe("invalid");
     expect(outcomeView({ configured: true, check: valid("confirmed"), booking: null }).state).toBe("missing");
+  });
+
+  it("promises a review only when the booking is linked to a student", () => {
+    expect(outcomeView({ configured: true, check: valid("confirmed"), booking })).toMatchObject({
+      note: "Recording this lets the site ask Jane S. for a review.",
+    });
+    const unlinked = { ...booking, student_id: null };
+    expect(outcomeView({ configured: true, check: valid("confirmed"), booking: unlinked })).toMatchObject({
+      note: "This booking isn't linked to a student record, so the site can't ask Jane S. for a review.",
+    });
+    expect(
+      outcomeView({ configured: true, check: valid("confirmed"), booking: { ...unlinked, status: "confirmed" } })
+    ).toMatchObject({
+      body: "This booking isn't linked to a student record, so the site can't ask Jane S. for a review.",
+    });
+  });
+
+  it("warns that no-show and didn't-happen are final, with no doubled period after the initial", () => {
+    for (const outcome of ["no_show", "cancelled"] as const) {
+      expect(outcomeView({ configured: true, check: valid(outcome), booking })).toMatchObject({
+        note: "Jane S. is not emailed. Once recorded, this can't be changed to a lesson that happened.",
+      });
+    }
+  });
+
+  it("never promises that Admin can change a recorded outcome", () => {
+    for (const status of ["confirmed", "no_show", "cancelled"]) {
+      const view = outcomeView({ configured: true, check: valid("confirmed"), booking: { ...booking, status } });
+      expect(view.state).toBe("recorded");
+      expect(JSON.stringify(view)).not.toMatch(/change this in Admin|\.\./);
+    }
+  });
+
+  it("says when the last tap did not save, and only then", () => {
+    const view = (failed: "save" | "busy" | null) =>
+      outcomeView({ configured: true, check: valid("confirmed"), booking, failed });
+    expect(view("save")).toMatchObject({ alert: expect.stringContaining("didn't save") });
+    expect(view("busy")).toMatchObject({ alert: expect.stringContaining("Too many tries") });
+    expect(view(null)).not.toHaveProperty("alert");
   });
 
   it("does not claim a booking is gone when the lookup itself failed", () => {
