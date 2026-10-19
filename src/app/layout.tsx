@@ -92,13 +92,13 @@ const jsonLd = {
       },
       priceRange: "$$",
       description:
-        "Strategic 1:1 pickleball coaching in Dallas–Fort Worth by Head Pro DeMario Montez.",
+        "Strategic 1:1 pickleball coaching in Dallas–Fort Worth by USPTA certified coach DeMario Montez.",
     },
     {
       "@type": "Person",
       "@id": `${SITE_URL}/#coach`,
       name: "DeMario Montez",
-      jobTitle: "Head Pickleball Pro",
+      jobTitle: "Pickleball Coach",
       telephone: "+14693719220",
       email: "demariomontez10@gmail.com",
       sameAs: [
