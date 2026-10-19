@@ -203,6 +203,21 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
     for local search.
   - The Instagram link (`@Alexanderiio`) does not match his name. Mario should confirm it.
 
+### 5. `feat/conversion-tracking` — privacy-safe funnel analytics (2026-10-19)
+
+- Ten custom events cover the booking funnel, partner-platform and contact handoffs (the
+  conversions this site's database never sees), payment link opens, and the contact and review
+  form results. Catalog and dashboard instructions: `docs/ANALYTICS.md`.
+- Properties are closed-set codes enforced by TypeScript, at most two per event (the Vercel
+  Pro limit). An e2e test proves the booking funnel's events never contain what the student
+  typed.
+- `booking_created` is server-side, so only saved bookings count. It sends no cookies, unlike
+  the library default.
+- Privacy policy (now "Updated October 19, 2026") and cookie notice disclose the interaction
+  counts.
+- **Before relying on it:** open Vercel -> Analytics and confirm Web Analytics is enabled. The
+  query API said "not found" for this project on 2026-10-19.
+
 ## Long-Term Reference
 
 - `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it
