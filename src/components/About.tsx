@@ -23,7 +23,7 @@ export default function About() {
           <div className="about-badge">
             <div className="mini-badge">
               <span className="dot" />
-              Head Pro
+              Pickleball Coach
             </div>
             <div className="mini-badge">Farmers Branch, TX</div>
           </div>
@@ -33,9 +33,10 @@ export default function About() {
         <p className="about-bio-intro">
           I&apos;m a 4.97 doubles DUPR player — top 1% worldwide and in Texas,
           top 100 in the state, and top 40 in DFW. I&apos;m also a
-          USPTA/DUPR certified coach and Head Pro at Dallas Indoor Pickleball
-          Club. I built my game the hard way — film study, repeatable patterns,
-          pressure-testing every shot. Now I build yours the same way.
+          USPTA/DUPR certified coach and a pickleball instructor for Dallas ISD
+          and the City of Carrollton. I built my game the hard way — film study,
+          repeatable patterns, pressure-testing every shot. Now I build yours
+          the same way.
         </p>
         <p className="about-bio-sub">
           I&apos;ll meet you at your level, diagnose the three things holding you

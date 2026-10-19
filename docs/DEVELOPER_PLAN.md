@@ -135,14 +135,16 @@ Tonio reviews them. The audit evidence behind them is in
   DeMario's own TikTok reads "4.973 currently", which matches his update.
 - Added his rankings: top 1% of DUPR-rated players worldwide and in Texas (hero), top 100 in
   Texas and top 40 in DFW (trust strip, bio, About stat), with an "as of October 2026" note.
-- Dropped the 4.579 singles rating in its own commit. His update gave doubles only, and a
-  spring number beside an October-dated one would read as current. Revert that commit to
-  restore the layout if he sends a current singles rating.
+- Dropped the 4.579 singles rating in its own commit. DeMario confirmed doubles only for now.
+  Revert that commit to restore the layout if he gets back into singles.
 - Corrected USTA -> USPTA (confirmed by Tonio).
 - The trust strip's first chip links to his TeachMe.To reviews: 5.0 from 137+ ratings,
   checked October 2026. It replaces the unsourced "5.0 / 79 reviews" claim removed in July.
-- **Not changed:** "Head Pro at Dallas Indoor Pickleball Club". His TikTok describes him as
-  based at The Grove; confirm with DeMario whether the Head Pro claim is still current.
+- Removed the "Head Pro at Dallas Indoor Pickleball Club" title at DeMario's request. The hero
+  tag, About photo badge, and structured-data `jobTitle` now read "Pickleball Coach"; the bio
+  clause and trust chip are gone. Dallas Indoor stays on the site as a PodPlay venue.
+- Added his instructor roles for Dallas ISD and the City of Carrollton, at his request: one
+  sentence in the bio and two trust chips in the old Dallas Indoor slot.
 - **Not added:** Spanish-language lessons. His TeachMe.To profile lists Spanish; add it to the
   site only once DeMario confirms he wants to offer it here.
 
