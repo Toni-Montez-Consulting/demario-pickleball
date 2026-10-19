@@ -1,6 +1,19 @@
 import Image from "next/image";
 import RevealWrapper from "./RevealWrapper";
 
+// Widths measured from the page canvas (full width to 430px, 900px from 768px,
+// 1100px from 1100px) minus section padding (22 / 48 / 64px a side). The old
+// values assumed the 430px phone canvas everywhere, so desktop got a 640w file
+// stretched to 972px.
+const FULL_WIDTH =
+  "(min-width: 1100px) 972px, (min-width: 900px) 804px, (min-width: 768px) calc(100vw - 96px), (min-width: 430px) 386px, calc(100vw - 44px)";
+const ACHIEVEMENT_PHOTO =
+  "(min-width: 1100px) 440px, (min-width: 900px) 360px, (min-width: 768px) calc(47vw - 60px), (min-width: 430px) 360px, calc(100vw - 70px)";
+const GALLERY_TALL =
+  "(min-width: 1100px) 641px, (min-width: 900px) 531px, (min-width: 768px) calc(66vw - 70px), (min-width: 430px) 252px, calc(66vw - 35px)";
+const GALLERY_CELL =
+  "(min-width: 1100px) 320px, (min-width: 900px) 265px, (min-width: 768px) calc(33vw - 35px), (min-width: 430px) 126px, calc(33vw - 18px)";
+
 export default function About() {
   return (
     <section className="block about" id="about">
@@ -17,8 +30,7 @@ export default function About() {
             alt="DeMario Montez on the pickleball court"
             fill
             className="gallery-img"
-            sizes="(max-width: 430px) 100vw, 430px"
-            priority
+            sizes={FULL_WIDTH}
           />
           <div className="about-badge">
             <div className="mini-badge">
@@ -74,7 +86,7 @@ export default function About() {
               alt="DeMario Montez after winning the Crazy Ape Dill Dinkers Plano pickleball tournament"
               fill
               className="gallery-img"
-              sizes="(max-width: 430px) 100vw, 430px"
+              sizes={ACHIEVEMENT_PHOTO}
             />
           </div>
           <div className="achievement-copy">
@@ -103,7 +115,7 @@ export default function About() {
               alt="Students group photo"
               fill
               className="gallery-img"
-              sizes="(max-width: 430px) 60vw, 300px"
+              sizes={GALLERY_TALL}
             />
           </div>
           <div className="gallery-item">
@@ -112,7 +124,7 @@ export default function About() {
               alt="Student selfie with coach"
               fill
               className="gallery-img"
-              sizes="(max-width: 430px) 40vw, 200px"
+              sizes={GALLERY_CELL}
             />
           </div>
           <div className="gallery-item">
@@ -121,7 +133,7 @@ export default function About() {
               alt="Doubles tournament medal"
               fill
               className="gallery-img"
-              sizes="(max-width: 430px) 40vw, 200px"
+              sizes={GALLERY_CELL}
             />
           </div>
           <div className="gallery-item wide">
@@ -130,7 +142,7 @@ export default function About() {
               alt="Podium team photo"
               fill
               className="gallery-img"
-              sizes="(max-width: 430px) 100vw, 500px"
+              sizes={FULL_WIDTH}
             />
           </div>
         </div>
