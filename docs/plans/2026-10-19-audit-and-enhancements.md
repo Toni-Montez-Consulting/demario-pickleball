@@ -132,15 +132,28 @@ Verification:
 - A browser pass at 320, 375, and 1280px passed 28 of 28.
 - Vercel showed no runtime errors (checked 18:13 UTC).
 
+#19 fixes the sticky nav's blur outside Safari. The CSS build had dropped it, which predates
+this round; it showed once #16 made the nav stick. It is merged and goes out with the next
+deploy.
+
+Also done on 2026-10-19: Supabase `rls_auto_enable()` no longer grants `EXECUTE` to
+`public`, `anon`, or `authenticated` (migration `revoke_public_execute_on_rls_auto_enable`),
+which clears two advisor warnings. A probe table created afterwards still got RLS from the
+`ensure_rls` trigger.
+
 For Tonio:
 - Vercel: reconnect Git. Pushes to `master` stopped deploying when the project moved to the
   Toni Montez Co team, so this round was deployed by hand. Steps: `docs/SETUP.md` section 8.
-- Merge and deploy `fix/nav-blur-prefix-order`. Since #16 made the nav sticky, the page shows
-  through it outside Safari: the CSS build dropped the nav's blur. That predates this round.
-- Vercel: confirm Web Analytics is enabled.
-- Vercel: set `LESSON_OUTCOME_SECRET` (Production) and redeploy.
-- Vercel: set the `www` domain to a permanent (308) redirect; it is 307 today.
-- Supabase: enable leaked password protection.
+- Vercel: confirm Web Analytics is enabled. The analytics API answers "not found" for this
+  project.
+- Vercel: set `LESSON_OUTCOME_SECRET` (Production only) and redeploy. The token used on
+  2026-10-19 could deploy but could not write production env vars or domains.
+- Vercel: add `www.demariomontezpb.com` to the project as a redirect to `demariomontezpb.com`
+  with status 308. `www` is not attached to any project, and Vercel's fallback answers 307.
+- Supabase: turn on leaked password protection in the Auth settings; the Pro plan includes it.
+- Supabase: drop the empty table `public.zz_rls_probe_20261019`, left by the check above. The
+  agent's tool needs a person to confirm a drop. RLS is on with no policies, so nothing can use
+  it meanwhile.
 - Read the three inquiries already in Admin; the newest is 2026-10-18.
 - Later, on a separate tested branch: a CSP, and HSTS `includeSubDomains`.
 - **Waiver version.**
