@@ -27,7 +27,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
   description: SITE_DESCRIPTION,
-  icons: { icon: "/favicon.svg" },
+  // Icons come from the file conventions in this folder: icon.svg, favicon.ico,
+  // and apple-icon.png (the last two made by scripts/generate-icons.mjs).
   openGraph: {
     type: "website",
     url: SITE_URL,
