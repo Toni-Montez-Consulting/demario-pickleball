@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import RevealWrapper from "./RevealWrapper";
+import { submitFailure, trackEvent } from "@/lib/analytics";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -25,6 +26,7 @@ export default function ContactForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("loading");
+    let failureReported = false;
     try {
       const res = await fetch("/api/inquiries", {
         method: "POST",
@@ -32,11 +34,15 @@ export default function ContactForm() {
         body: JSON.stringify({ name, email, message, company }),
       });
       if (!res.ok) {
+        trackEvent("inquiry_submit", { result: submitFailure(res.status) });
+        failureReported = true;
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Something went wrong. Try again.");
       }
+      trackEvent("inquiry_submit", { result: "success" });
       setStatus("success");
     } catch (err) {
+      if (!failureReported) trackEvent("inquiry_submit", { result: "network" });
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong.");
       setStatus("error");
     }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PaymentOptions from "@/components/PaymentOptions";
 import { pageMetadata } from "@/lib/metadata";
+import { eventAttributes } from "@/lib/analytics";
 
 // Not indexed: students arrive from their confirmation email, and payment
 // handles in search results add risk without bringing anyone new.
@@ -25,13 +26,25 @@ export default function PayPage() {
         </p>
 
         <div className="pay-page-wrap">
-          <PaymentOptions headingLevel={2} />
+          <PaymentOptions headingLevel={2} surface="pay_page" />
         </div>
 
         <p className="legal-date" style={{ marginTop: "2rem" }}>
           Questions about a payment? Email{" "}
-          <a href="mailto:demariomontez10@gmail.com">demariomontez10@gmail.com</a> or call{" "}
-          <a href="tel:4693719220">(469) 371-9220</a>.
+          <a
+            href="mailto:demariomontez10@gmail.com"
+            {...eventAttributes("contact_click", { channel: "email", surface: "pay_page" })}
+          >
+            demariomontez10@gmail.com
+          </a>{" "}
+          or call{" "}
+          <a
+            href="tel:4693719220"
+            {...eventAttributes("contact_click", { channel: "tel", surface: "pay_page" })}
+          >
+            (469) 371-9220
+          </a>
+          .
         </p>
       </main>
     </div>

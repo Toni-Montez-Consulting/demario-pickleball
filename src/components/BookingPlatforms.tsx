@@ -1,5 +1,11 @@
 import RevealWrapper from "./RevealWrapper";
 import { REQUIRED_BOOKING_PATHS } from "@/lib/venue-rules";
+import { eventAttributes, venueCode } from "@/lib/analytics";
+
+function venueClickAttributes(shortName: string) {
+  const venue = venueCode(shortName);
+  return venue ? eventAttributes("venue_link_click", { venue, surface: "section" }) : {};
+}
 
 const ExternalIcon = () => (
   <svg
@@ -61,6 +67,7 @@ export default function BookingPlatforms() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bp-card"
+                {...venueClickAttributes(p.shortName)}
               >
                 {content}
               </a>
@@ -70,7 +77,11 @@ export default function BookingPlatforms() {
               </div>
             );
           })}
-          <a href="sms:4693719220" className="bp-card bp-card-phone">
+          <a
+            href="sms:4693719220"
+            className="bp-card bp-card-phone"
+            {...eventAttributes("contact_click", { channel: "sms", surface: "section" })}
+          >
             <div className="bp-card-text">
               <div className="bp-name">Text or Call</div>
               <div className="bp-desc">

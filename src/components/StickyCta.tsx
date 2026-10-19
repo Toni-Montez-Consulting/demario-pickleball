@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { eventAttributes } from "@/lib/analytics";
 
 interface StickyCtaProps {
   onOpenBooking: () => void;
@@ -38,7 +39,12 @@ export default function StickyCta({ onOpenBooking }: StickyCtaProps) {
           <path d="M5 12h14M13 5l7 7-7 7" />
         </svg>
       </button>
-      <a className="phone" href="tel:4693719220" aria-label="Call DeMario">
+      <a
+        className="phone"
+        href="tel:4693719220"
+        aria-label="Call DeMario"
+        {...eventAttributes("contact_click", { channel: "tel", surface: "sticky" })}
+      >
         <svg
           viewBox="0 0 24 24"
           fill="none"

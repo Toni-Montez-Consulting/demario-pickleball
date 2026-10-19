@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { submitFailure, trackEvent, type ReviewResult } from "@/lib/analytics";
 
 interface ReviewFormProps {
   /** Present on the emailed link. Absent on the public /review page. */
@@ -37,18 +38,23 @@ export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFo
     const displayName = String(form.get("displayName") ?? "").trim();
     const contact = String(form.get("contact") ?? "");
     const company = String(form.get("company") ?? "");
+    const path = token ? "token" : "public";
+    const report = (result: ReviewResult) => trackEvent("review_submit", { result, path });
 
     if (rating === 0) {
+      report("missing_rating");
       setError("Pick a star rating first.");
       setState("error");
       return;
     }
     if (!displayName) {
+      report("missing_name");
       setError("Add the name you want shown with your review.");
       setState("error");
       return;
     }
     if (!consent) {
+      report("missing_consent");
       setError("Check the box so DeMario knows he can publish this.");
       setState("error");
       return;
@@ -72,11 +78,21 @@ export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFo
     }).catch(() => null);
 
     if (!res || !res.ok) {
+      report(
+        !res
+          ? "network"
+          : res.status === 404
+            ? "link_invalid"
+            : res.status === 409
+              ? "link_used"
+              : submitFailure(res.status)
+      );
       const data = res ? await res.json().catch(() => ({})) : {};
       setError(data.error ?? "Something went wrong. Please try again.");
       setState("error");
       return;
     }
+    report("success");
     setText(body);
     setState("done");
   }
@@ -94,6 +110,7 @@ export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFo
             type="button"
             className="btn btn-ghost"
             onClick={() => {
+              trackEvent("outbound_click", { dest: "google_review" });
               navigator.clipboard?.writeText(text);
               window.open(googleUrl, "_blank", "noopener,noreferrer");
             }}
