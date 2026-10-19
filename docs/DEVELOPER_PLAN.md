@@ -124,6 +124,29 @@ markup is ignored for rich results. It produces no stars and is not worth the su
 - Move GitHub Actions to the Node 24 runner default before GitHub's June 2, 2026 default change.
 - Upgrade dependency advisories when compatible patched versions are available; do not use `npm audit fix --force` without a tested migration branch.
 
+## In Review: October 2026 Audit Round
+
+Branches stacked in merge order, each based on the one before. Not merged or deployed until
+Tonio reviews them. The audit evidence behind them is in
+`docs/plans/2026-10-19-audit-and-enhancements.md` (branch `docs/october-2026-audit`).
+
+### 1. `fix/dupr-rankings` — credentials update (2026-10-19)
+
+- Doubles DUPR 4.702 -> 4.973 in the hero (4.97), trust strip, About stat, and meta description.
+  DeMario's own TikTok reads "4.973 currently", which matches his update.
+- Added his rankings: top 1% of DUPR-rated players worldwide and in Texas (hero), top 100 in
+  Texas and top 40 in DFW (trust strip, bio, About stat), with an "as of October 2026" note.
+- Dropped the 4.579 singles rating in its own commit. His update gave doubles only, and a
+  spring number beside an October-dated one would read as current. Revert that commit to
+  restore the layout if he sends a current singles rating.
+- Corrected USTA -> USPTA (confirmed by Tonio).
+- The trust strip's first chip links to his TeachMe.To reviews: 5.0 from 137+ ratings,
+  checked October 2026. It replaces the unsourced "5.0 / 79 reviews" claim removed in July.
+- **Not changed:** "Head Pro at Dallas Indoor Pickleball Club". His TikTok describes him as
+  based at The Grove; confirm with DeMario whether the Head Pro claim is still current.
+- **Not added:** Spanish-language lessons. His TeachMe.To profile lists Spanish; add it to the
+  site only once DeMario confirms he wants to offer it here.
+
 ## Long-Term Reference
 
 - `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it

@@ -7,7 +7,7 @@ It describes what the application does, how it is built, how each piece fits tog
 
 ## 1. Purpose and Context
 
-This is the professional coaching website for **DeMario Montez**, a Dallas–Fort Worth pickleball coach (4.70 doubles DUPR, USTA certified, Top 3% TeachMe.To SuperCoach). The site has two audiences:
+This is the professional coaching website for **DeMario Montez**, a Dallas–Fort Worth pickleball coach (4.973 doubles DUPR as of October 2026, top 1% of DUPR-rated players worldwide and in Texas, top 40 in DFW, USPTA certified, Top 3% TeachMe.To SuperCoach). The site has two audiences:
 
 - **Students** — discover DeMario's credentials and coaching style, understand lesson options and pricing, and self-schedule a lesson time directly through the site.
 - **DeMario (admin)** — manage bookings, block unavailable times, reply to inquiries, track business tasks and roadmap items, and monitor site health.
@@ -80,7 +80,7 @@ The homepage (`src/app/page.tsx`) is a client component that assembles the full 
 |---|---|
 | `Nav` | Fixed top navigation bar with a "Book a Lesson" CTA |
 | `Hero` | Above-the-fold splash with headline and primary CTA |
-| `TrustBar` | Credential badges (DUPR rating, USTA cert, SuperCoach rank) |
+| `TrustBar` | Credential badges: linked TeachMe.To rating, SuperCoach rank, USPTA cert, DUPR rating and rankings |
 | `Testimonials` | Student review cards fetched from `GET /api/reviews/published` |
 | `ImproveGrid` | Visual grid showing areas of coaching focus |
 | `Philosophy` | DeMario's coaching philosophy prose section |
