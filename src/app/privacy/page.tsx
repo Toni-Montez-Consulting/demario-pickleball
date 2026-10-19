@@ -14,6 +14,7 @@ export default function PrivacyPage() {
       <main className="legal-page">
         <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Privacy Policy</h1>
+        {/* Editing this page? Bump its date in LEGAL_LAST_MODIFIED (src/app/sitemap.ts). */}
         <p className="legal-date">Effective April 27, 2026</p>
 
         <h2>What we collect</h2>
