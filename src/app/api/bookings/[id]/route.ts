@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { requireAdmin } from "@/lib/supabase/server";
 import { sendBookingCancelledEmail } from "@/lib/email/client";
 
@@ -83,14 +83,18 @@ export async function PATCH(
   }
 
   if (update.status === "cancelled") {
-    sendBookingCancelledEmail({
-      id: data.id,
-      name: data.name,
-      email: data.email,
-      lesson_type: data.lesson_type,
-      lesson_date: data.lesson_date,
-      lesson_time: data.lesson_time,
-    }).catch((err) => console.error("[bookings PATCH] cancel email failed", err));
+    // The student's only notice. after() keeps the function alive until it is
+    // sent; a bare promise can be frozen once the response goes out.
+    after(() =>
+      sendBookingCancelledEmail({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        lesson_type: data.lesson_type,
+        lesson_date: data.lesson_date,
+        lesson_time: data.lesson_time,
+      }).catch((err) => console.error("[bookings PATCH] cancel email failed", err))
+    );
   }
 
   return NextResponse.json(data);
