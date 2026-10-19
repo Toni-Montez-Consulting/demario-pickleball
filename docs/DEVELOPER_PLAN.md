@@ -266,12 +266,21 @@ Origination Rule).
   is a no-op.
 - This deliberately bypasses admin MFA for one narrow transition. The spec's limitations check
   records why and how it is bounded.
-- Admin gets a **Needs outcome** filter (pending, lesson date passed).
-- `dateInTimeZone` replaces three identical private copies.
+- Admin gets a **Needs outcome** filter (pending, lesson date passed). Once a lesson has
+  started, its Cancel button reads **Didn't happen**, and the server sends no cancellation
+  email for it, so clearing old lessons cannot email a student about one from months ago.
+- The confirmation page states what each outcome means: No-show and Didn't happen are final,
+  and "Lesson happened" promises a review request only when the booking has a student record.
+  It no longer claims Admin can change a recorded outcome.
+- A tap that fails (rate limit, database error) returns to the page with a "didn't save"
+  alert instead of raw JSON, and tokens are shape-checked before use.
+- `dateInTimeZone` replaces three identical private copies (availability, the booking day
+  list, and Admin's today).
 - **Inert until** `LESSON_OUTCOME_SECRET` is set in Vercel Production. See the new section of
   `docs/RELEASE_CHECKLIST.md`.
-- **Open for DeMario:** is 8 AM and three reminders right, and does "Didn't happen" fit how he
-  moves lessons by text?
+- **Open for DeMario:** is the digest time right (13:00 UTC: 8 AM Central now, 7 AM after
+  daylight saving ends) with three reminders, and does "Didn't happen" fit how he moves
+  lessons by text?
 
 ## Long-Term Reference
 

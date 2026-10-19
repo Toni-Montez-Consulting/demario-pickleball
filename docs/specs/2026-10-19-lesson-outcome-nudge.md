@@ -123,7 +123,7 @@ request later that day or the next.
 | `not_configured` | "Lesson outcome links aren't set up yet" | Use Admin |
 
 - **Button labels:** "Yes, the lesson happened", "Mark as no-show", "Mark as didn't happen".
-- **Classes:** `.outcome-page`, `.outcome-facts`, `.outcome-note`, reusing `.kicker`, `.btn`,
+- **Classes:** `.outcome-page`, `.outcome-facts`, `.outcome-note`, `.outcome-alert`, reusing `.kicker`, `.btn`,
   `.btn-primary`, `.btn-ghost`, `.btn-full`. Existing colour tokens only.
 - **Mobile:** a single column, max-width 480px, full-width buttons at least 44px tall.
 - **Metadata:** `noindex, nofollow`. The token path is redacted from analytics as
@@ -133,14 +133,21 @@ request later that day or the next.
 
 ### 5.3 `POST /api/lesson-outcome`
 
-1. Read `token` from the form body (urlencoded) or JSON.
-2. Return 503 if `LESSON_OUTCOME_SECRET` is unset.
-3. Rate limit: route `lesson_outcome`, 30 per hour per IP.
+1. Read `token` from the form body. Return 400 unless it has a real link's shape (base64url,
+   a dot, base64url), which is checked before the token goes into a URL.
+2. If `LESSON_OUTCOME_SECRET` is unset, 303 back to the page, which shows `not_configured`.
+3. Rate limit: route `lesson_outcome`, 30 per hour per IP. When limited, 303 back with
+   `?failed=busy`.
 4. Verify the token. If it is invalid or expired, 303 back to the page, which renders the error
    state.
 5. Conditional update: `status = <outcome> WHERE id = <booking> AND status = 'pending'`. Zero
-   rows means it was already recorded, which is a no-op.
+   rows means it was already recorded, which is a no-op. A database error 303s back with
+   `?failed=save`.
 6. 303 to `/lesson-outcome/<token>`. The page reads the current status and shows `recorded`.
+
+This is a browser form post, so every result returns to the page; Mario never lands on raw
+JSON. With `?failed=` and a still-pending booking, the page shows `.outcome-alert` ("That
+didn't save, and nothing was changed") above the button.
 
 No email is sent from this route, and the overlap constraint cannot fire: every transition
 leaves `pending` for a status that is either still active (`confirmed`) or inactive.
@@ -178,8 +185,9 @@ logic move into one function, so the count and the list cannot drift.
 - Central-time window across DST.
 - Cron: 401 without the bearer; 500 without either secret; no email when nothing is pending;
   one digest for several lessons with the correct date filter.
-- POST: records the outcome and returns 303; a replay is a no-op; invalid token; rate limit;
-  503 when unconfigured.
+- POST: records the outcome and returns 303; a replay is a no-op; a malformed or invalid
+  token; rate limit and database failure return to the page with `?failed=`; unconfigured
+  returns to the page.
 - Digest template: escaping, plus three signed links per lesson.
 - Page view-model: every state.
 - Admin: the Needs outcome filter.
