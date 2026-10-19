@@ -6,6 +6,8 @@ import { assertBookableSlot } from "@/lib/availability";
 import { WAIVER_VERSION } from "@/lib/business";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { isCourtSetup, parseBookingNotes } from "@/lib/booking-notes";
+import { courtSetupCode } from "@/lib/analytics";
+import { trackServerEvent } from "@/lib/analytics-server";
 
 const VALID_LESSON_TYPES = ["beginner", "advanced", "clinic"] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -147,6 +149,15 @@ export async function POST(req: NextRequest) {
   after(() =>
     sendBookingCreatedEmails(emailBooking).catch((err) =>
       console.error("[bookings POST] email send failed", err)
+    )
+  );
+  // Counted here rather than in the browser: only a saved booking is a booking.
+  // Both values were validated above and are fixed codes, never student data.
+  after(() =>
+    trackServerEvent(
+      "booking_created",
+      { lesson_type, court_setup: courtSetupCode(parsedNotes.courtSetup) },
+      req.headers
     )
   );
 

@@ -19,36 +19,40 @@ import Footer from "@/components/Footer";
 import StickyCta from "@/components/StickyCta";
 import BookingModal from "@/components/BookingModal";
 import type { LessonKey } from "@/lib/data";
+import { trackEvent, type CtaSource } from "@/lib/analytics";
 
 export default function HomePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [initialLessonType, setInitialLessonType] = useState<LessonKey>("beginner");
 
-  function openBooking(lessonType: LessonKey = "beginner") {
-    setInitialLessonType(lessonType);
+  // Every Book button routes through here, so the source is recorded once
+  // instead of in each component.
+  function openBooking(source: CtaSource, lessonType?: LessonKey) {
+    trackEvent("book_cta_click", { source, lesson_type: lessonType });
+    setInitialLessonType(lessonType ?? "beginner");
     setModalOpen(true);
   }
 
   return (
     <div className="device" id="device">
-      <Nav onOpenBooking={() => openBooking()} />
+      <Nav onOpenBooking={() => openBooking("nav")} />
       {/* One main landmark, so screen-reader users can jump past the nav. */}
       <main>
-      <Hero onOpenBooking={() => openBooking()} />
+      <Hero onOpenBooking={() => openBooking("hero")} />
       <TrustBar />
-      <Testimonials onOpenBooking={() => openBooking()} />
+      <Testimonials onOpenBooking={() => openBooking("testimonials")} />
       <ImproveGrid />
       <FilmRoom />
       <Philosophy />
-      <Lessons onOpenBooking={openBooking} />
+      <Lessons onOpenBooking={(lessonType) => openBooking("lessons", lessonType)} />
       <WhereWeTrain />
       <About />
-      <FinalCta onOpenBooking={() => openBooking()} />
+      <FinalCta onOpenBooking={() => openBooking("final_cta")} />
       <BookingPlatforms />
       <ContactForm />
       </main>
       <Footer />
-      <StickyCta onOpenBooking={() => openBooking()} />
+      <StickyCta onOpenBooking={() => openBooking("sticky")} />
       <BookingModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

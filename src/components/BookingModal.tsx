@@ -10,10 +10,29 @@ import {
   TEXT_MARIO_HREF,
   type VenueRule,
 } from "@/lib/venue-rules";
+import {
+  bookingFailure,
+  courtSetupCode,
+  eventAttributes,
+  trackEvent,
+  venueCode,
+  type BookingStep,
+} from "@/lib/analytics";
 import PaymentOptions from "./PaymentOptions";
 import TermsContent, { TERMS_EFFECTIVE_DATE } from "./TermsContent";
 
 type Step = "form" | "terms" | "indoorRouting" | "picker" | "loading" | "error" | "confirmed";
+
+// The funnel names for each step a student actually sees. "loading" is a
+// spinner between picker and confirmed, not a step.
+const STEP_CODES: Record<Exclude<Step, "loading">, BookingStep> = {
+  form: "details",
+  terms: "terms",
+  indoorRouting: "indoor_routing",
+  picker: "picker",
+  error: "error",
+  confirmed: "confirmed",
+};
 
 interface FormData {
   name: string;
@@ -75,6 +94,7 @@ const TextIcon = () => (
 
 function VenueRouteCard({ venue }: { venue: VenueRule }) {
   const linked = Boolean(venue.href);
+  const code = venueCode(venue.shortName);
   const content = (
     <>
       <div className="venue-route-copy">
@@ -95,6 +115,7 @@ function VenueRouteCard({ venue }: { venue: VenueRule }) {
       target="_blank"
       rel="noopener noreferrer"
       className="venue-route-card"
+      {...(code ? eventAttributes("venue_link_click", { venue: code, surface: "modal" }) : {})}
     >
       {content}
     </a>
@@ -173,6 +194,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       setDays(freshDays);
       document.body.style.overflow = "hidden";
       setStep("form");
+      trackEvent("booking_step_viewed", { step: "details" });
       setForm({
         name: "",
         email: "",
@@ -254,6 +276,17 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [isOpen, onClose]);
 
+  // Moves to a step and reports it, so the funnel shows where students stop.
+  // Court setup rides along once it is chosen: routing and the time picker.
+  function showStep(next: Exclude<Step, "loading">) {
+    setStep(next);
+    trackEvent("booking_step_viewed", {
+      step: STEP_CODES[next],
+      court_setup:
+        next === "indoorRouting" || next === "picker" ? courtSetupCode(form.courtSetup) : undefined,
+    });
+  }
+
   function handleDaySelect(i: number) {
     setSelectedDay(i);
     setPickerError("");
@@ -265,6 +298,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     submittingRef.current = true;
     setStep("loading");
     setPickerError("");
+    let failureReported = false;
     try {
       const day = days[selectedDay];
       const res = await fetch("/api/bookings", {
@@ -288,21 +322,27 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
         }),
       });
       if (res.status === 409) {
+        trackEvent("booking_failed", { reason: "slot_taken" });
         await fetchAvailability(day.dateStr, times, form.lessonType);
         setPickerError("That time was just taken. Please pick another.");
         setStep("picker");
         return;
       }
       if (!res.ok) {
+        trackEvent("booking_failed", { reason: bookingFailure(res.status) });
+        failureReported = true;
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Booking failed. Please try again.");
       }
       const data = await res.json();
       setBookingId(data.id ?? "");
-      setStep("confirmed");
+      showStep("confirmed");
     } catch (err) {
+      // A throw that the !res.ok branch did not report is the request itself
+      // failing: offline, DNS, or the connection dropping.
+      if (!failureReported) trackEvent("booking_failed", { reason: "network" });
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong.");
-      setStep("error");
+      showStep("error");
     } finally {
       submittingRef.current = false;
     }
@@ -311,11 +351,11 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   function handleContinue() {
     if (form.courtSetup === "Indoor / weather-proof") {
       setPickerError("");
-      setStep("indoorRouting");
+      showStep("indoorRouting");
       return;
     }
     fetchAvailability(days[selectedDay].dateStr, times, form.lessonType);
-    setStep("picker");
+    showStep("picker");
   }
 
   function handleBackdropClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -470,7 +510,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 <button
                   type="button"
                   className="waiver-link"
-                  onClick={() => setStep("terms")}
+                  onClick={() => showStep("terms")}
                 >
                   Coaching Agreement &amp; Terms
                 </button>
@@ -512,7 +552,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
             <button
               type="button"
               className="btn btn-ghost terms-back"
-              onClick={() => setStep("form")}
+              onClick={() => showStep("form")}
             >
               Back to booking
             </button>
@@ -538,7 +578,11 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 <span>Not sure which one fits?</span>
                 <strong>Mario can route it for you.</strong>
               </div>
-              <a href={TEXT_MARIO_HREF} className="btn btn-primary venue-route-text">
+              <a
+                href={TEXT_MARIO_HREF}
+                className="btn btn-primary venue-route-text"
+                {...eventAttributes("contact_click", { channel: "sms", surface: "modal" })}
+              >
                 Text Mario
                 <TextIcon />
               </a>
@@ -547,7 +591,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
             <button
               type="button"
               className="btn btn-ghost venue-route-back"
-              onClick={() => setStep("form")}
+              onClick={() => showStep("form")}
             >
               Back to court setup
             </button>
@@ -663,7 +707,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
               <button
                 type="button"
                 className="btn btn-ghost picker-back"
-                onClick={() => setStep("form")}
+                onClick={() => showStep("form")}
               >
                 Back
               </button>
@@ -693,7 +737,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
           <>
             <h3 id="booking-modal-title">Something went wrong</h3>
             <div className="modal-error">{errorMsg}</div>
-            <button type="button" className="btn btn-ghost" onClick={() => setStep("picker")}>
+            <button type="button" className="btn btn-ghost" onClick={() => showStep("picker")}>
               Try again
             </button>
           </>
