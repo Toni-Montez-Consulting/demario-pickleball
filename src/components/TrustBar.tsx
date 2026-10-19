@@ -85,12 +85,6 @@ export default function TrustBar() {
             <strong>Top 100</strong> · Texas DUPR
           </span>
         </div>
-        <div className="trust-chip">
-          <StarIcon />
-          <span>
-            <strong>Dallas Indoor</strong> · Head Pro
-          </span>
-        </div>
         <div className="trust-chip rating">
           <svg
             className="ico"

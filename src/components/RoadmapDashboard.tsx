@@ -106,7 +106,7 @@ const PHASES: RoadmapPhase[] = [
       },
       {
         key: "p1-dipc-listing",
-        text: "Ask Dallas Indoor PBC to list you on their website as Head Pro",
+        text: "Ask Dallas Indoor PBC to list you on their website as a coach",
         detail: "Mario task: ask the club contact to add your name, photo, coaching title, phone/email, and booking site link to their website or coach page. Done when the listing is live.",
       },
       {
