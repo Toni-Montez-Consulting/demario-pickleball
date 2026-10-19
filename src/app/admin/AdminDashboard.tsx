@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { parseBookingNotes } from "@/lib/booking-notes";
+import { dateInTimeZone, lessonHasStarted } from "@/lib/time";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import WeeklyTemplateEditor from "@/components/WeeklyTemplateEditor";
 
@@ -111,14 +112,7 @@ async function responseError(res: Response, fallback: string): Promise<string> {
 }
 
 function todayDateString(): string {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: BOOKING_TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-  return `${value("year")}-${value("month")}-${value("day")}`;
+  return dateInTimeZone(new Date(), BOOKING_TIME_ZONE);
 }
 
 function contactHref(phone: string | null, scheme: "sms" | "tel"): string | null {
@@ -221,7 +215,8 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
 
   async function updateBookingStatus(
     id: string,
-    status: "confirmed" | "cancelled" | "no_show"
+    status: "confirmed" | "cancelled" | "no_show",
+    started = false
   ) {
     if (
       status === "no_show" &&
@@ -231,7 +226,16 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
     ) {
       return;
     }
-    if (status === "cancelled" && !window.confirm("Cancel this booking and email the student?")) {
+    // The server emails a cancellation only before the lesson starts, so the
+    // prompt says which one this is.
+    if (
+      status === "cancelled" &&
+      !window.confirm(
+        started
+          ? "Record that this lesson didn't happen? It has already started, so the student is not emailed."
+          : "Cancel this booking and email the student?"
+      )
+    ) {
       return;
     }
     setUpdating(id);
@@ -528,6 +532,8 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                 <tbody>
                   {visibleBookings.map((b) => {
                     const court = parseBookingNotes(b.notes);
+                    // Past its start, Cancel records "didn't happen" and emails no one.
+                    const started = lessonHasStarted(b.lesson_date, b.lesson_time);
                     const smsHref = contactHref(b.phone, "sms");
                     const telHref = contactHref(b.phone, "tel");
                     return (
@@ -588,9 +594,9 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                               type="button"
                               className="admin-btn cancel"
                               disabled={b.status === "cancelled" || updating === b.id}
-                              onClick={() => updateBookingStatus(b.id, "cancelled")}
+                              onClick={() => updateBookingStatus(b.id, "cancelled", started)}
                             >
-                              Cancel
+                              {started ? "Didn't happen" : "Cancel"}
                             </button>
                             <button
                               type="button"

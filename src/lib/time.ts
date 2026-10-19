@@ -60,6 +60,21 @@ function getTimeZoneOffsetMs(date: Date, timeZone: string): number {
   return asUtc - date.getTime();
 }
 
+/**
+ * Whether a lesson's start, in the booking time zone, has passed. A time that
+ * does not parse counts as not started, which keeps the old behaviour.
+ */
+export function lessonHasStarted(
+  date: string,
+  time: string,
+  now = new Date(),
+  timeZone = "America/Chicago"
+): boolean {
+  const parsed = parseDisplayTime(time);
+  if (!parsed) return false;
+  return zonedDateTimeToUtc(date, parsed, timeZone).getTime() <= now.getTime();
+}
+
 export function zonedDateTimeToUtc(
   date: string,
   time: DisplayTime,

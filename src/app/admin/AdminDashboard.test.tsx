@@ -159,7 +159,34 @@ describe("AdminDashboard availability", () => {
     );
 
     expect(screen.getByRole("button", { name: /^confirm$/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /^cancel$/i })).toBeDisabled();
+    // The lesson date has passed, so Cancel reads as recording that it didn't happen.
+    expect(screen.getByRole("button", { name: /^didn't happen$/i })).toBeDisabled();
+  });
+
+  it("offers Cancel before a lesson and a silent Didn't happen after it starts", () => {
+    const booking = {
+      created_at: "2026-04-27T12:00:00Z",
+      name: "Jane Student",
+      email: "jane@example.com",
+      phone: null,
+      lesson_type: "beginner",
+      lesson_time: "9:00 AM",
+      status: "pending" as const,
+      notes: null,
+      paid_at: null,
+    };
+    render(
+      <AdminDashboard
+        initialBookings={[
+          { ...booking, id: "past", lesson_date: "2026-05-05" },
+          { ...booking, id: "future", lesson_date: "2099-05-05" },
+        ]}
+        initialInquiries={[]}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /^didn't happen$/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^cancel$/i })).toBeEnabled();
   });
 
   it("loads the control center and adds a manual block with mocked admin APIs", async () => {

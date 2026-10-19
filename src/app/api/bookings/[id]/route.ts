@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { requireAdmin } from "@/lib/supabase/server";
 import { sendBookingCancelledEmail } from "@/lib/email/client";
+import { lessonHasStarted } from "@/lib/time";
 
 export async function PATCH(
   req: NextRequest,
@@ -82,9 +83,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Failed to update booking." }, { status: 500 });
   }
 
-  if (update.status === "cancelled") {
-    // The student's only notice. after() keeps the function alive until it is
-    // sent; a bare promise can be frozen once the response goes out.
+  // The student's only notice. after() keeps the function alive until it is
+  // sent; a bare promise can be frozen once the response goes out. A lesson that
+  // has already started gets no email: cancelling it records that it didn't
+  // happen (Admin's Needs outcome list), and "your lesson was cancelled" weeks
+  // later would only confuse the student.
+  if (update.status === "cancelled" && !lessonHasStarted(data.lesson_date, data.lesson_time)) {
     after(() =>
       sendBookingCancelledEmail({
         id: data.id,
