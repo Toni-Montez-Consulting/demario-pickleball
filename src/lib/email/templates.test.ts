@@ -4,6 +4,7 @@ import {
   studentRequestedHtml,
   reviewRequestHtml,
   inquiryNotificationHtml,
+  lessonOutcomeDigestHtml,
 } from "./templates";
 
 const booking = {
@@ -104,5 +105,39 @@ describe("inquiryNotificationHtml", () => {
     expect(html).not.toContain("<script>");
     expect(html).not.toContain("<img");
     expect(html).toContain("&lt;script&gt;");
+  });
+});
+
+describe("lessonOutcomeDigestHtml", () => {
+  const lesson = (name: string, id: string) => ({
+    name,
+    lessonName: "Foundations",
+    when: "Sun, Oct 18 · 9:00 AM CT",
+    courtSetup: "Outdoor public court",
+    links: {
+      confirmed: `https://demariomontezpb.com/lesson-outcome/${id}-yes`,
+      no_show: `https://demariomontezpb.com/lesson-outcome/${id}-noshow`,
+      cancelled: `https://demariomontezpb.com/lesson-outcome/${id}-no`,
+    },
+  });
+
+  it("gives every lesson its three outcome buttons", () => {
+    const html = lessonOutcomeDigestHtml([lesson("Jane Student", "a"), lesson("Sam Player", "b")]);
+    expect(html).toContain("2 lessons need an outcome");
+    for (const id of ["a", "b"]) {
+      expect(html).toContain(`/lesson-outcome/${id}-yes`);
+      expect(html).toContain(`/lesson-outcome/${id}-noshow`);
+      expect(html).toContain(`/lesson-outcome/${id}-no"`);
+    }
+    expect(html).toContain("Nothing is sent to the student for No-show or Didn't happen");
+  });
+
+  it("uses a singular heading for one lesson", () => {
+    expect(lessonOutcomeDigestHtml([lesson("Jane Student", "a")])).toContain("Did this lesson happen?");
+  });
+
+  it("escapes a student name, which came from a public form", () => {
+    const html = lessonOutcomeDigestHtml([lesson('<a href="https://evil.example">x</a>', "a")]);
+    expect(html).not.toContain('<a href="https://evil.example"');
   });
 });

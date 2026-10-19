@@ -1,6 +1,15 @@
 import { Resend } from "resend";
 import { generateIcs, type IcsBooking, type IcsMethod } from "./ics";
-import { studentRequestedHtml, adminNotificationHtml, studentCancelledHtml, feedbackNotificationHtml, reviewRequestHtml, inquiryNotificationHtml } from "./templates";
+import {
+  studentRequestedHtml,
+  adminNotificationHtml,
+  studentCancelledHtml,
+  feedbackNotificationHtml,
+  reviewRequestHtml,
+  inquiryNotificationHtml,
+  lessonOutcomeDigestHtml,
+  type OutcomeDigestLesson,
+} from "./templates";
 
 function getResend(): Resend | null {
   const key = process.env.RESEND_API_KEY;
@@ -178,6 +187,31 @@ export async function sendReviewRequestEmail({
   });
   if (result.error) {
     console.error("[email] review request failed", result.error);
+    return false;
+  }
+  return true;
+}
+
+/** Mario's morning digest of lessons that still need an outcome. */
+export async function sendLessonOutcomeDigest(lessons: OutcomeDigestLesson[]): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping lesson outcome digest");
+    return false;
+  }
+  const first = lessons[0];
+  const subject =
+    lessons.length === 1
+      ? `Did it happen? ${first.lessonName} with ${first.name.replace(/[\r\n]+/g, " ").trim()}`
+      : `${lessons.length} lessons need an outcome`;
+  const result = await resend.emails.send({
+    from: emailFrom(),
+    to: adminEmail(),
+    subject,
+    html: lessonOutcomeDigestHtml(lessons),
+  });
+  if (result.error) {
+    console.error("[email] lesson outcome digest failed", result.error);
     return false;
   }
   return true;
