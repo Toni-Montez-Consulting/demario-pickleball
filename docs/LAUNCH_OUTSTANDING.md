@@ -1,7 +1,7 @@
 # Public Launch Outstanding Notes
 
-Last updated: 2026-10-19, after the October round (PRs #12 to #19). The full
-reconciliation below is from 2026-08-12. The revision before that (2026-05-06)
+Last updated: 2026-10-19, after the October round (PRs #12 to #21) and that
+evening's production checks. The full reconciliation below is from 2026-08-12. The revision before that (2026-05-06)
 had gone stale: it still listed database work that shipped in round 1
 (2026-07-28) and in the double-booking fixes (2026-08-02).
 
@@ -22,9 +22,38 @@ database. Do not re-run the migrations; they are applied.
 - The student backfill ran: 5 bookings, 3 students, 0 unmatched.
 - 15 active time slots are configured.
 
-Not verifiable by query, so still worth a functional check at some point:
-anonymous read/write blocking on `bookings`, `inquiries`, and `rate_limit_events`
-(the policies are in place, but proving it needs a real anon-key request).
+## Verified 2026-10-19 (checked against production)
+
+### Anonymous access is blocked
+
+Checked with real anon-key requests, the same key the site ships to browsers.
+Reads of `bookings`, `inquiries`, `rate_limit_events`, `students`, `reviews`,
+`admin_tasks`, and `roadmap_checks` returned 0 rows, while `bookings` holds 8.
+Inserts into `bookings`, `inquiries`, and `rate_limit_events` were rejected by
+RLS (code 42501). Each insert left a required column empty, so even a missing
+policy could not have saved a row.
+
+### Google Calendar blocking works
+
+No new refresh token is needed. Public availability for October 20, 21, and 23
+marked times unavailable that can only come from Mario's Google Calendar: those
+days have no bookings, blocked slots, or recurring blocks. The token was last
+set on 2026-04-28. Google expires tokens from apps in Testing mode after 7 days,
+so this one is not on that clock.
+
+If public availability ever returns a 500, check the token first. A calendar
+error makes the booking picker show no times at all; it does not fall back to
+ignoring the calendar.
+
+Environment variables added through the Vercel CLI are stored as sensitive and
+cannot be read back. "Set" is verifiable; "set to the right value" is not, so
+check this functionally, as above, not by pulling env.
+
+### CRON_SECRET and both crons
+
+An unauthenticated request to either cron route returns 401 in production, and
+a route returns 500 instead when the secret is missing. `vercel crons ls` lists
+both: the lesson outcome digest at 13:00 UTC and review requests at 15:00 UTC.
 
 ## Genuinely Open
 
@@ -68,33 +97,12 @@ email arrives. Confirm a busy Google Calendar event blocks a public slot.
 
 Owner: Tonio and Mario.
 
-### Production Google Calendar refresh token
-
-Still outstanding. Generate a fresh token with Mario and confirm
-Admin -> Availability reports Google Calendar connected.
-
-Note: environment variables added through the Vercel CLI are stored as sensitive
-and cannot be read back. "Set" is verifiable; "set to the right value" is not.
-Check this functionally in the admin diagnostic, not by pulling env.
-
-Owner: Tonio.
-
 ### First real review, end to end
 
 Submit one review through the emailed link and publish it from Admin -> Reviews.
 Blocked behind the review loop above.
 
 Owner: Tonio and Mario.
-
-### CRON_SECRET
-
-Set, verified 2026-10-19: an unauthenticated request to
-`/api/cron/review-requests` returns 401 in production, and the route returns a
-500 instead when the secret is missing. `vercel.json` declares two daily crons:
-review requests at 15:00 UTC and, since #18, the lesson outcome digest at 13:00
-UTC. Still to do: confirm both appear in the project's Cron Jobs tab.
-
-Owner: Tonio.
 
 ## Blocked On Mario
 
@@ -179,7 +187,9 @@ reserved court fee is confirmed separately by Mario before the lesson.
 - Configure Sentry or another production monitoring tool, then verify a test
   event from `POST /api/monitoring-test` while logged in as an MFA-verified
   admin. Recommended for long-term operations, not a launch blocker if Mario and
-  Tonio accept that risk.
+  Tonio accept that risk. Production has no Sentry DSN as of 2026-10-19, so the
+  email-failure reports added in #15 go nowhere yet: a failed booking or lead
+  email shows only in Vercel's runtime logs, and nothing alerts anyone.
 - Add structured venue selection only after the court expansion checklist proves
   it will help students more than it clutters booking.
 - Add a short availability debounce or cache if public traffic increases.

@@ -525,21 +525,23 @@ Requires a `.env.local` file with all variables listed in Section 2.
 
 ## 9. Remaining Setup Checklist
 
-- [ ] **Confirm RESEND_API_KEY is present in production** — emails don't send without this (see Section 4)
+Reconciled against production on 2026-10-19. `docs/LAUNCH_OUTSTANDING.md` is the live list.
+
+- [x] **Confirm RESEND_API_KEY is present in production** — emails don't send without this (see Section 4). Present in Vercel Production (2026-10-19).
 - [ ] **Verify domain in Resend** — so emails come from `bookings@demariomontezpb.com` (see Section 4)
 - [ ] **Update EMAIL_FROM** after domain verified (see Section 4)
-- [ ] **Post-launch: configure Sentry** — add `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` in production, then verify a test event from `POST /api/monitoring-test` while logged in as an MFA-verified admin
-- [ ] **Enroll MFA** for each admin account (see Section 3) — nobody can access the admin panel until their account has MFA set up
-  - [ ] `tonio.montez@gmail.com`
-  - [ ] `demariomontez10@gmail.com`
-  - [ ] `tony.montez@gmail.com`
-  - [ ] `ericaxholloway@gmail.com`
-  - [ ] `leahmontez@hotmail.com`
-- [ ] **Add time slots** — go to Admin → Availability → Settings: lesson times & blocked dates list → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists
-- [ ] **Confirm venue routing copy** — verify public courts book through the site and platform-required venues match `docs/VENUE_RULES.md`
+- [ ] **Post-launch: configure Sentry** — add `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` in production, then verify a test event from `POST /api/monitoring-test` while logged in as an MFA-verified admin. No DSN in production as of 2026-10-19.
+- [x] **Enroll MFA** for each admin account (see Section 3) — nobody can access the admin panel until their account has MFA set up. All five accounts below had a verified factor on 2026-10-19.
+  - [x] `tonio.montez@gmail.com`
+  - [x] `demariomontez10@gmail.com`
+  - [x] `tony.montez@gmail.com`
+  - [x] `ericaxholloway@gmail.com`
+  - [x] `leahmontez@hotmail.com`
+- [x] **Add time slots** — go to Admin → Availability → Settings: lesson times & blocked dates list → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists. 15 active slots (2026-10-19).
+- [x] **Confirm venue routing copy** — verify public courts book through the site and platform-required venues match `docs/VENUE_RULES.md`. Settled; see `docs/LAUNCH_OUTSTANDING.md`.
 - [ ] **Submit one live booking test** — confirm student/admin emails include phone and court preference, the calendar invite says Mario confirms the exact court, payment links work, and the test booking can be cancelled
-- [ ] **Publish Google OAuth app to production** before leaving Google Calendar blocking enabled long-term (see Google Calendar blocking)
-- [ ] **Generate a fresh DeMario Google OAuth refresh token** after publishing, then update Vercel and redeploy
+- [x] **Publish Google OAuth app to production** before leaving Google Calendar blocking enabled long-term (see Google Calendar blocking). Not checked in Google Cloud directly, but the 2026-04-28 token still worked on 2026-10-19, which a Testing-mode app's 7-day tokens could not.
+- [x] **Generate a fresh DeMario Google OAuth refresh token** after publishing, then update Vercel and redeploy. Not needed: Google Calendar blocking works with the current token (2026-10-19).
 
 ---
 
