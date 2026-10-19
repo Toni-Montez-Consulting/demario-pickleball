@@ -91,12 +91,13 @@ Findings fixed in `fix/a11y-perf-seo`:
 
 | Site said | Evidence | Action |
 |---|---|---|
-| 4.70 doubles / 4.58 singles DUPR | DeMario: 4.973 doubles; his TikTok: "4.973 currently" | Updated; singles removed in its own commit |
+| 4.70 doubles / 4.58 singles DUPR | DeMario: 4.973 doubles; his TikTok: "4.973 currently" | Updated; singles removed in its own commit (DeMario: doubles only for now) |
 | — | DeMario: top 1% worldwide and in Texas, top 100 Texas, top 40 DFW | Added, dated October 2026 |
 | "USTA certified" | Search snippet of TeachMe.To: "USPTA Certified (PB)"; Tonio confirmed | Corrected to USPTA |
 | (unsourced 5.0 claim removed in July) | TeachMe.To: 5.0 from 137 ratings, 243 lessons | Linked chip added |
-| "Head Pro at Dallas Indoor" | TikTok describes him as based at The Grove | **Unchanged; ask DeMario** |
-| (not mentioned) | TeachMe.To: speaks English and Spanish | **Not added; ask DeMario** |
+| "Head Pro at Dallas Indoor" | DeMario asked to remove it | Removed; the hero tag and About badge now read "Pickleball Coach" |
+| (not mentioned) | DeMario: pickleball instructor for Dallas ISD and the City of Carrollton | Added to the bio and trust strip |
+| (not mentioned) | TeachMe.To: speaks English and Spanish | Not added; Tonio left it off |
 | Instagram `@Alexanderiio` | Handle does not match his name | **Ask DeMario** |
 | Address Farmers Branch (JSON-LD, About) vs Dallas (footer) | — | **Ask DeMario which to use for local search** |
 
@@ -107,7 +108,7 @@ Playwright suite locally before push. Each merges cleanly with open PR #11 in ei
 
 | # | Branch | What it does |
 |---|---|---|
-| 1 | `fix/dupr-rankings` | The update DeMario asked for: rating, rankings, USPTA, linked TeachMe.To rating |
+| 1 | `fix/dupr-rankings` | The update DeMario asked for: rating, rankings, USPTA, linked TeachMe.To rating, Dallas ISD and Carrollton roles, no Head Pro title |
 | 2 | `chore/security-patches` | Next 16.4.2, production audit to 0, CI on Node 24, `agentRules: false` |
 | 3 | `fix/lead-alerts` | Inquiry emails to Mario; booking emails via `after()`; email title escaping |
 | 4 | `fix/a11y-perf-seo` | Every live-audit finding in section 3 |
@@ -126,8 +127,7 @@ For Tonio:
 - Later, on a separate tested branch: a CSP, and HSTS `includeSubDomains`.
 
 For DeMario:
-- Head Pro claim, Spanish lessons, Instagram handle, and which address to use.
-- A current singles rating, if he wants it shown.
+- Instagram handle, and which address to use.
 - A 2000px+ hero photo (the current one is 828px wide).
 - Whether 8 AM and three reminders suit him, and how "Didn't happen" fits lessons he moves by
   text.
