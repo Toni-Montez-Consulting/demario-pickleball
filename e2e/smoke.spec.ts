@@ -193,6 +193,25 @@ test("booking terms stay in-flow and mobile modal does not overflow or trigger t
   }
 });
 
+test("keyboard focus stays inside the booking dialog in both directions", async ({ page }) => {
+  await mockBookingFlow(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: /book a lesson/i }).first().click();
+  const dialog = page.getByRole("dialog", { name: /book a lesson/i });
+  await expect(dialog).toBeVisible();
+
+  // More presses than the dialog has stops, so the walk must wrap at least once.
+  for (const key of ["Tab", "Shift+Tab"]) {
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.press(key);
+      const inside = await page.evaluate(
+        () => !!document.activeElement?.closest('[role="dialog"]')
+      );
+      expect(inside, `${key} press ${i + 1} left the dialog`).toBe(true);
+    }
+  }
+});
+
 test("payment page exposes a tappable PayPal link and QR large enough to scan", async ({ page }) => {
   await page.goto("/pay");
 
