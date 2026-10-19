@@ -9,6 +9,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Next 16.4's `next dev` appends a generated block to AGENTS.md whenever it
+  // detects an AI coding agent. AGENTS.md here is curated by hand and kept in
+  // sync with CLAUDE.md and agent memory, so a tool must not rewrite it on every
+  // dev run. Version-matched Next docs remain at node_modules/next/dist/docs/.
+  agentRules: false,
   images: {
     formats: ["image/avif", "image/webp"],
   },
