@@ -158,6 +158,18 @@ Tonio reviews them. The audit evidence behind them is in
   block to the hand-maintained `AGENTS.md` every time an AI agent runs the dev server.
 - Details and the remaining dev-only ESLint advisories: `docs/DEPENDENCY_ADVISORIES.md`.
 
+### 3. `fix/lead-alerts` — Mario hears about every lead (2026-10-19)
+
+- Contact-form inquiries now email Mario (Reply-To is the student). Before this they only
+  appeared in `/admin`, while the form promised a reply within 24 hours.
+- Booking emails run in `after()` instead of a bare un-awaited promise that serverless could
+  freeze after the response. That email is Mario's only new-booking alert.
+- Fixed an HTML injection: the email wrapper put the heading (the student's name, on admin
+  notifications) into `<title>` unescaped, so a crafted booking name could inject a link into
+  Mario's inbox.
+- **After deploy:** the three inquiries already in production (newest 2026-10-18) were never
+  emailed. Read them in Admin -> Inquiries.
+
 ## Long-Term Reference
 
 - `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it
