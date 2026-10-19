@@ -152,6 +152,11 @@ record of what was done and as the procedure for any future environment.
 
 See `docs/specs/2026-10-19-lesson-outcome-nudge.md`. Do not mark done until each item is true.
 
+**Status 2026-10-19:** steps 1 to 3 are done. The secret is set (Production only, Sensitive)
+and production was redeployed. `vercel crons ls` lists `/api/cron/lesson-outcomes` at
+`0 13 * * *` next to the review cron. The request without the bearer returns 401. Steps 4 to 7
+are open.
+
 1. Generate a secret (`openssl rand -base64 32`) and set `LESSON_OUTCOME_SECRET` in Vercel
    Production only. Redeploy.
 2. Confirm Vercel's Cron Jobs tab lists `/api/cron/lesson-outcomes` at `0 13 * * *` next to

@@ -51,9 +51,10 @@ tested but unproven in production.
 **Update 2026-10-19.** Still unproven. Aggregate counts on 2026-10-18: 8
 bookings, 1 ever confirmed, 0 review requests sent. PR #18 adds a morning email
 that gives Mario one-tap Lesson happened / No-show / Didn't happen links for
-recent pending lessons, so they get recorded without opening Admin. It stays
-off until `LESSON_OUTCOME_SECRET` is set in Vercel Production; see the Lesson
-Outcome Nudge section of `docs/RELEASE_CHECKLIST.md`.
+recent pending lessons, so they get recorded without opening Admin.
+`LESSON_OUTCOME_SECRET` was set in Vercel Production later on 2026-10-19, so it
+is on. The test with a test booking is still open; see the Lesson Outcome Nudge
+section of `docs/RELEASE_CHECKLIST.md`.
 
 Owner: Mario for confirming bookings, Tonio for watching the first live pass.
 

@@ -8,7 +8,9 @@ should stay in `/admin/roadmap`.
 - **As of 2026-10-19:** the October round (PRs #12 to #19) is merged; see "October 2026 Audit
   Round" below. The binding constraint has not moved: of 8 bookings only 1 was ever confirmed,
   and no review request has been sent (aggregate counts, 2026-10-18). #18's morning outcome
-  digest targets exactly that, once `LESSON_OUTCOME_SECRET` is set.
+  digest targets exactly that. `LESSON_OUTCOME_SECRET` was set in Production later on
+  2026-10-19, so the digest is on; it sends only when a site-booked lesson from the last three
+  days is still pending.
 - **As of 2026-08-12:** everything through PR #10 is merged and deployed to production. There
   is no code in flight. What remains is the manual gate list below, Mario's blocked inputs, and
   round 2. The binding constraint is not code: no booking has been created since 2026-07-28 and
@@ -272,7 +274,8 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
 - **Icons:** `favicon.ico` and the Apple touch icon (`node scripts/generate-icons.mjs`).
 - **Not done here:**
   - The hero photo is only 828px wide; it needs a 2000px+ original from DeMario.
-  - `www` -> apex returns 307. Set a permanent (308) redirect in Vercel Domains.
+  - `www` -> apex returned 307. Done outside the code on 2026-10-19: `www` is now a 308
+    redirect in Vercel Domains.
   - No CSP, and HSTS lacks `includeSubDomains`. Both need their own tested branch, because a
     CSP has to allow Next's inline scripts, Vercel Analytics, and Sentry.
   - `tel:` links have no `+1`; US numbers dial fine, so they were left alone.
@@ -326,8 +329,9 @@ Origination Rule).
   alert instead of raw JSON, and tokens are shape-checked before use.
 - `dateInTimeZone` replaces three identical private copies (availability, the booking day
   list, and Admin's today).
-- **Inert until** `LESSON_OUTCOME_SECRET` is set in Vercel Production. See the new section of
-  `docs/RELEASE_CHECKLIST.md`.
+- **Live since 2026-10-19:** `LESSON_OUTCOME_SECRET` is set in Vercel Production. Steps 4 to 7
+  of the Lesson Outcome Nudge section of `docs/RELEASE_CHECKLIST.md`, a test booking through
+  the digest, are still open.
 - **Open for DeMario:** is the digest time right (13:00 UTC: 8 AM Central now, 7 AM after
   daylight saving ends) with three reminders, and does "Didn't happen" fit how he moves
   lessons by text?

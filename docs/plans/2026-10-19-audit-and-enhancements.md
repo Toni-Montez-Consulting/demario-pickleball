@@ -145,19 +145,37 @@ Also done on 2026-10-19: Supabase `rls_auto_enable()` no longer grants `EXECUTE`
 which clears two advisor warnings. A probe table created afterwards still got RLS from the
 `ensure_rls` trigger.
 
+**Vercel follow-ups, done later on 2026-10-19** from Tonio's Vercel CLI, on
+`tonimontezco/demario-pickleball`:
+- `LESSON_OUTCOME_SECRET` is set for Production only, as Sensitive. The value came from
+  `openssl rand -base64 32`, piped on stdin, and was never printed.
+- `www.demariomontezpb.com` is on the project as a 308 redirect to `demariomontezpb.com`. It
+  went in through the project-domains API, because `vercel domains add` has no redirect
+  option.
+- Git is reconnected; see `docs/SETUP.md` section 8.
+- Production was rebuilt with `vercel redeploy` as `dpl_CWMa9KsvXuLGASy9VVe6xk1vt1LQ`. It is
+  the same commit, `3aabb05`; everything merged after it is docs only.
+
+Checked after the redeploy, at about 20:42 UTC:
+- A made-up outcome link reads "This link isn't valid". Before, it read "Lesson outcome links
+  aren't set up yet", so the running build has the secret.
+- `www` answered 307 before. Now `https://www.demariomontezpb.com/pay?x=1` answers 308 to
+  `https://demariomontezpb.com/pay?x=1`.
+- `GET /api/cron/lesson-outcomes` without auth returns 401, and `vercel crons ls` lists both
+  crons.
+- `/`, `/privacy`, `/pay`, and `/sitemap.xml` return 200, and Vercel shows no runtime errors.
+
 For Tonio:
-- Vercel: reconnect Git. Pushes to `master` stopped deploying when the project moved to the
-  Toni Montez Co team, so this round was deployed by hand. Steps: `docs/SETUP.md` section 8.
-- Vercel: confirm Web Analytics is enabled. The analytics API answers "not found" for this
-  project.
-- Vercel: set `LESSON_OUTCOME_SECRET` (Production only) and redeploy. The token used on
-  2026-10-19 could deploy but could not write production env vars or domains.
-- Vercel: add `www.demariomontezpb.com` to the project as a redirect to `demariomontezpb.com`
-  with status 308. `www` is not attached to any project, and Vercel's fallback answers 307.
+- Vercel: confirm Web Analytics is enabled (Vercel -> Analytics -> this project -> Enable). At
+  20:43 UTC the analytics API still answered "Web Analytics not found". The script route proves
+  nothing: `/_vercel/insights/script.js` answers 200, but so does
+  `/_vercel/speed-insights/script.js`, and the site does not load Speed Insights. Vercel adds
+  the analytics routes with the next deployment after enabling.
 - Supabase: turn on leaked password protection in the Auth settings; the Pro plan includes it.
+  The security advisor still flagged it at 20:43 UTC.
 - Supabase: drop the empty table `public.zz_rls_probe_20261019`, left by the check above. The
   agent's tool needs a person to confirm a drop. RLS is on with no policies, so nothing can use
-  it meanwhile.
+  it meanwhile. It was still there, with 0 rows, at 20:43 UTC.
 - Read the three inquiries already in Admin; the newest is 2026-10-18.
 - Later, on a separate tested branch: a CSP, and HSTS `includeSubDomains`.
 - **Waiver version.**
