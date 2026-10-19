@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendInquiryNotificationEmail } from "@/lib/email/client";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -58,5 +59,16 @@ export async function POST(req: NextRequest) {
     console.error("[inquiries POST]", error);
     return NextResponse.json({ error: "Failed to send message. Please try again." }, { status: 500 });
   }
+
+  // Inquiries used to land only in /admin, which nobody was watching. Email
+  // Mario after the response so a slow send never holds up the student.
+  after(() =>
+    sendInquiryNotificationEmail({
+      name: data.name,
+      email: data.email,
+      message: data.message,
+    }).catch((err) => console.error("[inquiries POST] notification failed", err))
+  );
+
   return NextResponse.json(data, { status: 201 });
 }

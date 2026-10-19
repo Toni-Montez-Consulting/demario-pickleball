@@ -103,6 +103,35 @@ export function adminNotificationHtml(booking: IcsBooking): string {
   );
 }
 
+export function inquiryNotificationHtml({
+  name,
+  email,
+  message,
+}: {
+  name: string;
+  email: string;
+  message: string;
+}): string {
+  const first = name.trim().split(/\s+/)[0] || "them";
+  return wrap(
+    `
+    <h1 style="font-size:20px;margin:0 0 12px;">New message from the site</h1>
+    <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px;">
+      <tr><td style="padding:6px 0;color:#777;">From</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(name)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#777;">Email</td><td style="padding:6px 0;text-align:right;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
+    </table>
+    <div style="background:#f5f5f5;border-radius:8px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(message)}</div>
+    <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">
+      Reply to this email to answer ${escapeHtml(first)} directly. The contact form promises a reply within 24 hours.
+    </p>
+    <p style="margin:20px 0 0;">
+      <a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open admin dashboard</a>
+    </p>
+    `,
+    `New message — ${name}`
+  );
+}
+
 export function studentCancelledHtml(booking: IcsBooking): string {
   const lesson = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
   return wrap(

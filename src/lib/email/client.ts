@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { generateIcs, type IcsBooking, type IcsMethod } from "./ics";
-import { studentRequestedHtml, adminNotificationHtml, studentCancelledHtml, feedbackNotificationHtml, reviewRequestHtml } from "./templates";
+import { studentRequestedHtml, adminNotificationHtml, studentCancelledHtml, feedbackNotificationHtml, reviewRequestHtml, inquiryNotificationHtml } from "./templates";
 
 function getResend(): Resend | null {
   const key = process.env.RESEND_API_KEY;
@@ -61,6 +61,36 @@ export async function sendBookingCreatedEmails(booking: IcsBooking): Promise<voi
   });
   if (adminResult.error) {
     console.error("[email] admin notification failed", adminResult.error);
+  }
+}
+
+/**
+ * Tells Mario a contact-form message arrived. Before this, inquiries only
+ * appeared in /admin, which Mario rarely opens, while the form promised a
+ * reply within 24 hours. Reply-To is the student, so answering is one tap.
+ */
+export async function sendInquiryNotificationEmail(inquiry: {
+  name: string;
+  email: string;
+  message: string;
+}): Promise<void> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping inquiry notification");
+    return;
+  }
+  // The name is free text from a public form. Keep it to one line so it cannot
+  // add lines to the subject header.
+  const sender = inquiry.name.replace(/[\r\n]+/g, " ").trim();
+  const result = await resend.emails.send({
+    from: emailFrom(),
+    to: adminEmail(),
+    subject: `New message — ${sender}`,
+    html: inquiryNotificationHtml(inquiry),
+    replyTo: inquiry.email,
+  });
+  if (result.error) {
+    console.error("[email] inquiry notification failed", result.error);
   }
 }
 

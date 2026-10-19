@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { adminNotificationHtml, studentRequestedHtml, reviewRequestHtml } from "./templates";
+import {
+  adminNotificationHtml,
+  studentRequestedHtml,
+  reviewRequestHtml,
+  inquiryNotificationHtml,
+} from "./templates";
 
 const booking = {
   id: "12345678-1234-1234-1234-123456789abc",
@@ -73,5 +78,31 @@ describe("reviewRequestHtml", () => {
       reviewUrl: "https://example.com/review/x",
     });
     expect(html).toContain("How was it, there?");
+  });
+});
+
+describe("inquiryNotificationHtml", () => {
+  it("shows who wrote, how to reach them, and what they asked", () => {
+    const html = inquiryNotificationHtml({
+      name: "Jane Student",
+      email: "jane@example.com",
+      message: "Do you have clinics this weekend?",
+    });
+    expect(html).toContain("Jane Student");
+    expect(html).toContain('href="mailto:jane@example.com"');
+    expect(html).toContain("Do you have clinics this weekend?");
+    expect(html).toContain("Reply to this email to answer Jane directly");
+    expect(html).toContain("/admin");
+  });
+
+  it("escapes markup a stranger typed into the public form", () => {
+    const html = inquiryNotificationHtml({
+      name: '<img src=x onerror="alert(1)">',
+      email: "jane@example.com",
+      message: "<script>alert(1)</script>",
+    });
+    expect(html).not.toContain("<script>");
+    expect(html).not.toContain("<img");
+    expect(html).toContain("&lt;script&gt;");
   });
 });
