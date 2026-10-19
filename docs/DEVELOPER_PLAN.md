@@ -218,6 +218,27 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
 - **Before relying on it:** open Vercel -> Analytics and confirm Web Analytics is enabled. The
   query API said "not found" for this project on 2026-10-19.
 
+### 6. `feat/lesson-outcome-nudge` — make the review loop run (2026-10-19)
+
+Spec: `docs/specs/2026-10-19-lesson-outcome-nudge.md` (written first, per the Interface
+Origination Rule).
+
+- Daily cron `/api/cron/lesson-outcomes` at 13:00 UTC emails Mario one digest of site-booked
+  lessons from the last three Central days that are still `pending`. It sends nothing when
+  nothing is pending.
+- Each lesson has three signed links: Lesson happened, No-show, and Didn't happen. A link opens
+  `/lesson-outcome/[token]`. Only that page's button (a POST) changes anything, and only from
+  `pending`. Tokens are HMAC-SHA256 with a dedicated secret and expire after 14 days. A replay
+  is a no-op.
+- This deliberately bypasses admin MFA for one narrow transition. The spec's limitations check
+  records why and how it is bounded.
+- Admin gets a **Needs outcome** filter (pending, lesson date passed).
+- `dateInTimeZone` replaces three identical private copies.
+- **Inert until** `LESSON_OUTCOME_SECRET` is set in Vercel Production. See the new section of
+  `docs/RELEASE_CHECKLIST.md`.
+- **Open for DeMario:** is 8 AM and three reminders right, and does "Didn't happen" fit how he
+  moves lessons by text?
+
 ## Long-Term Reference
 
 - `RATE_LIMIT_SALT` salts both rate-limit IP hashes and review link tokens. Changing it

@@ -146,3 +146,21 @@ record of what was done and as the procedure for any future environment.
 12. Publish it. Confirm it appears on the homepage.
 13. Hide it again and confirm it disappears from the homepage.
 14. Leave `NEXT_PUBLIC_GOOGLE_REVIEW_URL` unset until DeMario has a Google Business Profile.
+
+
+## Lesson Outcome Nudge (added 2026-10-19)
+
+See `docs/specs/2026-10-19-lesson-outcome-nudge.md`. Do not mark done until each item is true.
+
+1. Generate a secret (`openssl rand -base64 32`) and set `LESSON_OUTCOME_SECRET` in Vercel
+   Production only. Redeploy.
+2. Confirm Vercel's Cron Jobs tab lists `/api/cron/lesson-outcomes` at `0 13 * * *` next to
+   the review-request cron.
+3. Confirm `GET /api/cron/lesson-outcomes` without the bearer returns 401 in production.
+4. With a test booking dated yesterday and still `pending`, trigger the cron from the
+   dashboard. Confirm one digest reaches Mario with three buttons.
+5. Open a button and confirm the page records nothing until its button is tapped. Tap it and
+   confirm the booking changes in Admin and the page then reads "Recorded".
+6. Re-open the same link and the other two links for that lesson. All read "Recorded" and
+   change nothing.
+7. Delete or cancel the test booking.

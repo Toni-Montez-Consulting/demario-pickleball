@@ -18,6 +18,11 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
 
 ## Daily
 
+- **Morning email "Did this lesson happen?"** arrives the morning after a lesson booked through
+  the site. Tap **Lesson happened**, **No-show**, or **Didn't happen** for each lesson, then
+  confirm on the page that opens. "Lesson happened" is what lets the site ask the student for
+  a review. Nothing is sent to the student for the other two. Each lesson drops off after
+  three mornings; older ones are under **Needs outcome** in `/admin`.
 - Open `/admin` and review new bookings.
 - Text each new student using the phone number in the booking row.
 - Confirm the exact court, any court reservation fee, and payment expectation.

@@ -102,7 +102,7 @@ request later that day or the next.
   <h1>Did Jane S.'s lesson happen?</h1>
   <dl class="outcome-facts">
     <div><dt>Lesson</dt><dd>Foundations</dd></div>
-    <div><dt>When</dt><dd>Sat, Oct 18 · 9:00 AM CT</dd></div>
+    <div><dt>When</dt><dd>Sun, Oct 18 · 9:00 AM CT</dd></div>
   </dl>
   <form method="post" action="/api/lesson-outcome">
     <input type="hidden" name="token" value="…" />
