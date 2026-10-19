@@ -18,6 +18,8 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); }
+/* In-page links (#lessons, #about, #contact) land below the sticky nav. */
+html { scroll-padding-top: 72px; }
 body {
   font-family: var(--font-inter), system-ui, sans-serif;
   font-feature-settings: "ss01", "cv11";
@@ -45,7 +47,12 @@ img { display: block; max-width: 100%; }
   background: var(--bg);
   min-height: 100vh;
   position: relative;
+  /* clip, not hidden. overflow: hidden made .device the scroll container for
+     the sticky nav, and .device never scrolls, so the nav scrolled away with
+     the page. clip trims overflow the same way without becoming a scroll
+     container. hidden stays first as the fallback for Safari before 16. */
   overflow: hidden;
+  overflow: clip;
   box-shadow: 0 40px 120px -20px rgba(0,0,0,0.6);
 }
 
