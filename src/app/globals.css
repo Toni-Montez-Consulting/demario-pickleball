@@ -206,6 +206,11 @@ h1.hero-title .italic {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* A 320px screen leaves each column 92px, too narrow for the longer labels.
+   Wrap them there rather than cut a claim off mid-word. */
+@media (max-width: 359px) {
+  .hero-stat .label { white-space: normal; }
+}
 
 /* ====== TRUST BAR ====== */
 .trust {
@@ -242,8 +247,9 @@ h1.hero-title .italic {
 a.trust-chip { transition: border-color 0.2s; }
 a.trust-chip:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--line)); }
 /* The strip scrolls, so it clips anything outside its 4px padding. The global
-   3px offset plus a 2px ring would lose the ring's outer edge. */
-a.trust-chip:focus-visible { outline-offset: 1px; }
+   3px offset plus a 2px ring would lose the ring's outer edge, and the global
+   4px radius would square off the chip while it has focus. */
+a.trust-chip:focus-visible { outline-offset: 1px; border-radius: 12px; }
 
 /* ====== SECTION ====== */
 section.block { padding: 64px 22px; position: relative; }
@@ -1547,6 +1553,9 @@ footer .contact-line a:hover { color: var(--fg); }
   .final-cta { padding: 80px 48px 140px; }
   footer { padding: 36px 48px 80px; }
   .trust { padding: 20px 32px; }
+  /* The strip's scrollbar is hidden and a mouse wheel scrolls vertically, so
+     chips past the edge were unreachable on desktop. Show them all instead. */
+  .trust-marquee { flex-wrap: wrap; justify-content: center; row-gap: 12px; }
 
   .hero { min-height: 640px; padding: 80px 48px 48px; }
   .hero-content { margin-top: 260px; max-width: 560px; }
