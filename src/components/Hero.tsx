@@ -11,14 +11,18 @@ export default function Hero({ onOpenBooking }: HeroProps) {
     <section className="hero" id="hero">
       {/* Served through next/image so it gets avif/webp. As a CSS background it
           skipped the optimiser entirely, and it is the LCP candidate. Decorative,
-          so alt is empty — the headline carries the meaning. */}
+          so alt is empty — the headline carries the meaning. Next 16 deprecated
+          `priority`, which only preloads; its docs recommend eager loading plus
+          fetchPriority="high" for the LCP image instead. The hero spans the
+          page canvas: full width to 430px, then 900px, then 1100px. */}
       <div className="hero-bg">
         <Image
           src="/img/hero-ready.jpg"
           alt=""
           fill
-          priority
-          sizes="100vw"
+          loading="eager"
+          fetchPriority="high"
+          sizes="(min-width: 1100px) 1100px, (min-width: 900px) 900px, (min-width: 768px) 100vw, (min-width: 430px) 430px, 100vw"
           className="hero-bg-img"
         />
       </div>

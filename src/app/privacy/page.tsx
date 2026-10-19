@@ -1,11 +1,20 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/metadata";
+
+export const metadata = pageMetadata({
+  path: "/privacy",
+  title: "Privacy Policy · DeMario Montez Pickleball",
+  description:
+    "How DeMario Montez Pickleball Coaching collects, uses, and protects booking details, including the Google Calendar availability check.",
+});
 
 export default function PrivacyPage() {
   return (
     <div className="legal-bg">
-      <div className="legal-page">
+      <main className="legal-page">
         <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Privacy Policy</h1>
+        {/* Editing this page? Bump its date in LEGAL_LAST_MODIFIED (src/app/sitemap.ts). */}
         <p className="legal-date">Effective April 27, 2026</p>
 
         <h2>What we collect</h2>
@@ -90,7 +99,7 @@ export default function PrivacyPage() {
           <a href="mailto:demariomontez10@gmail.com">demariomontez10@gmail.com</a> or call{" "}
           <a href="tel:4693719220">(469) 371-9220</a>.
         </p>
-      </div>
+      </main>
     </div>
   );
 }

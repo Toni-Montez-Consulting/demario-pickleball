@@ -18,6 +18,8 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); }
+/* In-page links (#lessons, #about, #contact) land below the sticky nav. */
+html { scroll-padding-top: 72px; }
 body {
   font-family: var(--font-inter), system-ui, sans-serif;
   font-feature-settings: "ss01", "cv11";
@@ -45,7 +47,12 @@ img { display: block; max-width: 100%; }
   background: var(--bg);
   min-height: 100vh;
   position: relative;
+  /* clip, not hidden. overflow: hidden made .device the scroll container for
+     the sticky nav, and .device never scrolls, so the nav scrolled away with
+     the page. clip trims overflow the same way without becoming a scroll
+     container. hidden stays first as the fallback for Safari before 16. */
   overflow: hidden;
+  overflow: clip;
   box-shadow: 0 40px 120px -20px rgba(0,0,0,0.6);
 }
 
@@ -377,14 +384,28 @@ section.block { padding: 64px 22px; position: relative; }
 }
 
 .review-pager {
-  display: flex; gap: 6px; margin-top: 18px; justify-content: center;
+  /* 7.5px + the bars' 10.5px offset inside each button keeps them where an
+     18px margin put them before the tap targets grew. */
+  display: flex; gap: 6px; margin-top: 7.5px; justify-content: center;
 }
+/* Each button is a 24px-tall tap target (WCAG 2.5.8); before, it was the 3px
+   bar. The bar is drawn by ::before so it keeps its rounded ends. */
 .review-pager button {
-  width: 20px; height: 3px; border-radius: 2px;
-  background: var(--line);
-  transition: background .2s, width .2s;
+  position: relative;
+  width: 20px; height: 24px;
+  padding: 0;
+  transition: width .2s;
 }
-.review-pager button.active { background: var(--accent); width: 34px; }
+.review-pager button::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 10.5px;
+  height: 3px; border-radius: 2px;
+  background-color: var(--line);
+  transition: background-color .2s;
+}
+.review-pager button.active { width: 34px; }
+.review-pager button.active::before { background-color: var(--accent); }
 .proof-panel {
   display: flex;
   flex-direction: column;
@@ -1742,7 +1763,8 @@ footer .contact-line a:hover { color: var(--fg); }
   gap: 8px;
   align-items: center;
 }
-.footer-legal a { color: inherit; transition: color 0.15s; }
+/* 24px tall tap targets (WCAG 2.5.8); the text alone was 17px. */
+.footer-legal a { color: inherit; transition: color 0.15s; display: inline-flex; align-items: center; min-height: 24px; }
 .footer-legal a:hover { color: var(--fg); }
 .legal-sep { opacity: 0.5; }
 
@@ -2453,8 +2475,14 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
 .cookie-btn { white-space: nowrap; padding: 10px 18px; font-size: 13px; flex-shrink: 0; }
 
 @media (max-width: 767px) {
+  /* In the page under the nav, so it scrolls away with the hero. Fixed, it
+     covered 72px of every screen until dismissed. Below the nav's z-index so
+     it slides under the sticky nav rather than over it. */
   .cookie-banner {
-    top: 56px;
+    position: absolute;
+    z-index: 35;
+    /* Clears the 65px nav with a small gap. */
+    top: 72px;
     bottom: auto;
     left: 10px;
     right: 10px;
@@ -2476,6 +2504,11 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
 @media (min-width: 768px) {
   .contact-section { padding: 80px 48px; }
   .cookie-banner { padding: 14px 32px; }
+  /* The notice is one row here, at most ~68px tall. Lift the sticky Book button
+     above it until it is dismissed instead of covering its text. */
+  body:has(.cookie-banner) .sticky-cta {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (min-width: 1100px) {
@@ -2852,7 +2885,7 @@ textarea.modal-input { resize: vertical; min-height: 100px; }
   align-items: baseline;
   margin-bottom: 8px;
 }
-.pay-options-header h4 {
+.pay-options-header :is(h2, h4) {
   margin: 0;
   font-family: var(--font-space-grotesk), var(--font-inter), sans-serif;
   font-size: 15px;

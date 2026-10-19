@@ -193,6 +193,37 @@ test("booking terms stay in-flow and mobile modal does not overflow or trigger t
   }
 });
 
+test("keyboard focus stays inside the booking dialog in both directions", async ({ page }) => {
+  await mockBookingFlow(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: /book a lesson/i }).first().click();
+  const dialog = page.getByRole("dialog", { name: /book a lesson/i });
+  await expect(dialog).toBeVisible();
+
+  // More presses than the dialog has stops, so the walk must wrap at least once.
+  for (const key of ["Tab", "Shift+Tab"]) {
+    let previous: string | undefined;
+    const visited = new Set<string>();
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.press(key);
+      const focus = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        if (!el) return { inside: false, id: "" };
+        // Tag each element once so the test can tell whether focus moved.
+        el.dataset.focusProbe ??= String(document.querySelectorAll("[data-focus-probe]").length);
+        return { inside: !!el.closest('[role="dialog"]'), id: el.dataset.focusProbe };
+      });
+      expect(focus.inside, `${key} press ${i + 1} left the dialog`).toBe(true);
+      // Focus stranded on one control stays "inside" but is just as broken. The
+      // old Shift+Tab bug did exactly that.
+      expect(focus.id, `${key} press ${i + 1} did not move focus`).not.toBe(previous);
+      previous = focus.id;
+      visited.add(focus.id);
+    }
+    expect(visited.size, `${key} reached too few controls`).toBeGreaterThan(2);
+  }
+});
+
 test("payment page exposes a tappable PayPal link and QR large enough to scan", async ({ page }) => {
   await page.goto("/pay");
 

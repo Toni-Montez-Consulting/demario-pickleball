@@ -15,8 +15,16 @@ export default function StickyCta({ onOpenBooking }: StickyCtaProps) {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
+  // Hidden near the top of the page, where it is only transparent. inert takes
+  // its controls out of the tab order and the accessibility tree until it
+  // shows, so focus never lands on an invisible button.
   return (
-    <div className={`sticky-cta${shown ? " shown" : ""}`}>
+    <div
+      className={`sticky-cta${shown ? " shown" : ""}`}
+      role="region"
+      aria-label="Book or call DeMario"
+      inert={!shown}
+    >
       <button type="button" className="book" onClick={onOpenBooking}>
         Book a lesson
         <svg

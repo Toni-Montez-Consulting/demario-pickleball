@@ -1,11 +1,14 @@
-import type { Metadata } from "next";
 import ReviewForm from "@/components/ReviewForm";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+// DeMario texts this link to past students, so it must preview as itself
+// rather than inherit the homepage's title.
+export const metadata = pageMetadata({
+  path: "/review",
   title: "Leave a review · DeMario Montez Pickleball",
   description: "Share your experience training with DeMario Montez.",
-  robots: { index: false, follow: false },
-};
+  index: false,
+});
 
 /**
  * The link Mario shares with past clients who never booked through the site.
