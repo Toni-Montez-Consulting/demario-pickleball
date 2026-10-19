@@ -32,13 +32,23 @@ export const metadata: Metadata = {
     url: SITE_URL,
     title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
     description: SITE_DESCRIPTION,
-    images: [{ url: "/img/hero-ready.jpg", width: 828, height: 1099, alt: "DeMario Montez on the pickleball court" }],
+    // 1200x630 card made by scripts/generate-og-image.mjs. The portrait hero
+    // photo used before was cropped or shrunk by iMessage, WhatsApp, and
+    // Facebook, which is where students share coaches with each other.
+    images: [
+      {
+        url: "/img/og-card.jpg",
+        width: 1200,
+        height: 630,
+        alt: "DeMario Montez, pickleball coach in Dallas–Fort Worth: 4.97 doubles DUPR, top 1% worldwide, top 40 in DFW",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "DeMario Montez — Pickleball Coach · Dallas–Fort Worth",
     description: SITE_DESCRIPTION,
-    images: ["/img/hero-ready.jpg"],
+    images: ["/img/og-card.jpg"],
   },
 };
 
