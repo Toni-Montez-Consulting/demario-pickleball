@@ -178,7 +178,6 @@ Then, the same evening:
 
 For Tonio:
 - Read the three inquiries already in Admin; the newest is 2026-10-18.
-- Later, on a separate tested branch: a CSP, and HSTS `includeSubDomains`.
 - **Waiver version.**
   - On 2026-04-28 the liability release changed: it now names "host venues, and court
     providers" instead of Dallas Indoor. A court-fee clause was also added.

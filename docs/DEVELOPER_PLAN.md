@@ -273,8 +273,10 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
   - The hero photo is only 828px wide; it needs a 2000px+ original from DeMario.
   - `www` -> apex returned 307. Done outside the code on 2026-10-19: `www` is now a 308
     redirect in Vercel Domains.
-  - No CSP, and HSTS lacks `includeSubDomains`. Both need their own tested branch, because a
-    CSP has to allow Next's inline scripts, Vercel Analytics, and Sentry.
+  - CSP and HSTS `includeSubDomains` came later, on their own tested branch
+    (`fix/security-headers`); see `src/lib/security-headers.ts`. The policy allows inline
+    scripts because Next's App Router writes page data inline; nonces would force every page
+    to render on demand and lose the CDN cache.
   - `tel:` links have no `+1`; US numbers dial fine, so they were left alone.
   - JSON-LD says Farmers Branch while the footer says Dallas. Mario should pick the address
     for local search.

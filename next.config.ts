@@ -1,12 +1,6 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs/config";
-
-const securityHeaders = [
-  { key: "X-Frame-Options", value: "DENY" },
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-];
+import { buildSecurityHeaders } from "./src/lib/security-headers";
 
 const nextConfig: NextConfig = {
   // Next 16.4's `next dev` appends a generated block to AGENTS.md whenever it
@@ -17,11 +11,17 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  // Built when the server or build starts, so an env change needs a redeploy.
   async headers() {
     return [
       {
         source: "/(.*)",
-        headers: securityHeaders,
+        headers: buildSecurityHeaders({
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+          isDev: process.env.NODE_ENV === "development",
+          isPreview: process.env.VERCEL_ENV === "preview",
+        }),
       },
     ];
   },
