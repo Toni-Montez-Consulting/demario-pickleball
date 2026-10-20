@@ -137,16 +137,13 @@ and still named migrations that shipped on 2026-07-28 and 2026-08-02.
   `scripts/backfill-students.mjs` ran: 5 bookings, 3 students, 0 unmatched.
 - 15 active time slots are configured.
 
+**Verified 2026-10-19, so off this list:** anonymous access is blocked, both crons are
+registered, and Google Calendar blocking works without a new token. Evidence:
+`docs/LAUNCH_OUTSTANDING.md`, "Verified 2026-10-19".
+
 **Still open.**
 
-- Verify anon users cannot read or write `bookings`, `inquiries`, or `rate_limit_events`.
-  The policies are in place; proving it needs a real anon-key request, not a query.
-- Confirm both crons (review requests at 15:00 UTC, lesson outcomes at 13:00 UTC) appear in the
-  project's Cron Jobs tab. `CRON_SECRET` is set: on 2026-10-19 an unauthenticated request
-  returned 401, and the route returns 500 when the secret is missing.
 - Run the live manual checks in `docs/RELEASE_CHECKLIST.md`, including the new overlap check.
-- Generate a fresh production Google refresh token with DeMario and confirm Admin ->
-  Availability reports Google Calendar connected.
 - Submit one real review end to end and publish it from Admin -> Reviews. Blocked below.
 - Review `docs/ADMIN_HANDOFF.md` with DeMario.
 - Have Mario review `docs/MARIO_ACTION_PLAN.md` and complete the live Tasks list.
