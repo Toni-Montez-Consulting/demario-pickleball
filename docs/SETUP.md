@@ -278,6 +278,10 @@ curl -X POST "https://vowwokjesgdjridrikqp.supabase.co/auth/v1/invite" \
   -d '{"email":"newperson@email.com"}'
 
 # 3. They accept the invite email, set a password, then enroll MFA as above
+
+# Public sign-ups are off (2026-10-20). Step 2 uses the service-role admin API,
+# not public sign-up. If Supabase ever refuses the invite, turn "Allow new users
+# to sign up" on in Supabase Auth only for as long as the invite takes.
 ```
 
 ---
@@ -379,6 +383,8 @@ If two students try to book the same slot simultaneously, one gets a 409 error a
 ### Row Level Security
 
 All tables use RLS. Public browser reads use the anon key only for non-PII schedule data. Public form submissions go through Next.js API routes, which validate input and then use the service role from trusted server code. Admin routes require Supabase Auth, an allowed admin email, MFA, and then use the service role for data operations. The service role key is never exposed to the browser.
+
+Signed-in sessions have no table policies of their own, so a Supabase login by itself reads nothing through Supabase's API, even a real admin's before MFA. The only policies left are the three "Public select" ones for lesson times and blocked times. See `docs/supabase-service-role-only-migration.sql`, applied 2026-10-20. Public sign-ups are off in Supabase Auth, so new accounts only come from the admin invite in section 3.
 
 ### Abuse protection
 
