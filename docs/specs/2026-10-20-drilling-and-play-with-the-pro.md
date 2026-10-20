@@ -108,21 +108,25 @@ These show the format, length, group size, price per person, and total:
 invalid size or length instead of guessing. `src/lib/session-pricing.test.ts` checks every
 price, both size limits, and the drilling length rule.
 
-## 6. Decisions for Tonio
+## 6. Decisions
 
-1. **Group Clinic.** It is 90 minutes for 3 to 4 players at $50 each. A 90-minute drilling
-   session for the same group costs $35 or $30 each. Does drilling replace the clinic?
-   Recommendation: yes, retire Group Clinic so two offers do not compete. Confirm with DeMario.
-2. **Play with the Pro on the calendar.** Should it block 2 hours or 1? Recommendation: 2
-   hours, so nothing can be booked into the second hour. DeMario can release time by hand.
-3. **Who pays.** Recommendation: the person who books pays the group total, as the clinic works
+1. **Group Clinic. Open; Tonio is talking it through.** The clinic is 90 minutes for 3 to 4
+   players at $50 each. A 90-minute drilling session for the same group costs $35 or $30 each.
+   No one has booked Group Clinic through the site: all 8 bookings to 2026-10-20 were
+   Foundations. The options:
+   - Retire the clinic.
+   - Keep it as something clearly different at its own price.
+   - Ask DeMario which he meant.
+2. **Play with the Pro blocks 1 hour (Tonio, 2026-10-20).** A student choosing the length would
+   always pick 2 hours, since the price is the same. When a group plays longer, DeMario extends
+   the event on his Google Calendar or blocks the time in Admin. The site's calendar check then
+   keeps that time from being booked.
+3. **The person who books pays the group total (Tonio, 2026-10-20).** This matches the clinic
    today. The confirmation and `/pay` show the total.
-4. **Waiver for the rest of the group.** Today only the person booking accepts the coaching
-   terms. Groups of up to 8 widen that gap. Recommendation: launch on the clinic's precedent,
-   and add this to the open waiver-version question for whoever advises on the waiver.
-5. **Descriptions.** Each format needs one line saying what a session looks like, and what
-   separates a one-player drilling session ($60) from Foundations ($70). DeMario writes them,
-   or Claude drafts and DeMario approves.
+4. **Launch on the clinic's waiver precedent (Tonio, 2026-10-20).** Only the person booking
+   accepts the coaching terms. The wider gap for groups of up to 8 joins the open waiver-version
+   question for whoever advises on the waiver.
+5. **Claude drafts the descriptions and DeMario approves them (Tonio, 2026-10-20).**
 
 ## 7. Verification plan
 
