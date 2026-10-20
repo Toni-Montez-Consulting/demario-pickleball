@@ -276,7 +276,10 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
   - CSP and HSTS `includeSubDomains` came later, on their own tested branch
     (`fix/security-headers`); see `src/lib/security-headers.ts`. The policy allows inline
     scripts because Next's App Router writes page data inline; nonces would force every page
-    to render on demand and lose the CDN cache.
+    to render on demand and lose the CDN cache. The Playwright test runs against `next dev`,
+    so it exercises the development policy; unit tests pin the production directives, and the
+    live site got a browser pass after the deploy. The Vercel Toolbar's sources are allowed
+    on previews only, so the toolbar does not load on production for team members either.
   - `tel:` links have no `+1`; US numbers dial fine, so they were left alone.
   - JSON-LD says Farmers Branch while the footer says Dallas. Mario should pick the address
     for local search.

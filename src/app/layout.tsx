@@ -3,15 +3,9 @@ import { preload } from "react-dom";
 import SiteAnalytics from "@/components/SiteAnalytics";
 import { SITE_URL } from "@/lib/site";
 import { OG_IMAGE, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/metadata";
+import { PRELOADED_FONTS } from "@/lib/fonts";
 import "./fonts.css";
 import "./globals.css";
-
-// The Latin subsets carry nearly all of the site's text. next/font preloaded
-// these two files before fonts.css replaced it, and the preload stays.
-const PRELOADED_FONTS = [
-  "/fonts/inter-latin.83afe278.woff2",
-  "/fonts/space-grotesk-latin.0c89a48f.woff2",
-];
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
