@@ -11,9 +11,11 @@
 -- same night.
 --
 -- RLS stays enabled on every table. With no policy for a role, that role sees
--- and changes nothing; the service role bypasses RLS. The "Public select"
--- policies on time_slots, blocked_slots, and recurring_blocks stay: the public
--- booking widget reads lesson times with the anon key (GET /api/time-slots).
+-- and changes nothing; the service role bypasses RLS. Three "Public select"
+-- policies stay. The one on time_slots is needed: the public booking widget
+-- reads lesson times with the anon key (GET /api/time-slots). The ones on
+-- blocked_slots and recurring_blocks are not used by the app, which reads both
+-- through the service role; those tables hold only dates and times.
 --
 -- Plain DROP POLICY on purpose: if a policy had been renamed, the statement
 -- would fail and the whole transaction roll back instead of leaving access.

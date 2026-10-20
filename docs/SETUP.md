@@ -63,7 +63,7 @@ They are also in `.env.local` for local development (not committed to git).
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ...` | Supabase public key (safe to expose) |
 | `SUPABASE_SERVICE_ROLE_KEY` | `eyJ...` | Supabase admin key (never expose publicly) |
 | `NEXT_PUBLIC_SITE_URL` | `https://demariomontezpb.com` | Used in emails and ICS files |
-| `ADMIN_EMAIL` | comma-separated list | Controls who can log into the admin panel |
+| `ADMIN_EMAIL` | comma-separated list | Controls who can log into the admin panel. The **first** address also receives every admin email: new bookings, new inquiries, and the morning lesson-outcome digest. Keep Mario's address first |
 | `RESEND_API_KEY` | `re_...` | Resend API key for sending emails |
 | `EMAIL_FROM` | `DeMario Pickleball <bookings@demariomontezpb.com>` | The "from" address on all emails |
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry DSN | Browser error monitoring |
@@ -384,7 +384,7 @@ If two students try to book the same slot simultaneously, one gets a 409 error a
 
 All tables use RLS. Public browser reads use the anon key only for non-PII schedule data. Public form submissions go through Next.js API routes, which validate input and then use the service role from trusted server code. Admin routes require Supabase Auth, an allowed admin email, MFA, and then use the service role for data operations. The service role key is never exposed to the browser.
 
-Signed-in sessions have no table policies of their own, so a Supabase login by itself reads nothing through Supabase's API, even a real admin's before MFA. The only policies left are the three "Public select" ones for lesson times and blocked times. See `docs/supabase-service-role-only-migration.sql`, applied 2026-10-20. Public sign-ups are off in Supabase Auth, so new accounts only come from the admin invite in section 3.
+Signed-in sessions have no table policies of their own, so a Supabase login by itself reads nothing through Supabase's API, even a real admin's before MFA. The only policies left are three "Public select" ones. The one on `time_slots` is needed: the booking widget reads lesson times with the anon key. The ones on `blocked_slots` and `recurring_blocks` are not used by the app, which reads both through the service role, and those tables hold only dates and times. See `docs/supabase-service-role-only-migration.sql`, applied 2026-10-20. Public sign-ups are off in Supabase Auth, so new accounts only come from the admin invite in section 3.
 
 ### Abuse protection
 
@@ -546,7 +546,7 @@ Reconciled against production on 2026-10-19. `docs/LAUNCH_OUTSTANDING.md` is the
 - [x] **Add time slots** — go to Admin → Availability → Settings: lesson times & blocked dates list → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists. 15 active slots (2026-10-19).
 - [x] **Confirm venue routing copy** — verify public courts book through the site and platform-required venues match `docs/VENUE_RULES.md`. Settled; see `docs/LAUNCH_OUTSTANDING.md`.
 - [ ] **Submit one live booking test** — confirm student/admin emails include phone and court preference, the calendar invite says Mario confirms the exact court, payment links work, and the test booking can be cancelled
-- [x] **Publish Google OAuth app to production** before leaving Google Calendar blocking enabled long-term (see Google Calendar blocking). Not checked in Google Cloud directly, but the 2026-04-28 token still worked on 2026-10-19, which a Testing-mode app's 7-day tokens could not.
+- [ ] **Publish Google OAuth app to production** before leaving Google Calendar blocking enabled long-term (see Google Calendar blocking). Inferred, not verified: the 2026-04-28 token still worked on 2026-10-19, which a Testing-mode app's 7-day tokens could not. Confirm the publishing status in Google Cloud before ticking this.
 - [x] **Generate a fresh DeMario Google OAuth refresh token** after publishing, then update Vercel and redeploy. Not needed: Google Calendar blocking works with the current token (2026-10-19).
 
 ---
