@@ -99,8 +99,8 @@ Findings fixed in `fix/a11y-perf-seo`:
 | "Head Pro at Dallas Indoor" | DeMario asked to remove it | Removed; the hero tag and About badge now read "Pickleball Coach" |
 | (not mentioned) | DeMario: pickleball instructor for Dallas ISD and the City of Carrollton | Added to the bio and trust strip |
 | (not mentioned) | TeachMe.To: speaks English and Spanish | Not added; Tonio left it off |
-| Instagram `@Alexanderiio` | Handle does not match his name | **Ask DeMario** |
-| Address Farmers Branch (JSON-LD, About) vs Dallas (footer) | — | **Ask DeMario which to use for local search** |
+| Instagram `@Alexanderiio` | Handle does not match his name | Updated to `@demario.montez` (DeMario, 2026-10-20) |
+| Address Farmers Branch (JSON-LD, About) vs Dallas (footer) | — | Dallas is the primary area, with DFW still listed (DeMario, 2026-10-20) |
 
 ## 6. Branches, in merge order
 
@@ -190,9 +190,14 @@ For Tonio:
   - Every booking since then records a version whose text the student did not see.
   - Decide with whoever advises on the waiver before changing either.
 
-For DeMario:
-- Instagram handle, and which address to use.
-- A 2000px+ hero photo (the current one is 828px wide).
-- Whether a 7–8 AM digest (13:00 UTC) and three reminders suit him, and how "Didn't happen"
-  fits lessons he moves by text.
-- Confirm or record the 3 past-dated pending bookings in Admin -> Needs outcome.
+For DeMario, answered 2026-10-20:
+- Instagram is `@demario.montez`, and Dallas is the primary area with DFW still listed. Both
+  are on the site.
+- Hero photo: two podium photos came in, 1600×1200 group shots. The hero item stays open.
+- The 8 AM digest and three reminders suit him. For a lesson moved by text, he marks the
+  original "Didn't happen" and books the new date as its own booking. "Didn't happen" never
+  sends a review request: the review cron only asks about confirmed lessons.
+- The four pending past lessons: May 22 didn't happen. July 25, August 26, and October 19
+  happened and were paid by PayPal. To be recorded in Admin.
+- Round 2 pricing arrived for drilling sessions and Play with the Pro. Google Business
+  Profile: not for now.

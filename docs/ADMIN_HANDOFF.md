@@ -26,6 +26,10 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
   ones are under **Needs outcome** in `/admin`: **Confirm** if it happened, **No show**, or
   **Didn't happen** (the Cancel button, renamed once a lesson has started, which emails no
   one).
+- **A lesson moved by text:** mark the original **Didn't happen**, then book the new date as
+  its own booking on the site, or have the student rebook. Each lesson keeps its own outcome.
+  Only **Lesson happened** asks the student for a review; **Didn't happen** and **No-show**
+  never do.
 - Open `/admin` and review new bookings.
 - Text each new student using the phone number in the booking row.
 - Confirm the exact court, any court reservation fee, and payment expectation.

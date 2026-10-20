@@ -50,28 +50,31 @@ const jsonLd = {
       image: `${SITE_URL}/img/hero-ready.jpg`,
       telephone: "+14693719220",
       email: "demariomontez10@gmail.com",
+      // Dallas is the primary area (DeMario, 2026-10-20); the wider metroplex stays listed.
       areaServed: [
         { "@type": "City", name: "Dallas" },
+        { "@type": "AdministrativeArea", name: "Dallas–Fort Worth metroplex" },
         { "@type": "City", name: "Fort Worth" },
         { "@type": "City", name: "Farmers Branch" },
         { "@type": "City", name: "Plano" },
       ],
       sameAs: [
-        "https://instagram.com/Alexanderiio",
+        "https://www.instagram.com/demario.montez/",
         "https://tiktok.com/@DemarioMontez",
         "https://facebook.com/demario.montez.9/",
       ],
       employee: { "@id": `${SITE_URL}/#coach` },
       address: {
         "@type": "PostalAddress",
-        addressLocality: "Farmers Branch",
+        addressLocality: "Dallas",
         addressRegion: "TX",
         addressCountry: "US",
       },
+      // Dallas city center. Lessons happen at courts across DFW, not at one address.
       geo: {
         "@type": "GeoCoordinates",
-        latitude: 32.9262,
-        longitude: -96.8892,
+        latitude: 32.7767,
+        longitude: -96.797,
       },
       priceRange: "$$",
       description:
@@ -85,7 +88,7 @@ const jsonLd = {
       telephone: "+14693719220",
       email: "demariomontez10@gmail.com",
       sameAs: [
-        "https://instagram.com/Alexanderiio",
+        "https://www.instagram.com/demario.montez/",
         "https://tiktok.com/@DemarioMontez",
         "https://facebook.com/demario.montez.9/",
       ],

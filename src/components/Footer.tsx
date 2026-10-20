@@ -26,7 +26,7 @@ export default function Footer() {
       </div>
       <div className="footer-social">
         <a
-          href="https://instagram.com/Alexanderiio"
+          href="https://www.instagram.com/demario.montez/"
           {...eventAttributes("outbound_click", { dest: "instagram" })}
           target="_blank"
           rel="noopener noreferrer"

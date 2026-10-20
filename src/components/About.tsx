@@ -38,7 +38,7 @@ export default function About() {
               <span className="dot" />
               Pickleball Coach
             </div>
-            <div className="mini-badge">Farmers Branch, TX</div>
+            <div className="mini-badge">Dallas, TX</div>
           </div>
         </div>
       </RevealWrapper>
