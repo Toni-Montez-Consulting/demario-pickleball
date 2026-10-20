@@ -186,10 +186,6 @@ For Tonio:
     2026".
   - Every booking since then records a version whose text the student did not see.
   - Decide with whoever advises on the waiver before changing either.
-- Recommended: self-host Inter and Space Grotesk with `next/font/local`. That ends the
-  intermittent `next dev` start-up failure caused by Google Fonts responses, which failed one
-  GitHub CI run on 2026-10-19 (#11; it passed on re-run). Keep today's per-subset
-  `unicode-range` split and check the typography renders the same.
 
 For DeMario:
 - Instagram handle, and which address to use.
