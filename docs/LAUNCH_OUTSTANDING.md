@@ -55,6 +55,26 @@ An unauthenticated request to either cron route returns 401 in production, and
 a route returns 500 instead when the secret is missing. `vercel crons ls` lists
 both: the lesson outcome digest at 13:00 UTC and review requests at 15:00 UTC.
 
+### Sign-ups off, and signed-in sessions locked down (2026-10-20)
+
+The evening checks found public sign-ups on in Supabase Auth. Every policy for
+signed-in sessions was also `using (true)`. Together, anyone could register and
+then read or change bookings and inquiries through Supabase's API. No one had:
+the only 5 accounts were the listed admins, all with MFA. Both were closed at
+00:32 to 00:33 UTC, after Tonio's go-ahead:
+
+- Sign-ups are off. `supabase config push` ran from a config declaring only
+  `[auth] enable_signup = false`, and `config diff` showed that single change
+  first. Supabase's public auth settings now report `disable_signup: true`, with
+  email login still on.
+- The nine signed-in-session policies are dropped
+  (`docs/supabase-service-role-only-migration.sql`). Only the three "Public
+  select" policies remain. A simulated signed-in session sees 0 rows in
+  `bookings`, `inquiries`, `admin_tasks`, `roadmap_checks`, and `students`.
+- The site is unaffected. Admin reads and writes through the service role. The
+  public lesson-times endpoint still returns all 15 slots, and anonymous reads
+  and writes are still blocked.
+
 ## Genuinely Open
 
 ### The review loop has never run in production

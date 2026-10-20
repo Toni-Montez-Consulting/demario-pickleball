@@ -175,6 +175,10 @@ Then, the same evening:
   Supabase connector's own confirmation could not be answered from this session, so the drop
   ran through the Supabase CLI (`supabase@2.120.0 db query --linked`) after Tonio approved the
   command. The other ten tables kept their row counts.
+- Public sign-ups were found on, with every signed-in-session policy `using (true)`. Both were
+  closed at 00:32 to 00:33 UTC on 2026-10-20, after Tonio's go-ahead; see
+  `docs/LAUNCH_OUTSTANDING.md`. The same night, #22 to #25 merged and deployed on their own
+  from Git: the CSP, the self-hosted fonts, the lockfile fix, and the evening-checks docs.
 
 For Tonio:
 - Read the three inquiries already in Admin; the newest is 2026-10-18.
