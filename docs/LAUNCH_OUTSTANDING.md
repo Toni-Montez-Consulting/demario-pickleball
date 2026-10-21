@@ -77,7 +77,7 @@ the only 5 accounts were the listed admins, all with MFA. Both were closed at
 
 ## Genuinely Open
 
-### The review loop has never run in production
+### The review loop in production
 
 This is the important one. Round 1 shipped the student spine and the review loop
 on 2026-07-28, and as of 2026-08-12 it has produced nothing:
@@ -105,6 +105,17 @@ recent pending lessons, so they get recorded without opening Admin.
 is on. The test with a test booking is still open; see the Lesson Outcome Nudge
 section of `docs/RELEASE_CHECKLIST.md`.
 
+**Update 2026-10-20: the loop ran for the first time.** At 10:41 UTC, on Mario's
+word, the October 19, July 25, and August 26 lessons were recorded as happened,
+and May 22 as didn't happen. The 15:00 UTC cron then sent the first review
+request ever, for the October 19 lesson. That booking is stamped at 15:00 UTC,
+which the cron does only after Resend accepts the email, and its review row is
+waiting, not yet submitted. The July 25 and August 26 students were not asked:
+those lessons are outside the cron's 30-day lookback. Counts read early
+on 2026-10-21 UTC: 8 bookings (4 confirmed, 3 cancelled, 1 pending) and 1
+review request sent. Still unproven: a student submitting a review through the
+link.
+
 Owner: Mario for confirming bookings, Tonio for watching the first live pass.
 
 ### Live booking QA
@@ -120,7 +131,8 @@ Owner: Tonio and Mario.
 ### First real review, end to end
 
 Submit one review through the emailed link and publish it from Admin -> Reviews.
-Blocked behind the review loop above.
+The first link went out on 2026-10-20. Waiting on that student to submit, then
+on Mario to publish it.
 
 Owner: Tonio and Mario.
 
