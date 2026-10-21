@@ -115,6 +115,11 @@ invite, Google Calendar link, payment links, QR code, and admin booking row all
 show the expected details. Cancel it from admin and confirm the cancellation
 email arrives. Confirm a busy Google Calendar event blocks a public slot.
 
+Once round 2 is live, add one booking each for a 60-minute and a 90-minute
+Drilling Session and for Play with the Pro, each with more than one player.
+Check that the group size and the total show in both emails, the invite, the
+Admin row, and the next morning's digest.
+
 Owner: Tonio and Mario.
 
 ### First real review, end to end
@@ -124,10 +129,18 @@ Blocked behind the review loop above.
 
 Owner: Tonio and Mario.
 
+### Round 2: migration before merge
+
+Drilling Sessions and Play with the Pro are built in draft PR #29 with Mario's
+prices and approved copy (spec: `docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`).
+`docs/supabase-round-2-sessions-migration.sql` must be applied to production,
+with Tonio's go-ahead, before the PR merges. Until then the database refuses the
+new lesson types.
+
+Owner: Tonio.
+
 ## Blocked On Mario
 
-- Pricing, duration, and player counts for drilling sessions and
-  play-with-the-pro. This blocks all of round 2.
 - Mario has no Google Business Profile. Verify service-area-business eligibility
   against live Google documentation before writing that task.
 - DUPR read-only API or partner access. Automated rating sync waits on it.

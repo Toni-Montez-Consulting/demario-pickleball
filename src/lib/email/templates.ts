@@ -1,19 +1,22 @@
 import { SITE_URL } from "@/lib/site";
 import { COURT_CONFIRMATION_MESSAGE, LESSON_LOCATION } from "@/lib/business";
 import { parseBookingNotes } from "@/lib/booking-notes";
+import { fixedFee, lessonName, storedQuote } from "@/lib/lesson-types";
+import { playersLabel, usd } from "@/lib/session-pricing";
 import { generateGoogleCalendarUrl, type IcsBooking } from "./ics";
 
-const LESSON_NAMES: Record<string, string> = {
-  beginner: "Foundations",
-  advanced: "Strategy Lab",
-  clinic: "Group Clinic",
-};
-
-const LESSON_PRICES: Record<string, string> = {
-  beginner: "$70",
-  advanced: "$80",
-  clinic: "$50",
-};
+/**
+ * A group booking's players and the total the person booking pays, from the
+ * quote stored with the booking. Null for every other lesson.
+ */
+function groupRows(booking: IcsBooking): { players: string; total: string } | null {
+  const quote = storedQuote(booking);
+  if (!quote) return null;
+  return {
+    players: `${playersLabel(quote.groupSize)} · ${usd(quote.perPerson)} per person`,
+    total: `${usd(quote.total)} total`,
+  };
+}
 
 // Callers pass raw strings, often with a student's name in the heading, so
 // the title is escaped here. Unescaped, a name like "</title><a href=...>"
@@ -37,8 +40,10 @@ function wrap(inner: string, heading: string): string {
 }
 
 export function studentRequestedHtml(booking: IcsBooking): string {
-  const lesson = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
-  const price = LESSON_PRICES[booking.lesson_type] ?? "";
+  const lesson = lessonName(booking.lesson_type);
+  const group = groupRows(booking);
+  const fee = fixedFee(booking.lesson_type);
+  const price = group ? group.total : fee !== null ? usd(fee) : "";
   const shortId = booking.id.slice(0, 8).toUpperCase();
   const court = parseBookingNotes(booking.notes);
   return wrap(
@@ -49,6 +54,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
     </p>
     <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
       <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(lesson)}</strong></td></tr>
+      ${group ? `<tr><td style="padding:6px 0;color:#777;">Players</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(group.players)}</strong></td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_date)}</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Court</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(LESSON_LOCATION)}</strong></td></tr>
@@ -76,7 +82,8 @@ export function studentRequestedHtml(booking: IcsBooking): string {
 }
 
 export function adminNotificationHtml(booking: IcsBooking): string {
-  const lesson = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
+  const lesson = lessonName(booking.lesson_type);
+  const group = groupRows(booking);
   const shortId = booking.id.slice(0, 8).toUpperCase();
   const court = parseBookingNotes(booking.notes);
   return wrap(
@@ -87,6 +94,8 @@ export function adminNotificationHtml(booking: IcsBooking): string {
       <tr><td style="padding:6px 0;color:#777;">Email</td><td style="padding:6px 0;text-align:right;"><a href="mailto:${escapeHtml(booking.email)}">${escapeHtml(booking.email)}</a></td></tr>
       ${booking.phone ? `<tr><td style="padding:6px 0;color:#777;">Phone</td><td style="padding:6px 0;text-align:right;"><a href="tel:${escapeHtml(booking.phone)}">${escapeHtml(booking.phone)}</a></td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;">${escapeHtml(lesson)}</td></tr>
+      ${group ? `<tr><td style="padding:6px 0;color:#777;">Players</td><td style="padding:6px 0;text-align:right;">${escapeHtml(group.players)}</td></tr>
+      <tr><td style="padding:6px 0;color:#777;">Booker pays</td><td style="padding:6px 0;text-align:right;">${escapeHtml(group.total)}</td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;">${escapeHtml(booking.lesson_date)} · ${escapeHtml(booking.lesson_time)} CT</td></tr>
       ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Court setup</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.courtSetup)}</td></tr>` : ""}
       ${court.preferredArea ? `<tr><td style="padding:6px 0;color:#777;">Area/court note</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.preferredArea)}</td></tr>` : ""}
@@ -135,6 +144,8 @@ export function inquiryNotificationHtml({
 export interface OutcomeDigestLesson {
   name: string;
   lessonName: string;
+  /** "3 players", for a group format. */
+  players?: string | null;
   when: string;
   courtSetup: string | null;
   links: { confirmed: string; no_show: string; cancelled: string };
@@ -154,7 +165,9 @@ export function lessonOutcomeDigestHtml(lessons: OutcomeDigestLesson[]): string 
     .map(
       (lesson) => `
     <div style="border-top:1px solid #eee;padding:16px 0;">
-      <p style="margin:0 0 4px;font-size:15px;"><strong>${escapeHtml(lesson.name)}</strong> · ${escapeHtml(lesson.lessonName)}</p>
+      <p style="margin:0 0 4px;font-size:15px;"><strong>${escapeHtml(lesson.name)}</strong> · ${escapeHtml(lesson.lessonName)}${
+        lesson.players ? ` · ${escapeHtml(lesson.players)}` : ""
+      }</p>
       <p style="margin:0 0 12px;font-size:14px;color:#666;">${escapeHtml(lesson.when)}${
         lesson.courtSetup ? ` · ${escapeHtml(lesson.courtSetup)}` : ""
       }</p>
@@ -184,7 +197,7 @@ export function lessonOutcomeDigestHtml(lessons: OutcomeDigestLesson[]): string 
 }
 
 export function studentCancelledHtml(booking: IcsBooking): string {
-  const lesson = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
+  const lesson = lessonName(booking.lesson_type);
   return wrap(
     `
     <h1 style="font-size:22px;margin:0 0 12px;">Your lesson was cancelled.</h1>

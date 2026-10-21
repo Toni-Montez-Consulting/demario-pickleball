@@ -578,8 +578,12 @@ section.block { padding: 64px 22px; position: relative; }
 .pillar p { margin: 0; font-size: 12.5px; color: var(--fg-muted); line-height: 1.5; }
 
 /* ====== LESSONS ====== */
+/* Five tabs do not fit one row on a phone. Each tab keeps its label on one
+   line and the row wraps; tabs share each row's width evenly where they can. */
 .lesson-tabs {
   display: flex;
+  flex-wrap: wrap;
+  row-gap: 4px;
   background: var(--bg-2);
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -588,6 +592,8 @@ section.block { padding: 64px 22px; position: relative; }
 }
 .lesson-tab {
   flex: 1;
+  min-width: max-content;
+  white-space: nowrap;
   padding: 10px 8px;
   text-align: center;
   font-size: 12px;
@@ -625,6 +631,44 @@ section.block { padding: 64px 22px; position: relative; }
 .lesson-price { text-align: right; }
 .lesson-price .amt { font-family: var(--font-space-grotesk); font-size: 28px; font-weight: 600; }
 .lesson-price .per { font-size: 11px; color: var(--fg-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.lesson-price .from { margin-top: 4px; font-size: 11.5px; color: var(--fg-muted); white-space: nowrap; }
+
+.lesson-prices { padding: 6px 22px 22px; }
+.price-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+.price-table caption {
+  caption-side: top;
+  text-align: left;
+  padding: 14px 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+.price-table th,
+.price-table td {
+  padding: 9px 0;
+  text-align: right;
+  border-bottom: 1px dashed color-mix(in oklab, var(--line) 70%, transparent);
+}
+.price-table th:first-child { text-align: left; }
+.price-table thead th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.price-table tbody th { font-weight: 600; }
+.price-table td { font-family: var(--font-space-grotesk); font-weight: 600; }
+.price-table tbody tr:last-child th,
+.price-table tbody tr:last-child td { border-bottom: none; }
+.price-note { margin: 10px 0 0; font-size: 12px; color: var(--fg-muted); line-height: 1.4; }
 
 .lesson-steps { padding: 6px 22px 22px; }
 .lesson-step {
@@ -958,7 +1002,67 @@ footer .contact-line a:hover { color: var(--fg); }
 
 /* ====== MODAL FORM INPUTS ====== */
 .modal-form-group { margin-bottom: 14px; }
-.modal-form-group label { display: block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-muted); font-weight: 600; margin-bottom: 6px; }
+.modal-form-group label,
+.modal-form-group .field-label { display: block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-muted); font-weight: 600; margin-bottom: 6px; }
+
+/* Group formats: length switch, player stepper, and the live quote. Every
+   control is at least 44px tall for thumbs. */
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.segmented button {
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+.segmented button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.stepper {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.stepper-btn {
+  min-height: 44px;
+  border-radius: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--fg);
+}
+.stepper-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.stepper-value {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.quote-line {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in oklab, var(--accent) 45%, var(--line));
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--accent) 8%, var(--bg-3));
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
 .modal-input {
   width: 100%;
   padding: 12px 14px;
@@ -1447,7 +1551,8 @@ footer .contact-line a:hover { color: var(--fg); }
 .admin-table-scroll { overflow-x: auto; }
 .admin-empty { color: var(--fg-muted); font-size: 14px; padding: 20px 0; }
 .td-name { font-weight: 600; color: var(--fg); }
-.td-email-sub { font-size: 11px; color: var(--fg-muted); }
+.td-email-sub,
+.td-quote-sub { font-size: 11px; color: var(--fg-muted); }
 .td-phone-sub { font-size: 11px; color: var(--fg-dim); margin-top: 2px; }
 .td-contact-actions {
   display: flex;

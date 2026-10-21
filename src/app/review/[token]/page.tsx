@@ -2,17 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ReviewForm from "@/components/ReviewForm";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { lessonName } from "@/lib/lesson-types";
 import { hashReviewToken } from "@/lib/reviews";
 
 export const metadata: Metadata = {
   title: "Leave a review · DeMario Montez Pickleball",
   robots: { index: false, follow: false },
-};
-
-const LESSON_NAMES: Record<string, string> = {
-  beginner: "Foundations",
-  advanced: "Strategy Lab",
-  clinic: "Group Clinic",
 };
 
 /** The private link emailed 24 hours after a lesson. */
@@ -49,8 +44,7 @@ export default async function TokenReviewPage({
       .eq("id", review.booking_id)
       .maybeSingle();
     if (booking) {
-      const name = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
-      lessonLabel = `${name} on ${booking.lesson_date}`;
+      lessonLabel = `${lessonName(booking.lesson_type)} on ${booking.lesson_date}`;
     }
   }
 

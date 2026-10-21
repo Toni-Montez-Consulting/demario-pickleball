@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextRequest } from "next/server";
 import { verifyOutcomeToken } from "@/lib/lesson-outcomes";
 
-type Row = Record<string, string | null>;
+type Row = Record<string, string | number | null>;
 
 const mocks = vi.hoisted(() => ({
   rows: [] as Row[],
@@ -117,6 +117,17 @@ describe("GET /api/cron/lesson-outcomes", () => {
       const check = verifyOutcomeToken(link.split("/lesson-outcome/")[1], LINK_SECRET);
       expect(check).toMatchObject({ ok: true, bookingId: "11111111-1111-1111-1111-111111111111", outcome });
     }
+  });
+
+  it("names a group's size next to its format", async () => {
+    mocks.rows = [
+      { id: "33333333-3333-3333-3333-333333333333", name: "Group Lead", lesson_type: "play_pro", lesson_date: "2026-10-18", lesson_time: "9:00 AM", notes: null, group_size: 3 },
+    ];
+
+    await runCron();
+
+    const lessons = mocks.sendLessonOutcomeDigest.mock.calls[0][0];
+    expect(lessons[0]).toMatchObject({ lessonName: "Play with the Pro", players: "3 players" });
   });
 
   it("reports a failed send as 502 without student details", async () => {

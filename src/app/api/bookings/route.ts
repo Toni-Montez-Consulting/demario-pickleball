@@ -8,15 +8,16 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { isCourtSetup, parseBookingNotes } from "@/lib/booking-notes";
 import { courtSetupCode } from "@/lib/analytics";
 import { trackServerEvent } from "@/lib/analytics-server";
+import { isGroupLessonType, isLessonType, quoteColumns, quoteLesson } from "@/lib/lesson-types";
+import type { SessionQuote } from "@/lib/session-pricing";
 
-const VALID_LESSON_TYPES = ["beginner", "advanced", "clinic"] as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
 
-  const { name, email, phone, lesson_type, lesson_date, lesson_time, notes, waiver_accepted, company } = body;
+  const { name, email, phone, lesson_type, lesson_date, lesson_time, notes, waiver_accepted, company, group_size } = body;
 
   if (typeof company === "string" && company.trim()) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
@@ -49,8 +50,21 @@ export async function POST(req: NextRequest) {
   if (!EMAIL_RE.test(email) || email.length > 254) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   }
-  if (!VALID_LESSON_TYPES.includes(lesson_type)) {
+  if (!isLessonType(lesson_type)) {
     return NextResponse.json({ error: "Invalid lesson type" }, { status: 400 });
+  }
+  // A group format is priced here from DeMario's table, for the size the
+  // student chose. Nothing the browser says about price is read. A size on a
+  // one-on-one lesson or the clinic is a malformed request, not something to drop.
+  let quote: SessionQuote | null = null;
+  if (isGroupLessonType(lesson_type)) {
+    try {
+      quote = quoteLesson(lesson_type, group_size);
+    } catch {
+      return NextResponse.json({ error: "Invalid group size" }, { status: 400 });
+    }
+  } else if (group_size !== undefined && group_size !== null) {
+    return NextResponse.json({ error: "Invalid group size" }, { status: 400 });
   }
   if (typeof lesson_time !== "string") {
     return NextResponse.json({ error: "Invalid time" }, { status: 400 });
@@ -94,6 +108,9 @@ export async function POST(req: NextRequest) {
       notes: trimmedNotes,
       waiver_signed_at: new Date().toISOString(),
       waiver_version: WAIVER_VERSION,
+      // Stored so a later price change never rewrites what this booking owes.
+      // Only group formats carry these, as the database requires.
+      ...(quote ? quoteColumns(quote) : {}),
     })
     .select()
     .single();
@@ -141,6 +158,9 @@ export async function POST(req: NextRequest) {
     lesson_date: data.lesson_date,
     lesson_time: data.lesson_time,
     notes: data.notes,
+    group_size: data.group_size,
+    quoted_per_person_cents: data.quoted_per_person_cents,
+    quoted_total_cents: data.quoted_total_cents,
   };
   // These emails are Mario's only alert that a lesson was booked. A bare
   // un-awaited promise could be frozen with the serverless function once the

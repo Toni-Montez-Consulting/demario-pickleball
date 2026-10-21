@@ -373,6 +373,101 @@ describe("POST /api/bookings", () => {
     expect(inserted).toHaveLength(0);
   });
 
+  describe("group formats", () => {
+    const openDay = () => ({
+      time_slots: [{ display_label: "9:00 AM", active: true }],
+      bookings: [],
+      blocked_slots: [],
+      recurring_blocks: [],
+    });
+
+    it("prices a drilling session from DeMario's table and stores the quote", async () => {
+      mocks.serviceClient = createMockClient(openDay(), inserted);
+
+      const response = await postBooking({
+        ...VALID_BOOKING_BODY,
+        lesson_type: "drill_90",
+        group_size: 3,
+        // A price from the browser is never read.
+        quoted_per_person_cents: 1,
+        quoted_total_cents: 3,
+      });
+
+      expect(response.status).toBe(201);
+      expect(inserted[0]).toMatchObject({
+        lesson_type: "drill_90",
+        group_size: 3,
+        quoted_per_person_cents: 3500,
+        quoted_total_cents: 10500,
+      });
+      await runAfterCallbacks();
+      expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledWith(
+        expect.objectContaining({ group_size: 3, quoted_per_person_cents: 3500, quoted_total_cents: 10500 })
+      );
+      expect(mocks.trackServerEvent).toHaveBeenCalledWith(
+        "booking_created",
+        { lesson_type: "drill_90", court_setup: "outdoor" },
+        expect.any(Headers)
+      );
+    });
+
+    it("prices Play with the Pro for the size booked", async () => {
+      mocks.serviceClient = createMockClient(openDay(), inserted);
+
+      const response = await postBooking({ ...VALID_BOOKING_BODY, lesson_type: "play_pro", group_size: 2 });
+
+      expect(response.status).toBe(201);
+      expect(inserted[0]).toMatchObject({ group_size: 2, quoted_per_person_cents: 4000, quoted_total_cents: 8000 });
+    });
+
+    it.each<[string, unknown]>([
+      ["drill_60", undefined],
+      ["drill_60", 9],
+      ["drill_90", 0],
+      ["play_pro", 5],
+      ["play_pro", "2"],
+      ["play_pro", 2.5],
+    ])("rejects %s for a group size of %s", async (lesson_type, group_size) => {
+      mocks.serviceClient = createMockClient(openDay(), inserted);
+
+      const response = await postBooking({ ...VALID_BOOKING_BODY, lesson_type, group_size });
+
+      expect(response.status).toBe(400);
+      expect((await response.json()).error).toBe("Invalid group size");
+      expect(inserted).toHaveLength(0);
+    });
+
+    it("rejects a group size on a lesson that is not a group format", async () => {
+      mocks.serviceClient = createMockClient(openDay(), inserted);
+
+      const response = await postBooking({ ...VALID_BOOKING_BODY, lesson_type: "clinic", group_size: 3 });
+
+      expect(response.status).toBe(400);
+      expect((await response.json()).error).toBe("Invalid group size");
+      expect(inserted).toHaveLength(0);
+    });
+
+    it("stores no quote on a fixed-fee lesson", async () => {
+      mocks.serviceClient = createMockClient(openDay(), inserted);
+
+      const response = await postBooking(VALID_BOOKING_BODY);
+
+      expect(response.status).toBe(201);
+      expect(inserted[0]).not.toHaveProperty("group_size");
+      expect(inserted[0]).not.toHaveProperty("quoted_total_cents");
+    });
+
+    it("rejects a format name that is not a stored lesson type", async () => {
+      mocks.serviceClient = createMockClient(openDay(), inserted);
+
+      const response = await postBooking({ ...VALID_BOOKING_BODY, lesson_type: "drill", group_size: 3 });
+
+      expect(response.status).toBe(400);
+      expect((await response.json()).error).toBe("Invalid lesson type");
+      expect(inserted).toHaveLength(0);
+    });
+  });
+
   it("rejects direct API bookings for indoor partner-platform courts", async () => {
     mocks.serviceClient = createMockClient({}, inserted);
 

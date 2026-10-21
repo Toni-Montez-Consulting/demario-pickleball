@@ -50,3 +50,33 @@ export function quoteSession(format: SessionFormat, groupSize: number, length?: 
   const perPerson = table[groupSize - 1];
   return { format, groupSize, perPerson, total: perPerson * groupSize };
 }
+
+/** The price for one player. Drilling quotes its 60-minute session unless told otherwise. */
+export function soloPrice(format: SessionFormat, length: DrillLength = 60): number {
+  return format === "drill" ? DRILL_PER_PERSON[length][0] : PLAY_PRO_PER_PERSON[0];
+}
+
+/** The lowest price per player: for one drilling length, or across both when none is given. */
+export function lowestPerPerson(format: SessionFormat, length?: DrillLength): number {
+  const tables =
+    format === "play_pro"
+      ? [PLAY_PRO_PER_PERSON]
+      : length
+        ? [DRILL_PER_PERSON[length]]
+        : Object.values(DRILL_PER_PERSON);
+  return Math.min(...tables.flat());
+}
+
+/** "$25", or "$22.50" should a price ever carry cents. */
+export function usd(dollars: number): string {
+  return Number.isInteger(dollars) ? `$${dollars}` : `$${dollars.toFixed(2)}`;
+}
+
+export function playersLabel(groupSize: number): string {
+  return `${groupSize} ${groupSize === 1 ? "player" : "players"}`;
+}
+
+/** "$25 per person · 3 players · $75 total", the same line everywhere a quote appears. */
+export function quoteLine(quote: Pick<SessionQuote, "perPerson" | "groupSize" | "total">): string {
+  return `${usd(quote.perPerson)} per person · ${playersLabel(quote.groupSize)} · ${usd(quote.total)} total`;
+}

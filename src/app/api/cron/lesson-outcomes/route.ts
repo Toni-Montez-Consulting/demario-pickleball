@@ -7,10 +7,11 @@ import {
   outcomeSecret,
   reminderWindow,
   signOutcomeToken,
-  LESSON_NAMES,
   OUTCOMES,
   type LessonOutcome,
 } from "@/lib/lesson-outcomes";
+import { lessonName } from "@/lib/lesson-types";
+import { playersLabel } from "@/lib/session-pricing";
 import { SITE_URL } from "@/lib/site";
 import { parseDisplayTime } from "@/lib/time";
 
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
   const supabase = createServiceRoleClient();
   const { data: bookings, error } = await supabase
     .from("bookings")
-    .select("id,name,lesson_type,lesson_date,lesson_time,notes")
+    .select("id,name,lesson_type,lesson_date,lesson_time,notes,group_size")
     .eq("status", "pending")
     .gte("lesson_date", from)
     .lte("lesson_date", to);
@@ -73,7 +74,8 @@ export async function GET(req: NextRequest) {
 
   const lessons = ordered.map((booking) => ({
     name: booking.name,
-    lessonName: LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type,
+    lessonName: lessonName(booking.lesson_type),
+    players: booking.group_size ? playersLabel(booking.group_size) : null,
     when: `${formatLessonDate(booking.lesson_date)} · ${booking.lesson_time} CT`,
     courtSetup: parseBookingNotes(booking.notes).courtSetup,
     links: Object.fromEntries(OUTCOMES.map((o) => [o, link(booking.id, o)])) as Record<

@@ -1,6 +1,7 @@
 import { track as vercelTrack } from "@vercel/analytics";
 import { isCourtSetup, type CourtSetup } from "@/lib/booking-notes";
 import type { LessonKey } from "@/lib/data";
+import type { LessonType } from "@/lib/lesson-types";
 
 /**
  * Every custom analytics event the site sends, and the only values each
@@ -50,10 +51,15 @@ export type ReviewResult =
 export type OutboundDest = "instagram" | "tiktok" | "facebook" | "google_review" | "teachme_reviews";
 
 export interface AnalyticsEvents {
+  /** The card's format: drilling is one card ("drill") until a length is picked. */
   book_cta_click: { source: CtaSource; lesson_type?: LessonKey };
   booking_step_viewed: { step: BookingStep; court_setup?: CourtSetupCode };
   booking_failed: { reason: BookingFailure };
-  booking_created: { lesson_type: LessonKey; court_setup: CourtSetupCode };
+  /**
+   * The stored lesson type, so drilling reports drill_60 or drill_90. Group
+   * size stays in the database: the event's two properties are already used.
+   */
+  booking_created: { lesson_type: LessonType; court_setup: CourtSetupCode };
   venue_link_click: { venue: VenueCode; surface: Surface };
   contact_click: { channel: ContactChannel; surface: Surface };
   payment_link_click: { method: PaymentMethod; surface: Surface };

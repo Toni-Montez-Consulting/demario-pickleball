@@ -1,3 +1,5 @@
+import type { LessonType } from "@/lib/lesson-types";
+
 export const COACH_NAME = "DeMario Montez";
 export const COACH_EMAIL = "demariomontez10@gmail.com";
 export const COACH_PHONE_DISPLAY = "(469) 371-9220";
@@ -18,8 +20,15 @@ export const COURT_CONFIRMATION_MESSAGE =
 
 export const WAIVER_VERSION = "2026-04-24";
 
+// The database's booking_duration() mirrors these for the overlap constraint
+// (docs/supabase-round-2-sessions-migration.sql); lesson-types.test.ts checks
+// that the two match. Play with the Pro runs one to two hours at one price and
+// blocks one: DeMario extends a longer session on his own calendar.
 export const LESSON_DURATION_MINUTES: Record<string, number> = {
   beginner: 60,
   advanced: 75,
   clinic: 90,
-};
+  drill_60: 60,
+  drill_90: 90,
+  play_pro: 60,
+} satisfies Record<LessonType, number>;

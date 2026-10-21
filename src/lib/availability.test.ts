@@ -304,6 +304,25 @@ describe("overlapping bookings", () => {
     expect(data?.unavailable).toEqual(expect.arrayContaining(["5:00 PM", "5:30 PM", "6:00 PM"]));
   });
 
+  it("blocks every slot a 90-minute drilling session runs through", async () => {
+    const { data } = await getAvailabilityForDate(withBooking("5:00 PM", "drill_90"), "2026-05-04", {
+      lessonType: "drill_60",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual(expect.arrayContaining(["5:00 PM", "5:30 PM", "6:00 PM"]));
+    expect(data?.unavailable).not.toContain("7:00 PM");
+  });
+
+  // Play with the Pro runs one to two hours at one price; the site holds one.
+  it("holds one hour for Play with the Pro", async () => {
+    const { data } = await getAvailabilityForDate(withBooking("5:00 PM", "play_pro"), "2026-05-04", {
+      lessonType: "play_pro",
+      busyProvider: noBusy,
+    });
+    expect(data?.unavailable).toEqual(expect.arrayContaining(["5:00 PM", "5:30 PM"]));
+    expect(data?.unavailable).not.toContain("6:00 PM");
+  });
+
   it("ignores cancelled bookings", async () => {
     const supabase = mockSupabase({
       bookings: [],

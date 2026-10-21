@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { GROUP_SIZE_LIMITS, quoteSession } from "./session-pricing";
+import {
+  GROUP_SIZE_LIMITS,
+  lowestPerPerson,
+  playersLabel,
+  quoteLine,
+  quoteSession,
+  soloPrice,
+  usd,
+} from "./session-pricing";
 
 // DeMario's prices, 2026-10-20, copied from his texts. A change to the table
 // should fail here first.
@@ -41,5 +49,28 @@ describe("quoteSession", () => {
     expect(() => quoteSession("drill", 2)).toThrow(/60 or 90 minutes/);
     // A length from outside the type, as a malformed request could send it.
     expect(() => quoteSession("drill", 2, 75 as unknown as 60)).toThrow(/60 or 90 minutes/);
+  });
+
+  it("refuses a group size that is not a whole number, as a request could send it", () => {
+    expect(() => quoteSession("drill", "3" as unknown as number, 60)).toThrow(RangeError);
+    expect(() => quoteSession("play_pro", undefined as unknown as number)).toThrow(RangeError);
+  });
+});
+
+describe("price summaries", () => {
+  it("reads the solo and lowest prices from the table", () => {
+    expect(soloPrice("drill")).toBe(60);
+    expect(soloPrice("drill", 90)).toBe(80);
+    expect(soloPrice("play_pro")).toBe(70);
+    expect(lowestPerPerson("drill")).toBe(15);
+    expect(lowestPerPerson("drill", 90)).toBe(18);
+    expect(lowestPerPerson("play_pro")).toBe(30);
+  });
+
+  it("writes the quote line the form, emails, and Admin share", () => {
+    expect(quoteLine(quoteSession("drill", 3, 60))).toBe("$25 per person · 3 players · $75 total");
+    expect(quoteLine(quoteSession("play_pro", 1))).toBe("$70 per person · 1 player · $70 total");
+    expect(playersLabel(1)).toBe("1 player");
+    expect(usd(22.5)).toBe("$22.50");
   });
 });

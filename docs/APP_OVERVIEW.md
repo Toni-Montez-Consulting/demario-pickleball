@@ -98,13 +98,21 @@ The homepage (`src/app/page.tsx`) is a client component that assembles the full 
 
 ### Lesson Types and Pricing
 
-All lesson data lives in `src/lib/data.ts` and `src/lib/business.ts`.
+Every stored lesson type is named in `src/lib/lesson-types.ts`. Card copy lives in
+`src/lib/data.ts`, durations in `src/lib/business.ts`, and the group formats' prices in
+`src/lib/session-pricing.ts` (spec: `docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`).
 
 | Key | Name | Price | Duration |
 |---|---|---|---|
 | `beginner` | Foundations | $70 | 60 min |
 | `advanced` | Strategy Lab | $80 | 75 min |
 | `clinic` | Group Clinic | $50/player | 90 min |
+| `drill_60` | Drilling Session, 60 min | $60 solo, from $15/player, 1 to 8 players | 60 min |
+| `drill_90` | Drilling Session, 90 min | $80 solo, from $18/player, 1 to 8 players | 90 min |
+| `play_pro` | Play with the Pro | $70 solo, from $30/player, 1 to 4 players | 60 min held; runs 1 to 2 hours |
+
+For the three group formats the person booking pays the group's total. The server quotes it
+from `session-pricing.ts` and stores it on the booking.
 
 ---
 
@@ -339,7 +347,7 @@ The production Supabase project uses the following core tables. Schema changes a
 
 | Table | Purpose |
 |---|---|
-| `bookings` | One row per booking. Fields: id, name, email, phone, lesson_type, lesson_date, lesson_time, status, notes, paid_at, created_at |
+| `bookings` | One row per booking. Fields: id, name, email, phone, lesson_type, lesson_date, lesson_time, status, notes, paid_at, created_at, and for group formats group_size, quoted_per_person_cents, quoted_total_cents |
 | `inquiries` | One row per contact form submission. Fields: id, name, email, message, read, created_at |
 | `blocked_slots` | One-off blocked dates/times set by admin. Fields: id, date, time (nullable for all-day), all_day, created_at |
 | `recurring_blocks` | Weekly recurring unavailability. Fields: id, day_of_week (0–6), time (nullable), created_at |

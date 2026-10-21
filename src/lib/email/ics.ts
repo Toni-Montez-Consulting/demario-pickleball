@@ -1,10 +1,12 @@
 import { SITE_URL } from "@/lib/site";
 import { LESSON_DURATION_MINUTES, LESSON_LOCATION } from "@/lib/business";
+import { lessonName as nameOfLesson, storedQuote, type StoredQuote } from "@/lib/lesson-types";
+import { quoteLine } from "@/lib/session-pricing";
 import { parseDisplayTime } from "@/lib/time";
 
 export type IcsMethod = "REQUEST" | "CANCEL";
 
-export interface IcsBooking {
+export interface IcsBooking extends StoredQuote {
   id: string;
   name: string;
   email: string;
@@ -14,12 +16,6 @@ export interface IcsBooking {
   lesson_time: string;
   notes?: string | null;
 }
-
-const LESSON_NAMES: Record<string, string> = {
-  beginner: "Foundations",
-  advanced: "Strategy Lab",
-  clinic: "Group Clinic",
-};
 
 function formatLocal(year: number, month: number, day: number, hour: number, minute: number): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -90,13 +86,19 @@ export function generateGoogleCalendarUrl({
   const endTotal = start.hour * 60 + start.minute + durationMin;
   const dtStart = formatLocal(y, mo, d, start.hour, start.minute);
   const dtEnd = formatLocal(y, mo, d, Math.floor(endTotal / 60), endTotal % 60);
-  const lessonName = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
+  const lessonName = nameOfLesson(booking.lesson_type);
+  const quote = storedQuote(booking);
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: `Pickleball lesson — ${lessonName} with ${organizerName}`,
     dates: `${dtStart}/${dtEnd}`,
     ctz: "America/Chicago",
-    details: `Booking ID: ${booking.id.slice(0, 8).toUpperCase()}\nCourt: Mario will confirm the exact court after booking.\nPay: ${SITE_URL}/pay`,
+    details: [
+      `Booking ID: ${booking.id.slice(0, 8).toUpperCase()}`,
+      ...(quote ? [`Price: ${quoteLine(quote)}`] : []),
+      "Court: Mario will confirm the exact court after booking.",
+      `Pay: ${SITE_URL}/pay`,
+    ].join("\n"),
     location: LESSON_LOCATION,
     sf: "true",
     output: "xml",
@@ -127,7 +129,8 @@ export function generateIcs({
   const dtEnd = formatLocal(y, mo, d, endHour, endMinute);
   const dtStamp = formatUtc(new Date());
 
-  const lessonName = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
+  const lessonName = nameOfLesson(booking.lesson_type);
+  const quote = storedQuote(booking);
   const summary =
     method === "CANCEL"
       ? `Cancelled: Pickleball lesson (${lessonName})`
@@ -135,6 +138,7 @@ export function generateIcs({
 
   const description = [
     `Lesson: ${lessonName}`,
+    ...(quote ? [`Price: ${quoteLine(quote)}`] : []),
     `Coach: ${organizerName}`,
     `Court: Mario will confirm the exact court after booking.`,
     ``,

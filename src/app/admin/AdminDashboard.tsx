@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { parseBookingNotes } from "@/lib/booking-notes";
+import { lessonName, storedQuote } from "@/lib/lesson-types";
+import { quoteLine } from "@/lib/session-pricing";
 import { dateInTimeZone, lessonHasStarted } from "@/lib/time";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import WeeklyTemplateEditor from "@/components/WeeklyTemplateEditor";
@@ -18,6 +20,10 @@ interface Booking {
   status: "pending" | "confirmed" | "cancelled" | "no_show";
   notes: string | null;
   paid_at: string | null;
+  /** Set on group formats only, as quoted when the student booked. */
+  group_size?: number | null;
+  quoted_per_person_cents?: number | null;
+  quoted_total_cents?: number | null;
 }
 
 interface Inquiry {
@@ -67,12 +73,6 @@ interface Props {
 }
 
 type BookingFilter = "all" | "upcoming" | "needs_outcome" | "pending" | "unpaid" | "cancelled";
-
-const LESSON_NAMES: Record<string, string> = {
-  beginner: "Foundations",
-  advanced: "Strategy Lab",
-  clinic: "Group Clinic",
-};
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const BOOKING_TIME_ZONE = "America/Chicago";
@@ -532,6 +532,8 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                 <tbody>
                   {visibleBookings.map((b) => {
                     const court = parseBookingNotes(b.notes);
+                    // A group booking's players and what the booker owes, as quoted.
+                    const quote = storedQuote(b);
                     // Past its start, Cancel records "didn't happen" and emails no one.
                     const started = lessonHasStarted(b.lesson_date, b.lesson_time);
                     const smsHref = contactHref(b.phone, "sms");
@@ -558,7 +560,10 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                             </div>
                           )}
                         </td>
-                        <td>{LESSON_NAMES[b.lesson_type] ?? b.lesson_type}</td>
+                        <td>
+                          {lessonName(b.lesson_type)}
+                          {quote && <div className="td-quote-sub">{quoteLine(quote)}</div>}
+                        </td>
                         <td>
                           <span className={`status-badge status-${b.status}`}>{b.status}</span>
                         </td>

@@ -37,6 +37,33 @@ describe("email templates", () => {
     expect(html).toContain("Text the student to confirm the exact court");
   });
 
+  it("shows a group booking's players and the total the booker pays", () => {
+    const group = {
+      ...booking,
+      lesson_type: "drill_90",
+      group_size: 3,
+      quoted_per_person_cents: 3500,
+      quoted_total_cents: 10500,
+    };
+
+    const student = studentRequestedHtml(group);
+    expect(student).toContain("Drilling Session, 90 min");
+    expect(student).toContain("3 players · $35 per person");
+    expect(student).toContain("$105 total");
+
+    const admin = adminNotificationHtml(group);
+    expect(admin).toContain("3 players · $35 per person");
+    expect(admin).toContain("Booker pays");
+    expect(admin).toContain("$105 total");
+  });
+
+  it("keeps a one-on-one lesson's fee and adds no group rows", () => {
+    const html = studentRequestedHtml(booking);
+    expect(html).toContain("$70");
+    expect(html).not.toContain("Players");
+    expect(adminNotificationHtml(booking)).not.toContain("Booker pays");
+  });
+
   it("escapes a student's name everywhere, including the <title>", () => {
     const html = adminNotificationHtml({
       ...booking,
@@ -130,6 +157,13 @@ describe("lessonOutcomeDigestHtml", () => {
       expect(html).toContain(`/lesson-outcome/${id}-no"`);
     }
     expect(html).toContain("Nothing is sent to the student for No-show or Didn't happen");
+  });
+
+  it("names a group's size next to its format", () => {
+    const html = lessonOutcomeDigestHtml([
+      { ...lesson("Jane Student", "a"), lessonName: "Play with the Pro", players: "3 players" },
+    ]);
+    expect(html).toContain("Play with the Pro · 3 players");
   });
 
   it("uses a singular heading for one lesson", () => {

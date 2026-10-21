@@ -67,6 +67,8 @@ describe("BookingModal", () => {
           waiver_accepted: true,
           company: "",
         });
+        // A one-on-one lesson carries no group size.
+        expect(JSON.parse(String(init?.body))).not.toHaveProperty("group_size");
         return jsonResponse({
           id: "12345678-1234-1234-1234-123456789abc",
           name: "Jane Student",
@@ -202,6 +204,78 @@ describe("BookingModal", () => {
     await waitFor(() => {
       expect(screen.getByText(/No lesson times available yet/i)).toBeInTheDocument();
     });
+  });
+
+  it("quotes a drilling group live and books the size and length it showed", async () => {
+    let posted: Record<string, unknown> | null = null;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === "/api/time-slots") return jsonResponse([{ display_label: "9:00 AM" }]);
+      if (url.startsWith("/api/availability")) return jsonResponse({ allDay: false, unavailable: [] });
+      if (url === "/api/bookings") {
+        posted = JSON.parse(String(init?.body));
+        return jsonResponse({ id: "12345678-1234-1234-1234-123456789abc" }, 201);
+      }
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<BookingModal isOpen onClose={() => undefined} initialLessonType="drill" />);
+
+    // One player and 60 minutes to start.
+    expect(screen.getByLabelText(/lesson type/i)).toHaveValue("drill");
+    expect(screen.getByText("$60 per person · 1 player · $60 total")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /fewer players/i })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "90 min" }));
+    fireEvent.click(screen.getByRole("button", { name: /more players/i }));
+    fireEvent.click(screen.getByRole("button", { name: /more players/i }));
+    expect(screen.getByText("$35 per person · 3 players · $105 total")).toBeInTheDocument();
+    expect(screen.getByText(/Court fees, if any, are separate/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane Student" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
+    fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
+
+    const reserve = await screen.findByRole("button", { name: /reserve/i });
+    await waitFor(() => expect(reserve).toBeEnabled());
+    const availability = fetchMock.mock.calls.find(([input]) => String(input).startsWith("/api/availability"));
+    expect(String(availability?.[0])).toContain("lesson_type=drill_90");
+    expect(screen.getAllByText(/Drilling Session, 90 min · 3 players/).length).toBeGreaterThan(0);
+    fireEvent.click(reserve);
+
+    await screen.findByText(/you're booked/i);
+    expect(posted).toMatchObject({ lesson_type: "drill_90", group_size: 3 });
+    expect(screen.getByText("3 players · $35 per person")).toBeInTheDocument();
+    // The person booking pays the group's total.
+    expect(screen.getAllByText("$105.00")).toHaveLength(2);
+  }, 15000);
+
+  it("holds the stepper to each format's limits and clamps on a switch", () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/time-slots") return jsonResponse([{ display_label: "9:00 AM" }]);
+      throw new Error(`Unexpected fetch ${url}`);
+    }));
+
+    render(<BookingModal isOpen onClose={() => undefined} initialLessonType="drill" />);
+
+    const more = screen.getByRole("button", { name: /more players/i });
+    for (let i = 0; i < 10; i++) fireEvent.click(more);
+    expect(screen.getByText("8 players")).toBeInTheDocument();
+    expect(more).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText(/lesson type/i), { target: { value: "play_pro" } });
+    expect(screen.getByText("4 players")).toBeInTheDocument();
+    expect(screen.getByText("$30 per person · 4 players · $120 total")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "90 min" })).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/lesson type/i), { target: { value: "clinic" } });
+    expect(screen.queryByRole("button", { name: /more players/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/per person ·/)).not.toBeInTheDocument();
   });
 
   it("lets help-me-choose students continue to available times", async () => {
