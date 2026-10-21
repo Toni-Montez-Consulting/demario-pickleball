@@ -247,10 +247,20 @@ test("the lesson tabs and the group quote fit a 320px phone", async ({ page }) =
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto("/");
 
-  // Five tabs wrap onto a second row instead of running off the card.
+  // Five tabs wrap instead of running off the card: the three lessons on one
+  // row, the two group formats on the next.
   const tabs = page.locator(".lesson-tabs");
   await tabs.scrollIntoViewIfNeeded();
   expect(await tabs.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+  const rows = await tabs.evaluate((el) => {
+    const counts = new Map<number, number>();
+    for (const tab of Array.from(el.children)) {
+      const top = Math.round(tab.getBoundingClientRect().top);
+      counts.set(top, (counts.get(top) ?? 0) + 1);
+    }
+    return Array.from(counts.values());
+  });
+  expect(rows).toEqual([3, 2]);
 
   await page.getByRole("button", { name: /book a lesson/i }).first().click();
   const dialog = page.getByRole("dialog", { name: /book a lesson/i });

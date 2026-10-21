@@ -335,6 +335,14 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     });
   }
 
+  // From the latest state, so quick taps all count, and held to the limits.
+  function stepGroupSize(delta: number) {
+    setForm((f) => {
+      const type = lessonTypeFor(f.lessonKey, f.drillLength);
+      return { ...f, groupSize: clampGroupSize(type, clampGroupSize(type, f.groupSize) + delta) };
+    });
+  }
+
   function handleDaySelect(i: number) {
     setSelectedDay(i);
     setPickerError("");
@@ -517,11 +525,11 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 value={form.lessonKey}
                 onChange={(e) => {
                   const lessonKey = e.target.value as LessonKey;
-                  setForm({
-                    ...form,
+                  setForm((f) => ({
+                    ...f,
                     lessonKey,
-                    groupSize: clampGroupSize(lessonTypeFor(lessonKey, form.drillLength), form.groupSize),
-                  });
+                    groupSize: clampGroupSize(lessonTypeFor(lessonKey, f.drillLength), f.groupSize),
+                  }));
                 }}
               >
                 {FORMAT_OPTIONS.map(({ key, label }) => (
@@ -540,7 +548,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                       key={length}
                       type="button"
                       aria-pressed={form.drillLength === length}
-                      onClick={() => setForm({ ...form, drillLength: length })}
+                      onClick={() => setForm((f) => ({ ...f, drillLength: length }))}
                     >
                       {length} min
                     </button>
@@ -557,7 +565,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                     className="stepper-btn"
                     aria-label="Fewer players"
                     disabled={quote.groupSize <= groupLimits.min}
-                    onClick={() => setForm({ ...form, groupSize: quote.groupSize - 1 })}
+                    onClick={() => stepGroupSize(-1)}
                   >
                     −
                   </button>
@@ -567,7 +575,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                     className="stepper-btn"
                     aria-label="More players"
                     disabled={quote.groupSize >= groupLimits.max}
-                    onClick={() => setForm({ ...form, groupSize: quote.groupSize + 1 })}
+                    onClick={() => stepGroupSize(1)}
                   >
                     +
                   </button>

@@ -578,8 +578,9 @@ section.block { padding: 64px 22px; position: relative; }
 .pillar p { margin: 0; font-size: 12.5px; color: var(--fg-muted); line-height: 1.5; }
 
 /* ====== LESSONS ====== */
-/* Five tabs do not fit one row on a phone. Each tab keeps its label on one
-   line and the row wraps; tabs share each row's width evenly where they can. */
+/* Five tabs do not fit one row on a phone. A 30% basis puts three on the first
+   row (the three lessons) and the two group formats on the second; each tab
+   keeps its label on one line. From 768px they share one row. */
 .lesson-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -591,7 +592,7 @@ section.block { padding: 64px 22px; position: relative; }
   margin-bottom: 20px;
 }
 .lesson-tab {
-  flex: 1;
+  flex: 1 1 30%;
   min-width: max-content;
   white-space: nowrap;
   padding: 10px 8px;
@@ -607,6 +608,9 @@ section.block { padding: 64px 22px; position: relative; }
 .lesson-tab.active {
   background: var(--bg-3);
   color: var(--fg);
+}
+@media (min-width: 768px) {
+  .lesson-tab { flex-basis: 0; }
 }
 .lesson-card {
   border: 1px solid var(--line);
@@ -1062,6 +1066,8 @@ footer .contact-line a:hover { color: var(--fg); }
   font-weight: 600;
   line-height: 1.4;
   font-variant-numeric: tabular-nums;
+  /* At 320px the line wraps; keep "total" from landing alone on line two. */
+  text-wrap: pretty;
 }
 .modal-input {
   width: 100%;

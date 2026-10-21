@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import BookingModal from "./BookingModal";
 
@@ -238,7 +238,8 @@ describe("BookingModal", () => {
     fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
     fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
     fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: /continue to available times/i }));
+    // Labelled "Loading lesson times..." until the times arrive.
+    fireEvent.click(await screen.findByRole("button", { name: /continue to available times/i }));
 
     const reserve = await screen.findByRole("button", { name: /reserve/i });
     await waitFor(() => expect(reserve).toBeEnabled());
@@ -263,7 +264,15 @@ describe("BookingModal", () => {
 
     render(<BookingModal isOpen onClose={() => undefined} initialLessonType="drill" />);
 
+    // Three taps before React renders again all count.
     const more = screen.getByRole("button", { name: /more players/i });
+    act(() => {
+      more.click();
+      more.click();
+      more.click();
+    });
+    expect(screen.getByText("4 players")).toBeInTheDocument();
+
     for (let i = 0; i < 10; i++) fireEvent.click(more);
     expect(screen.getByText("8 players")).toBeInTheDocument();
     expect(more).toBeDisabled();
