@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { lessonName } from "@/lib/lesson-types";
 import { defaultDisplayName } from "@/lib/reviews";
+import { playersLabel } from "@/lib/session-pricing";
 import { addDays, dateInTimeZone } from "@/lib/time";
 
 /**
@@ -129,6 +131,8 @@ export interface OutcomeBooking {
   status: string;
   /** The review cron only asks about bookings linked to a student. */
   student_id?: string | null;
+  /** Set on group formats only. */
+  group_size?: number | null;
 }
 
 export type OutcomeView =
@@ -146,12 +150,6 @@ export type OutcomeView =
       heading: string;
       body: string;
     };
-
-export const LESSON_NAMES: Record<string, string> = {
-  beginner: "Foundations",
-  advanced: "Strategy Lab",
-  clinic: "Group Clinic",
-};
 
 /** Why the last tap did not save, from the endpoint's ?failed= redirect. */
 export type OutcomeFailure = "save" | "busy";
@@ -240,7 +238,8 @@ export function outcomeView({
     heading: copy.question(name),
     button: copy.button,
     facts: [
-      { label: "Lesson", value: LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type },
+      { label: "Lesson", value: lessonName(booking.lesson_type) },
+      ...(booking.group_size ? [{ label: "Players", value: playersLabel(booking.group_size) }] : []),
       { label: "When", value: `${formatLessonDate(booking.lesson_date)} · ${booking.lesson_time} CT` },
     ],
     note:

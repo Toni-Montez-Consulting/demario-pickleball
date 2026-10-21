@@ -105,6 +105,21 @@ describe("outcomeView", () => {
     expect(JSON.stringify(view)).not.toContain("Student");
   });
 
+  it("names a group's size between the lesson and the time", () => {
+    const view = outcomeView({
+      configured: true,
+      check: valid("confirmed"),
+      booking: { ...booking, lesson_type: "drill_60", group_size: 4 },
+    });
+    expect(view).toMatchObject({
+      facts: [
+        { label: "Lesson", value: "Drilling Session, 60 min" },
+        { label: "Players", value: "4 players" },
+        { label: "When", value: "Sun, Oct 18 · 9:00 AM CT" },
+      ],
+    });
+  });
+
   it("uses no-show wording for a no-show link", () => {
     expect(outcomeView({ configured: true, check: valid("no_show"), booking })).toMatchObject({
       heading: "Was Jane S. a no-show?",

@@ -1,4 +1,5 @@
 import { eventAttributes } from "@/lib/analytics";
+import { lowestPerPerson, soloPrice, usd } from "@/lib/session-pricing";
 
 // Editing these terms? Bump their date in LEGAL_LAST_MODIFIED (src/app/sitemap.ts).
 export const TERMS_EFFECTIVE_DATE = "Effective April 23, 2026";
@@ -12,7 +13,7 @@ export default function TermsContent() {
         in the Dallas-Fort Worth area. Your lesson time is reserved when you book, and
         Mario confirms the exact court afterward based on your preference, court availability,
         weather, and any venue rules. Lessons are provided as described at the time of booking
-        (Foundations, Strategy Lab, or Group Clinic).
+        (Foundations, Strategy Lab, Group Clinic, Drilling Session, or Play with the Pro).
       </p>
 
       <h2>Pricing</h2>
@@ -20,7 +21,20 @@ export default function TermsContent() {
         <li>Foundations (1-on-1) - $70 per session</li>
         <li>Strategy Lab (1-on-1) - $80 per session</li>
         <li>Group Clinic - $50 per player per session</li>
+        <li>
+          Drilling Session (1 to 8 players) - 60 minutes: {usd(soloPrice("drill", 60))} solo, from{" "}
+          {usd(lowestPerPerson("drill", 60))} per player; 90 minutes: {usd(soloPrice("drill", 90))} solo,
+          from {usd(lowestPerPerson("drill", 90))} per player
+        </li>
+        <li>
+          Play with the Pro (1 to 4 players) - {usd(soloPrice("play_pro"))} solo, from{" "}
+          {usd(lowestPerPerson("play_pro"))} per player
+        </li>
       </ul>
+      <p>
+        For a Drilling Session or Play with the Pro, the person who books pays the total for the
+        group, as shown when booking.
+      </p>
       <p>
         Prices are subject to change with reasonable notice. Lesson prices do not include
         third-party court reservation fees unless Mario confirms otherwise before the lesson.

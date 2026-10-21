@@ -45,7 +45,7 @@ export default async function LessonOutcomePage({
   if (check?.ok) {
     const { data, error } = await createServiceRoleClient()
       .from("bookings")
-      .select("name,lesson_type,lesson_date,lesson_time,status,student_id")
+      .select("name,lesson_type,lesson_date,lesson_time,status,student_id,group_size")
       .eq("id", check.bookingId)
       .maybeSingle();
     if (error) {

@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { Resend, type CreateEmailOptions } from "resend";
 import { shortName } from "@/lib/lesson-outcomes";
+import { lessonName } from "@/lib/lesson-types";
 import { generateIcs, type IcsBooking, type IcsMethod } from "./ics";
 import {
   studentRequestedHtml,
@@ -28,12 +29,6 @@ function adminEmail(): string {
   const val = process.env.ADMIN_EMAIL ?? "demariomontez10@gmail.com";
   return val.split(",")[0].trim();
 }
-
-const LESSON_NAMES: Record<string, string> = {
-  beginner: "Foundations",
-  advanced: "Strategy Lab",
-  clinic: "Group Clinic",
-};
 
 /** Names come from public forms. One line, so they cannot add lines to a subject header. */
 function oneLine(text: string): string {
@@ -79,7 +74,7 @@ export async function sendBookingCreatedEmails(booking: IcsBooking): Promise<voi
     organizerEmail: adminEmail(),
   });
   const icsContent = Buffer.from(ics).toString("base64");
-  const lesson = LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type;
+  const lesson = lessonName(booking.lesson_type);
 
   const studentResult = await resend.emails.send({
     from: emailFrom(),

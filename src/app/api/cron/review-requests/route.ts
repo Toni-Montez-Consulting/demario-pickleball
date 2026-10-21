@@ -8,13 +8,8 @@ import {
   type ReviewEligibleBooking,
 } from "@/lib/reviews";
 import { sendReviewRequestEmail } from "@/lib/email/client";
+import { lessonName } from "@/lib/lesson-types";
 import { SITE_URL } from "@/lib/site";
-
-const LESSON_NAMES: Record<string, string> = {
-  beginner: "Foundations",
-  advanced: "Strategy Lab",
-  clinic: "Group Clinic",
-};
 
 /** Do not ask the same student for a review more than once a quarter. */
 const REASK_WINDOW_DAYS = 90;
@@ -122,7 +117,7 @@ export async function GET(req: NextRequest) {
     const ok = await sendReviewRequestEmail({
       to: booking.email,
       name: booking.name,
-      lessonName: LESSON_NAMES[booking.lesson_type] ?? booking.lesson_type,
+      lessonName: lessonName(booking.lesson_type),
       lessonDate: booking.lesson_date,
       reviewUrl: `${SITE_URL}/review/${token}`,
     });

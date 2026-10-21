@@ -44,6 +44,35 @@ describe("AdminDashboard availability", () => {
     expect(screen.getByText("Area: Lake Highlands")).toBeVisible();
   });
 
+  it("shows a group booking's format and the quote the student booked at", () => {
+    render(
+      <AdminDashboard
+        initialBookings={[
+          {
+            id: "booking-group",
+            created_at: "2026-10-20T12:00:00Z",
+            name: "Group Lead",
+            email: "lead@example.com",
+            phone: null,
+            lesson_type: "drill_90",
+            lesson_date: "2099-05-05",
+            lesson_time: "9:00 AM",
+            status: "pending",
+            notes: null,
+            paid_at: null,
+            group_size: 3,
+            quoted_per_person_cents: 3500,
+            quoted_total_cents: 10500,
+          },
+        ]}
+        initialInquiries={[]}
+      />
+    );
+
+    expect(screen.getByText("Drilling Session, 90 min")).toBeVisible();
+    expect(screen.getByText("$35 per person · 3 players · $105 total")).toBeVisible();
+  });
+
   it("filters bookings by operational status", async () => {
     const user = userEvent.setup();
 

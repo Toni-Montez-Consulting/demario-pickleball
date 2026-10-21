@@ -1,8 +1,22 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { generateDays, type DaySlot } from "@/lib/data";
+import { generateDays, LESSONS, type DaySlot, type LessonKey } from "@/lib/data";
 import { COURT_CONFIRMATION_MESSAGE, LESSON_LOCATION } from "@/lib/business";
+import {
+  fixedFee,
+  groupSizeLimits,
+  LESSON_NAMES,
+  quoteLesson,
+  type LessonType,
+} from "@/lib/lesson-types";
+import {
+  lowestPerPerson,
+  playersLabel,
+  quoteLine,
+  usd,
+  type DrillLength,
+} from "@/lib/session-pricing";
 import { COURT_SETUP_OPTIONS, formatBookingNotes, type CourtSetup } from "@/lib/booking-notes";
 import {
   COURT_SETUP_HINTS,
@@ -38,7 +52,11 @@ interface FormData {
   name: string;
   email: string;
   phone: string;
-  lessonType: "beginner" | "advanced" | "clinic";
+  /** The format picked in the form. Drilling becomes drill_60 or drill_90 by length. */
+  lessonKey: LessonKey;
+  drillLength: DrillLength;
+  /** Only sent for a group format. */
+  groupSize: number;
   courtSetup: CourtSetup | "";
   preferredCourt: string;
 }
@@ -46,23 +64,35 @@ interface FormData {
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialLessonType?: FormData["lessonType"];
+  initialLessonType?: LessonKey;
 }
 
-const LESSON_LABELS: Record<string, string> = {
-  beginner: "Foundations ($70)",
-  advanced: "Strategy Lab ($80)",
-  clinic: "Group Clinic ($50)",
-};
+// Fixed-fee lessons show their fee; group formats show their lowest price per
+// player. Both come from the price tables, never from copy.
+const FORMAT_OPTIONS = (Object.keys(LESSONS) as LessonKey[]).map((key) => {
+  const fee = fixedFee(key);
+  const price =
+    fee !== null
+      ? usd(fee)
+      : `from ${usd(lowestPerPerson(key === "drill" ? "drill" : "play_pro"))}`;
+  return { key, label: `${LESSONS[key].name} (${price})` };
+});
+
+const DRILL_LENGTHS: DrillLength[] = [60, 90];
+
+function lessonTypeFor(key: LessonKey, drillLength: DrillLength): LessonType {
+  if (key === "drill") return drillLength === 90 ? "drill_90" : "drill_60";
+  return key;
+}
+
+/** Keeps a group size inside the chosen format's limits. */
+function clampGroupSize(type: LessonType, groupSize: number): number {
+  const limits = groupSizeLimits(type);
+  return limits ? Math.min(Math.max(groupSize, limits.min), limits.max) : groupSize;
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^[\d\s\-()+]{7,20}$/;
-
-const LESSON_PRICES: Record<string, string> = {
-  beginner: "$70.00",
-  advanced: "$80.00",
-  clinic: "$50.00",
-};
 
 const RouteArrowIcon = () => (
   <svg
@@ -132,7 +162,9 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     name: "",
     email: "",
     phone: "",
-    lessonType: initialLessonType,
+    lessonKey: initialLessonType,
+    drillLength: 60,
+    groupSize: 1,
     courtSetup: "",
     preferredCourt: "",
   });
@@ -157,17 +189,23 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   // Steps already reported in this opening of the form. See showStep.
   const viewedStepsRef = useRef<Set<BookingStep>>(new Set());
 
+  // What the server is asked to book, and for a group format what it will
+  // charge. The server quotes again from the same table; this is the preview.
+  const lessonType = lessonTypeFor(form.lessonKey, form.drillLength);
+  const groupLimits = groupSizeLimits(lessonType);
+  const quote = quoteLesson(lessonType, clampGroupSize(lessonType, form.groupSize));
+
   const fetchAvailability = useCallback(async (
     dateStr: string,
     availableTimes: string[],
-    lessonType: FormData["lessonType"]
+    type: LessonType
   ) => {
     setAvailLoading(true);
     setAvailError("");
     try {
       const params = new URLSearchParams({
         date: dateStr,
-        lesson_type: lessonType,
+        lesson_type: type,
       });
       const res = await fetch(`/api/availability?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load availability.");
@@ -202,7 +240,9 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
         name: "",
         email: "",
         phone: "",
-        lessonType: initialLessonType,
+        lessonKey: initialLessonType,
+        drillLength: 60,
+        groupSize: 1,
         courtSetup: "",
         preferredCourt: "",
       });
@@ -295,10 +335,18 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     });
   }
 
+  // From the latest state, so quick taps all count, and held to the limits.
+  function stepGroupSize(delta: number) {
+    setForm((f) => {
+      const type = lessonTypeFor(f.lessonKey, f.drillLength);
+      return { ...f, groupSize: clampGroupSize(type, clampGroupSize(type, f.groupSize) + delta) };
+    });
+  }
+
   function handleDaySelect(i: number) {
     setSelectedDay(i);
     setPickerError("");
-    fetchAvailability(days[i].dateStr, times, form.lessonType);
+    fetchAvailability(days[i].dateStr, times, lessonType);
   }
 
   async function confirmBooking() {
@@ -316,7 +364,10 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
           name: form.name,
           email: form.email,
           phone: form.phone,
-          lesson_type: form.lessonType,
+          lesson_type: lessonType,
+          // The size the quote line showed. The server prices it again from
+          // the same table and never takes a price from the browser.
+          group_size: quote?.groupSize,
           lesson_date: day.dateStr,
           lesson_time: selectedTime,
           notes: form.courtSetup
@@ -331,7 +382,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       });
       if (res.status === 409) {
         trackEvent("booking_failed", { reason: "slot_taken" });
-        await fetchAvailability(day.dateStr, times, form.lessonType);
+        await fetchAvailability(day.dateStr, times, lessonType);
         setPickerError("That time was just taken. Please pick another.");
         showStep("picker");
         return;
@@ -364,7 +415,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       showStep("indoorRouting");
       return;
     }
-    fetchAvailability(days[selectedDay].dateStr, times, form.lessonType);
+    fetchAvailability(days[selectedDay].dateStr, times, lessonType);
     showStep("picker");
   }
 
@@ -375,8 +426,12 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   if (!isOpen) return null;
 
   const day = days[selectedDay];
-  const lessonName = LESSON_LABELS[form.lessonType].split(" (")[0];
-  const lessonPrice = LESSON_PRICES[form.lessonType];
+  const lessonName = LESSON_NAMES[lessonType];
+  const lessonLabel = quote ? `${lessonName} · ${playersLabel(quote.groupSize)}` : lessonName;
+  // The person booking pays the whole group's total. A fixed fee shows as it
+  // always has (the clinic's is per player).
+  const feeDollars = quote ? quote.total : fixedFee(lessonType);
+  const lessonPrice = feeDollars === null ? "" : `$${feeDollars.toFixed(2)}`;
   const availableCount = times.filter((t) => !bookedTimes.has(t)).length;
   const phoneValue = form.phone.trim();
   const phoneValid = PHONE_RE.test(phoneValue) && phoneValue.replace(/\D/g, "").length >= 7;
@@ -467,16 +522,72 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
               <select
                 id="lesson-type"
                 className="modal-select"
-                value={form.lessonType}
-                onChange={(e) =>
-                  setForm({ ...form, lessonType: e.target.value as FormData["lessonType"] })
-                }
+                value={form.lessonKey}
+                onChange={(e) => {
+                  const lessonKey = e.target.value as LessonKey;
+                  setForm((f) => ({
+                    ...f,
+                    lessonKey,
+                    groupSize: clampGroupSize(lessonTypeFor(lessonKey, f.drillLength), f.groupSize),
+                  }));
+                }}
               >
-                <option value="beginner">Foundations ($70)</option>
-                <option value="advanced">Strategy Lab ($80)</option>
-                <option value="clinic">Group Clinic ($50)</option>
+                {FORMAT_OPTIONS.map(({ key, label }) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </div>
+            {form.lessonKey === "drill" && (
+              <div className="modal-form-group">
+                <span className="field-label" id="bm-length-label">Length</span>
+                <div className="segmented" role="group" aria-labelledby="bm-length-label">
+                  {DRILL_LENGTHS.map((length) => (
+                    <button
+                      key={length}
+                      type="button"
+                      aria-pressed={form.drillLength === length}
+                      onClick={() => setForm((f) => ({ ...f, drillLength: length }))}
+                    >
+                      {length} min
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {groupLimits && quote && (
+              <div className="modal-form-group">
+                <span className="field-label" id="bm-players-label">Players</span>
+                <div className="stepper" role="group" aria-labelledby="bm-players-label">
+                  <button
+                    type="button"
+                    className="stepper-btn"
+                    aria-label="Fewer players"
+                    disabled={quote.groupSize <= groupLimits.min}
+                    onClick={() => stepGroupSize(-1)}
+                  >
+                    −
+                  </button>
+                  <span className="stepper-value">{playersLabel(quote.groupSize)}</span>
+                  <button
+                    type="button"
+                    className="stepper-btn"
+                    aria-label="More players"
+                    disabled={quote.groupSize >= groupLimits.max}
+                    onClick={() => stepGroupSize(1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
+            {quote && (
+              <div className="modal-form-group">
+                <p className="quote-line" aria-live="polite">{quoteLine(quote)}</p>
+                <p className="field-hint">Court fees, if any, are separate. DeMario confirms them with you.</p>
+              </div>
+            )}
             <div className="modal-form-group">
               <label htmlFor="court-setup">Preferred court setup</label>
               <select
@@ -612,13 +723,13 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
           <>
             <h3 id="booking-modal-title">Choose a time</h3>
             <p className="m-sub">
-              {lessonName} · {LESSON_LOCATION}
+              {lessonLabel} · {LESSON_LOCATION}
             </p>
 
             <div className="booking-choice-summary">
               <div>
                 <span>Lesson</span>
-                <strong>{lessonName}</strong>
+                <strong>{lessonLabel}</strong>
               </div>
               <div>
                 <span>Price</span>
@@ -675,7 +786,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
             ) : availError ? (
               <div className="avail-fetch-error">
                 <div className="modal-error">{availError}</div>
-                <button type="button" className="btn btn-ghost avail-retry-btn" onClick={() => fetchAvailability(days[selectedDay].dateStr, times, form.lessonType)}>
+                <button type="button" className="btn btn-ghost avail-retry-btn" onClick={() => fetchAvailability(days[selectedDay].dateStr, times, lessonType)}>
                   Retry
                 </button>
               </div>
@@ -774,6 +885,12 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 <span>Lesson</span>
                 <strong>{lessonName}</strong>
               </div>
+              {quote && (
+                <div className="booking-summary-row">
+                  <span>Players</span>
+                  <strong>{playersLabel(quote.groupSize)} · {usd(quote.perPerson)} per person</strong>
+                </div>
+              )}
               <div className="booking-summary-row">
                 <span>Coach</span>
                 <strong>DeMario Montez</strong>

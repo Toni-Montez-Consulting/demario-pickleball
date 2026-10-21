@@ -126,6 +126,11 @@ invite, Google Calendar link, payment links, QR code, and admin booking row all
 show the expected details. Cancel it from admin and confirm the cancellation
 email arrives. Confirm a busy Google Calendar event blocks a public slot.
 
+Once round 2 is live, add one booking each for a 60-minute and a 90-minute
+Drilling Session and for Play with the Pro, each with more than one player.
+Check that the group size and the total show in both emails, the invite, the
+Admin row, and the next morning's digest.
+
 Owner: Tonio and Mario.
 
 ### First real review, end to end
@@ -142,7 +147,8 @@ Owner: Tonio and Mario.
 
 Answered 2026-10-20: Mario sent pricing, durations, and group sizes for drilling
 sessions and Play with the Pro, so round 2 is no longer blocked on him. He does
-not want a Google Business Profile for now.
+not want a Google Business Profile for now. He also kept the Group Clinic as it
+is and approved the two new cards' text.
 
 The three homepage testimonials are confirmed real and permissioned.
 
@@ -181,6 +187,17 @@ details.
 If traffic grows, consider a very short server-side cache or a client-side
 debounce. The final booking submit should still check Google Calendar before
 inserting a booking.
+
+### Group sessions (round 2)
+
+Drilling Sessions (`drill_60`, `drill_90`) and Play with the Pro (`play_pro`) book
+with a group size. The server prices them from `src/lib/session-pricing.ts` and
+stores the quote on the booking: `group_size`, `quoted_per_person_cents`, and
+`quoted_total_cents`. The person booking pays the group total. Play with the Pro
+holds one hour; DeMario extends a longer session on his own calendar. The
+database change (`docs/supabase-round-2-sessions-migration.sql`) was applied on
+2026-10-21 at 01:49 UTC, before PR #29 merged. Spec:
+`docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`.
 
 ### Booking overlap protection
 

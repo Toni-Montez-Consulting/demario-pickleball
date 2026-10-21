@@ -40,10 +40,10 @@ within two properties. Web Analytics Plus ($10/month) raises the limit to 8 prop
 
 | Event | Properties | Question |
 |---|---|---|
-| `book_cta_click` | `source` (nav, hero, testimonials, lessons, final_cta, sticky), `lesson_type` | Which Book button starts bookings? |
+| `book_cta_click` | `source` (nav, hero, testimonials, lessons, final_cta, sticky), `lesson_type` (the card: beginner, advanced, clinic, drill, play_pro) | Which Book button starts bookings? |
 | `booking_step_viewed` | `step` (details, terms, indoor_routing, picker, error, confirmed), `court_setup` | Where does the booking form lose people? Sent once per step per opening of the form, so Back, Try again, and a taken slot do not count a step twice. |
 | `booking_failed` | `reason` (slot_taken, rate_limited, invalid, server, network) | Are bookings failing, and why? |
-| `booking_created` | `lesson_type`, `court_setup` | How many bookings were actually saved (server-side)? |
+| `booking_created` | `lesson_type` (as stored: beginner, advanced, clinic, drill_60, drill_90, play_pro), `court_setup` | How many bookings were actually saved (server-side)? Group size is not sent; the event's two properties are taken, and the database has it. |
 | `venue_link_click` | `venue` (dallas_indoor, the_grove, teachme_to, ...), `surface` | How many students leave for PodPlay or TeachMe.To? |
 | `contact_click` | `channel` (sms, tel, email), `surface` | How many text, call, or email Mario directly? |
 | `payment_link_click` | `method` (cashapp, zelle, paypal, paypal_qr), `surface` | Which payment methods do students open? |

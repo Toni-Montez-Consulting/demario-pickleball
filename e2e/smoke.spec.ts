@@ -193,6 +193,90 @@ test("booking terms stay in-flow and mobile modal does not overflow or trigger t
   }
 });
 
+test("drilling and Play with the Pro quote the group live and book its total", async ({ page }) => {
+  await mockBookingFlow(page);
+  const posted = page.waitForRequest(
+    (request) => request.url().endsWith("/api/bookings") && request.method() === "POST"
+  );
+
+  await page.goto("/");
+  const lessons = page.locator("#lessons");
+  await lessons.getByRole("button", { name: "Drilling", exact: true }).click();
+  await expect(lessons.getByRole("heading", { name: "Drilling Session" })).toBeVisible();
+  await expect(lessons.getByText("from $15 per player")).toBeVisible();
+  await expect(lessons.getByRole("table")).toContainText("90 min");
+  await lessons.getByRole("button", { name: /book this lesson/i }).click();
+
+  const dialog = page.getByRole("dialog", { name: /book a lesson/i });
+  await expect(dialog.getByLabel(/lesson type/i)).toHaveValue("drill");
+  await expect(dialog.getByText("$60 per person · 1 player · $60 total")).toBeVisible();
+
+  await dialog.getByRole("button", { name: "90 min" }).click();
+  const more = dialog.getByRole("button", { name: "More players" });
+  for (let players = 1; players < 8; players++) await more.click();
+  await expect(dialog.getByText("$18 per person · 8 players · $144 total")).toBeVisible();
+  await expect(more).toBeDisabled();
+
+  // Play with the Pro takes four at most, so the group is clamped to four.
+  await dialog.getByLabel(/lesson type/i).selectOption("play_pro");
+  await expect(dialog.getByText("$30 per person · 4 players · $120 total")).toBeVisible();
+  await dialog.getByRole("button", { name: "Fewer players" }).click();
+  await expect(dialog.getByText("$35 per person · 3 players · $105 total")).toBeVisible();
+
+  await dialog.getByLabel(/your name/i).fill("Jane Student");
+  await dialog.getByLabel(/email/i).fill("jane@example.com");
+  await dialog.getByLabel(/phone/i).fill("(469) 371-9220");
+  await dialog.getByLabel(/preferred court setup/i).selectOption("Outdoor public court");
+  await dialog.getByLabel(/preferred area or court/i).fill("Lake Highlands");
+  await dialog.getByRole("checkbox").check();
+  await dialog.getByRole("button", { name: /continue to available times/i }).click();
+
+  const picker = page.getByRole("dialog");
+  await expect(picker.getByText("Play with the Pro · 3 players", { exact: true })).toBeVisible();
+  await expect(picker.getByText("$105.00", { exact: true })).toBeVisible();
+  await picker.getByRole("button", { name: /reserve/i }).click();
+
+  const confirmed = page.getByRole("dialog", { name: /you're booked/i });
+  await expect(confirmed.getByText("3 players · $35 per person")).toBeVisible();
+  await expect(confirmed.locator(".pay-amount")).toHaveText("$105.00");
+  expect((await posted).postDataJSON()).toMatchObject({ lesson_type: "play_pro", group_size: 3 });
+});
+
+test("the lesson tabs and the group quote fit a 320px phone", async ({ page }) => {
+  await mockBookingFlow(page);
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/");
+
+  // Five tabs wrap instead of running off the card: the three lessons on one
+  // row, the two group formats on the next.
+  const tabs = page.locator(".lesson-tabs");
+  await tabs.scrollIntoViewIfNeeded();
+  expect(await tabs.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+  const rows = await tabs.evaluate((el) => {
+    const counts = new Map<number, number>();
+    for (const tab of Array.from(el.children)) {
+      const top = Math.round(tab.getBoundingClientRect().top);
+      counts.set(top, (counts.get(top) ?? 0) + 1);
+    }
+    return Array.from(counts.values());
+  });
+  expect(rows).toEqual([3, 2]);
+
+  await page.getByRole("button", { name: /book a lesson/i }).first().click();
+  const dialog = page.getByRole("dialog", { name: /book a lesson/i });
+  await dialog.getByLabel(/lesson type/i).selectOption("drill");
+  const quote = dialog.locator(".quote-line");
+  await quote.scrollIntoViewIfNeeded();
+  await expect(quote).toHaveText("$60 per person · 1 player · $60 total");
+  expect(await dialog.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+
+  for (const name of ["Fewer players", "More players", "60 min", "90 min"]) {
+    const box = await dialog.getByRole("button", { name, exact: true }).boundingBox();
+    expect(box?.height, name).toBeGreaterThanOrEqual(44);
+    expect(box?.width, name).toBeGreaterThanOrEqual(44);
+  }
+});
+
 test("keyboard focus stays inside the booking dialog in both directions", async ({ page }) => {
   await mockBookingFlow(page);
   await page.goto("/");
