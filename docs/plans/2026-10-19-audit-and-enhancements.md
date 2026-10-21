@@ -194,10 +194,11 @@ For DeMario, answered 2026-10-20:
 - Instagram is `@demario.montez`, and Dallas is the primary area with DFW still listed. Both
   are on the site.
 - Hero photo: two podium photos came in, 1600×1200 group shots. The hero item stays open.
+  He will get a photo at his next tournament, on 2026-11-21 (Tonio, 2026-10-21).
 - The 8 AM digest and three reminders suit him. For a lesson moved by text, he marks the
   original "Didn't happen" and books the new date as its own booking. "Didn't happen" never
   sends a review request: the review cron only asks about confirmed lessons.
 - The four pending past lessons: May 22 didn't happen. July 25, August 26, and October 19
-  happened and were paid by PayPal. To be recorded in Admin.
+  happened and were paid by PayPal. Recorded on 2026-10-20 at 10:41 UTC.
 - Round 2 pricing arrived for drilling sessions and Play with the Pro. Google Business
   Profile: not for now.
