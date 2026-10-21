@@ -271,7 +271,8 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
   `/`, `/pay`, `/privacy`, `/terms`.
 - **Icons:** `favicon.ico` and the Apple touch icon (`node scripts/generate-icons.mjs`).
 - **Not done here:**
-  - The hero photo is only 828px wide; it needs a 2000px+ original from DeMario.
+  - The hero photo is only 828px wide; it needs a 2000px+ original from DeMario. He will get
+    one at his next tournament, on 2026-11-21.
   - `www` -> apex returned 307. Done outside the code on 2026-10-19: `www` is now a 308
     redirect in Vercel Domains.
   - CSP and HSTS `includeSubDomains` came later, on their own tested branch
