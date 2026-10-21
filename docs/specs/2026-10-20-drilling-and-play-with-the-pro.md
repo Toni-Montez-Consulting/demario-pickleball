@@ -1,7 +1,7 @@
 # Drilling Sessions and Play with the Pro
 
-**Status:** built in draft PR #29, 2026-10-20. Every decision in section 6 is made. The
-database migration waits on Tonio's go-ahead and must be applied before the PR merges
+**Status:** built in PR #29, 2026-10-20. Every decision in section 6 is made. The database
+migration was applied to production on 2026-10-21 at 01:49 UTC, before the PR merged
 (section 7). The source is DeMario's texts to Tonio on 2026-10-20; his numbers win over
 anything here.
 
@@ -166,7 +166,8 @@ Group size is not sent: Vercel's Pro plan keeps two properties per event, and
 1. CI green on PR #29: unit tests, the build, and Playwright.
 2. Preview check in a real browser: the cards, and the form's quote on a phone and a desktop.
    No booking is submitted, because previews use the production database.
-3. With Tonio's go-ahead, apply the migration, then run its VERIFY queries.
+3. With Tonio's go-ahead, apply the migration, then run its VERIFY queries. Done on
+   2026-10-21 at 01:49 UTC; every VERIFY query matched.
 4. Merge. Production deploys from Git; check it the same way as the preview.
 5. After deploy, one real booking per format with DeMario, folded into the live booking QA in
    `docs/LAUNCH_OUTSTANDING.md`.

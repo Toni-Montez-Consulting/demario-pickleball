@@ -129,16 +129,6 @@ Blocked behind the review loop above.
 
 Owner: Tonio and Mario.
 
-### Round 2: migration before merge
-
-Drilling Sessions and Play with the Pro are built in draft PR #29 with Mario's
-prices and approved copy (spec: `docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`).
-`docs/supabase-round-2-sessions-migration.sql` must be applied to production,
-with Tonio's go-ahead, before the PR merges. Until then the database refuses the
-new lesson types.
-
-Owner: Tonio.
-
 ## Blocked On Mario
 
 - DUPR read-only API or partner access. Automated rating sync waits on it.
@@ -185,6 +175,17 @@ details.
 If traffic grows, consider a very short server-side cache or a client-side
 debounce. The final booking submit should still check Google Calendar before
 inserting a booking.
+
+### Group sessions (round 2)
+
+Drilling Sessions (`drill_60`, `drill_90`) and Play with the Pro (`play_pro`) book
+with a group size. The server prices them from `src/lib/session-pricing.ts` and
+stores the quote on the booking: `group_size`, `quoted_per_person_cents`, and
+`quoted_total_cents`. The person booking pays the group total. Play with the Pro
+holds one hour; DeMario extends a longer session on his own calendar. The
+database change (`docs/supabase-round-2-sessions-migration.sql`) was applied on
+2026-10-21 at 01:49 UTC, before PR #29 merged. Spec:
+`docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`.
 
 ### Booking overlap protection
 

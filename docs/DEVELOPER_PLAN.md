@@ -165,9 +165,9 @@ on 2026-10-18 (8 bookings, 1 confirmed, 0 review requests); #18 is the response.
 - Round 2 of the yield/retention work: drilling sessions and play-with-the-pro as bookable
   formats, plus packages as a manual lesson-credits ledger on the student record. DeMario sent
   pricing, durations, and group sizes for both formats on 2026-10-20; packages are still
-  unpriced. Both formats are built in draft PR #29
-  (`docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`), whose database migration must be
-  applied before it merges.
+  unpriced. Both formats are built in PR #29
+  (`docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`); its database migration was
+  applied on 2026-10-21.
 - Add secure student cancellation/reschedule links using private email tokens, policy-aware UI/API checks, student/admin notifications, ICS cancel/update files, and manual payment/refund handling until Stripe exists.
 - Add Stripe Checkout only after the pickleball business entity and banking setup exist.
 - Add automated DUPR rating sync only after Mario receives official read-only API or partner access from DUPR.

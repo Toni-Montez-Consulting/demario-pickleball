@@ -1,9 +1,9 @@
 -- Round 2 sessions: Drilling Sessions and Play with the Pro.
 -- Spec: docs/specs/2026-10-20-drilling-and-play-with-the-pro.md
 --
--- NOT YET APPLIED. Apply only with Tonio's go-ahead, and BEFORE the code that
--- books these formats deploys: until then the database refuses their
--- lesson_type values. One transaction; safe to re-run.
+-- Applied to production 2026-10-21 01:49 UTC, with Tonio's go-ahead, before the
+-- code that books these formats deployed. Every VERIFY query below matched.
+-- One transaction; safe to re-run.
 --
 -- What changes:
 --   1. bookings.lesson_type also accepts drill_60, drill_90, and play_pro.
