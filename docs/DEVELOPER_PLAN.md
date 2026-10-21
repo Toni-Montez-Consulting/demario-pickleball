@@ -163,8 +163,11 @@ on 2026-10-18 (8 bookings, 1 confirmed, 0 review requests); #18 is the response.
 
 - Add 24-hour reminder emails.
 - Round 2 of the yield/retention work: drilling sessions and play-with-the-pro as bookable
-  formats, plus packages as a manual lesson-credits ledger on the student record. Blocked on
-  DeMario's pricing, duration, and player counts.
+  formats, plus packages as a manual lesson-credits ledger on the student record. DeMario sent
+  pricing, durations, and group sizes for both formats on 2026-10-20; packages are still
+  unpriced. Both formats are built in draft PR #29
+  (`docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`), whose database migration must be
+  applied before it merges.
 - Add secure student cancellation/reschedule links using private email tokens, policy-aware UI/API checks, student/admin notifications, ICS cancel/update files, and manual payment/refund handling until Stripe exists.
 - Add Stripe Checkout only after the pickleball business entity and banking setup exist.
 - Add automated DUPR rating sync only after Mario receives official read-only API or partner access from DUPR.
@@ -281,9 +284,9 @@ From the 2026-10-19 live audit (Lighthouse mobile 92/100/100/100, desktop 100s; 
     live site got a browser pass after the deploy. The Vercel Toolbar's sources are allowed
     on previews only, so the toolbar does not load on production for team members either.
   - `tel:` links have no `+1`; US numbers dial fine, so they were left alone.
-  - JSON-LD says Farmers Branch while the footer says Dallas. Mario should pick the address
-    for local search.
-  - The Instagram link (`@Alexanderiio`) does not match his name. Mario should confirm it.
+  - Done 2026-10-20 on DeMario's answers: Dallas is the primary area in the JSON-LD and the
+    About badge, with the DFW metroplex still listed, and Instagram links go to
+    `@demario.montez`.
 
 ### 5. `feat/conversion-tracking` — privacy-safe funnel analytics (2026-10-19)
 
@@ -334,9 +337,10 @@ Origination Rule).
 - **Live since 2026-10-19:** `LESSON_OUTCOME_SECRET` is set in Vercel Production. Steps 4 to 7
   of the Lesson Outcome Nudge section of `docs/RELEASE_CHECKLIST.md`, a test booking through
   the digest, are still open.
-- **Open for DeMario:** is the digest time right (13:00 UTC: 8 AM Central now, 7 AM after
-  daylight saving ends) with three reminders, and does "Didn't happen" fit how he moves
-  lessons by text?
+- **Answered by DeMario, 2026-10-20:** 8 AM and three reminders suit him. A lesson moved by
+  text is marked "Didn't happen" and the new date is booked on its own. He asked that "Didn't
+  happen" never send a review request, and it doesn't: the review cron only asks about
+  `confirmed` bookings.
 
 ## Long-Term Reference
 

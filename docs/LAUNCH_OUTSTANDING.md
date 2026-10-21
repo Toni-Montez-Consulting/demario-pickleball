@@ -141,9 +141,12 @@ Owner: Tonio.
 
 ## Blocked On Mario
 
-- Mario has no Google Business Profile. Verify service-area-business eligibility
-  against live Google documentation before writing that task.
 - DUPR read-only API or partner access. Automated rating sync waits on it.
+
+Answered 2026-10-20: Mario sent pricing, durations, and group sizes for drilling
+sessions and Play with the Pro, so round 2 is no longer blocked on him. He does
+not want a Google Business Profile for now. He also kept the Group Clinic as it
+is and approved the two new cards' text.
 
 The three homepage testimonials are confirmed real and permissioned.
 
