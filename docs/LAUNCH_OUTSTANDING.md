@@ -135,9 +135,10 @@ Owner: Tonio and Mario.
 
 ### First real review, end to end
 
-Submit one review through the emailed link and publish it from Admin -> Reviews.
-The first link went out on 2026-10-20. Waiting on that student to submit, then
-on Mario to publish it.
+Submit one review through the emailed link and check that it appears on the
+homepage without anyone publishing it, and that DeMario's email about it arrives
+with a working Take it down button (`docs/specs/2026-10-22-automatic-reviews.md`).
+The first link went out on 2026-10-20. Waiting on that student to submit.
 
 Owner: Tonio and Mario.
 
