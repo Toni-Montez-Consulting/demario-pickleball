@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid time" }, { status: 400 });
   }
   const trimmedPhone = typeof phone === "string" ? phone.trim() : "";
-  if (!/^[\d\s\-()+]{7,20}$/.test(trimmedPhone) || trimmedPhone.replace(/\D/g, "").length < 7) {
+  if (!/^[\d\s\-().+]{7,20}$/.test(trimmedPhone) || trimmedPhone.replace(/\D/g, "").length < 7) {
     return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
   }
   const trimmedNotes = (typeof notes === "string" && notes.trim()) ? notes.trim().slice(0, 500) : null;

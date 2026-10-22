@@ -8,7 +8,8 @@ import {
   type ReviewEligibleBooking,
 } from "@/lib/reviews";
 import { sendReviewRequestEmail } from "@/lib/email/client";
-import { lessonName } from "@/lib/lesson-types";
+import { lessonPhrase } from "@/lib/lesson-types";
+import { formatLessonDate } from "@/lib/time";
 import { SITE_URL } from "@/lib/site";
 
 /** Do not ask the same student for a review more than once a quarter. */
@@ -109,21 +110,49 @@ export async function GET(req: NextRequest) {
       continue;
     }
 
+    // Claim the booking before sending. Vercel can occasionally start the same
+    // scheduled run twice; both runs would read this booking as unasked, so
+    // only the one whose stamp lands sends. The other skips it.
+    const { data: claimed, error: claimError } = await supabase
+      .from("bookings")
+      .update({ review_request_sent_at: now.toISOString() })
+      .eq("id", booking.id)
+      .is("review_request_sent_at", null)
+      .select("id");
+
+    if (claimError) {
+      console.error("[cron review-requests] claim failed", booking.id, claimError);
+      failed.push(booking.id);
+      continue;
+    }
+    if (!claimed || claimed.length === 0) {
+      skipped["claimed by another run"] = (skipped["claimed by another run"] ?? 0) + 1;
+      continue;
+    }
+
     const token = generateReviewToken();
 
-    // Send first, then persist. The reverse order meant a failed send left a
-    // pending row whose token nobody had, which the 90-day dedupe then counted
-    // as "already asked" — silencing that student for a quarter.
+    // Send, then store the review row. The reverse order meant a failed send
+    // left a pending row whose token nobody had, which the 90-day dedupe then
+    // counted as "already asked" — silencing that student for a quarter.
     const ok = await sendReviewRequestEmail({
       to: booking.email,
       name: booking.name,
-      lessonName: lessonName(booking.lesson_type),
-      lessonDate: booking.lesson_date,
+      lessonName: lessonPhrase(booking.lesson_type),
+      lessonDate: formatLessonDate(booking.lesson_date),
       reviewUrl: `${SITE_URL}/review/${token}`,
     });
 
     if (!ok) {
       console.error("[cron review-requests] email send failed", booking.id);
+      // Release the claim so the next run tries this student again.
+      const { error: releaseError } = await supabase
+        .from("bookings")
+        .update({ review_request_sent_at: null })
+        .eq("id", booking.id);
+      if (releaseError) {
+        console.error("[cron review-requests] could not release claim", booking.id, releaseError);
+      }
       failed.push(booking.id);
       continue;
     }
@@ -145,17 +174,6 @@ export async function GET(req: NextRequest) {
 
     if (createError) {
       console.error("[cron review-requests] review row failed after send", booking.id, createError);
-      failed.push(booking.id);
-      continue;
-    }
-
-    const { error: stampError } = await supabase
-      .from("bookings")
-      .update({ review_request_sent_at: now.toISOString() })
-      .eq("id", booking.id);
-
-    if (stampError) {
-      console.error("[cron review-requests] stamp failed", booking.id, stampError);
       failed.push(booking.id);
       continue;
     }

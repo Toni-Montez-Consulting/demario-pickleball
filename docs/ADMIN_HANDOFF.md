@@ -23,16 +23,18 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
   confirm on the page that opens. "Lesson happened" is what lets the site ask the student for
   a review. Nothing is sent to the student for the other two, and once recorded they can't be
   changed back to a lesson that happened. Each lesson drops off after three mornings; older
-  ones are under **Needs outcome** in `/admin`: **Confirm** if it happened, **No show**, or
+  ones are under **Needs outcome** in `/admin`: **Lesson happened**, **No show**, or
   **Didn't happen** (the Cancel button, renamed once a lesson has started, which emails no
-  one).
+  one). **Lesson happened** works only once the lesson has started, so confirming the court
+  by text beforehand can never trigger a review request.
 - **A lesson moved by text:** mark the original **Didn't happen**, then book the new date as
   its own booking on the site, or have the student rebook. Each lesson keeps its own outcome.
   Only **Lesson happened** asks the student for a review; **Didn't happen** and **No-show**
   never do.
 - Open `/admin` and review new bookings.
 - Text each new student using the phone number in the booking row.
-- Confirm the exact court, any court reservation fee, and payment expectation.
+- Confirm the exact court, any court reservation fee, and payment expectation with the
+  student by text. Nothing to click for this in `/admin`.
 - Use the student's preferred court setup and preferred area/court note when choosing the court plan.
 - Check payment memos for the booking ID shown in the confirmation email.
 - Mark paid lessons as paid after Cash App, Zelle, or PayPal is received.

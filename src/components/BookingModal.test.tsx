@@ -11,8 +11,17 @@ function jsonResponse(body: unknown, status = 200) {
 
 describe("BookingModal", () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
+
+  function fillDetails() {
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane Student" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "(469) 371-9220" } });
+    fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+  }
 
   it("defers availability loading until a student continues to site-bookable times", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
@@ -285,6 +294,113 @@ describe("BookingModal", () => {
     fireEvent.change(screen.getByLabelText(/lesson type/i), { target: { value: "clinic" } });
     expect(screen.queryByRole("button", { name: /more players/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/per person ·/)).not.toBeInTheDocument();
+  });
+
+  it("accepts a dotted phone number and explains a bad one once the field is left", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/time-slots") return jsonResponse([{ display_label: "9:00 AM" }]);
+      throw new Error(`Unexpected fetch ${url}`);
+    }));
+
+    render(<BookingModal isOpen onClose={() => undefined} />);
+
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane Student" } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "jane@example.com" } });
+    fireEvent.change(screen.getByLabelText(/preferred court setup/i), { target: { value: "Outdoor public court" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+
+    const phone = screen.getByLabelText(/phone/i);
+    fireEvent.change(phone, { target: { value: "214-555" } });
+    // Nothing is said while the student is still typing.
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    fireEvent.blur(phone);
+    expect(screen.getByRole("alert")).toHaveTextContent(/at least 7 digits/i);
+
+    fireEvent.change(phone, { target: { value: "214.555.0134" } });
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /continue to available times/i })).toBeEnabled();
+  });
+
+  it("ignores a slow availability answer for a day the student already left", async () => {
+    const pending: Array<(body: unknown) => void> = [];
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/time-slots") return Promise.resolve(jsonResponse([{ display_label: "9:00 AM" }]));
+      if (url.startsWith("/api/availability")) {
+        return new Promise<Response>((resolve) => pending.push((body) => resolve(jsonResponse(body))));
+      }
+      throw new Error(`Unexpected fetch ${url}`);
+    }));
+
+    render(<BookingModal isOpen onClose={() => undefined} />);
+    fillDetails();
+    fireEvent.click(await screen.findByRole("button", { name: /continue to available times/i }));
+
+    const days = screen.getAllByRole("button").filter((button) => button.classList.contains("slot"));
+    fireEvent.click(days[1]);
+    fireEvent.click(days[2]);
+    expect(pending).toHaveLength(3);
+
+    // The day on screen answers first; the two abandoned days answer later.
+    await act(async () => pending[2]({ allDay: false, unavailable: [] }));
+    await act(async () => pending[1]({ allDay: true, unavailable: [] }));
+    await act(async () => pending[0]({ allDay: true, unavailable: [] }));
+
+    expect(screen.queryByText(/DeMario is unavailable on this date/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "9:00 AM" })).toBeEnabled();
+  });
+
+  it("says when the lesson times failed to load, and retries them", async () => {
+    let timeSlotCalls = 0;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/time-slots") {
+        timeSlotCalls += 1;
+        return timeSlotCalls === 1 ? new Response("{}", { status: 500 }) : jsonResponse([{ display_label: "9:00 AM" }]);
+      }
+      if (url.startsWith("/api/availability")) return jsonResponse({ allDay: false, unavailable: [] });
+      throw new Error(`Unexpected fetch ${url}`);
+    }));
+
+    render(<BookingModal isOpen onClose={() => undefined} />);
+    fillDetails();
+    fireEvent.click(await screen.findByRole("button", { name: /continue to available times/i }));
+
+    expect(await screen.findByText(/Could not load lesson times/i)).toBeInTheDocument();
+    expect(screen.queryByText(/No lesson times available yet/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
+    expect(await screen.findByRole("button", { name: "9:00 AM" })).toBeInTheDocument();
+    expect(timeSlotCalls).toBe(2);
+  });
+
+  it("rebuilds the day strip when the form stayed open past midnight", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-20T04:50:00Z")); // 11:50 PM Central, Oct 19
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === "/api/time-slots") return jsonResponse([{ display_label: "9:00 AM" }]);
+      if (url.startsWith("/api/availability")) return jsonResponse({ allDay: false, unavailable: [] });
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<BookingModal isOpen onClose={() => undefined} />);
+    fillDetails();
+    const continueButton = await screen.findByRole("button", { name: /continue to available times/i });
+
+    // Oct 20 was the first bookable day when the form opened. At 12:05 AM it
+    // is today, and the server refuses today.
+    vi.setSystemTime(new Date("2026-10-20T05:05:00Z"));
+    fireEvent.click(continueButton);
+
+    const availabilityDates = () =>
+      fetchMock.mock.calls
+        .map(([input]) => String(input))
+        .filter((url) => url.startsWith("/api/availability"))
+        .map((url) => new URL(url, "https://example.test").searchParams.get("date"));
+    await waitFor(() => expect(availabilityDates()).toEqual(["2026-10-21"]));
   });
 
   it("lets help-me-choose students continue to available times", async () => {

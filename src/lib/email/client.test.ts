@@ -114,7 +114,7 @@ describe("email client", () => {
       expect(alert).toMatchObject({
         to: "mario@example.com",
         replyTo: "jane@example.com",
-        subject: "New booking — Jane Student · 2026-05-04 9:00 AM",
+        subject: "New booking — Jane Student · Mon, May 4 9:00 AM",
       });
     });
 

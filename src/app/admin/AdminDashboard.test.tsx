@@ -73,6 +73,48 @@ describe("AdminDashboard availability", () => {
     expect(screen.getByText("$35 per person · 3 players · $105 total")).toBeVisible();
   });
 
+  it("says when bookings could not load, instead of showing an empty list", () => {
+    render(
+      <AdminDashboard
+        initialBookings={[]}
+        initialInquiries={[]}
+        loadError="Couldn't load bookings. Reload the page; if this keeps happening, the database may be down."
+      />
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(/Couldn't load bookings/);
+  });
+
+  // "Lesson happened" is what the review request reads. Before the lesson it
+  // would ask a student to review a lesson that may yet be rained out.
+  it("offers Lesson happened only once a lesson has started", () => {
+    const base = {
+      created_at: "2026-04-27T12:00:00Z",
+      email: "student@example.com",
+      phone: null,
+      lesson_type: "beginner",
+      lesson_time: "9:00 AM",
+      status: "pending" as const,
+      notes: null,
+      paid_at: null,
+    };
+    render(
+      <AdminDashboard
+        initialBookings={[
+          { ...base, id: "past", name: "Past Student", lesson_date: "2026-05-05" },
+          { ...base, id: "future", name: "Future Student", lesson_date: "2099-05-05" },
+        ]}
+        initialInquiries={[]}
+      />
+    );
+
+    const rowButton = (name: string) =>
+      screen.getByText(name).closest("tr")!.querySelector("button.admin-btn.confirm") as HTMLButtonElement;
+    expect(rowButton("Past Student")).toHaveTextContent("Lesson happened");
+    expect(rowButton("Past Student")).toBeEnabled();
+    expect(rowButton("Future Student")).toBeDisabled();
+  });
+
   it("filters bookings by operational status", async () => {
     const user = userEvent.setup();
 
@@ -187,7 +229,7 @@ describe("AdminDashboard availability", () => {
       />
     );
 
-    expect(screen.getByRole("button", { name: /^confirm$/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^lesson happened$/i })).toBeDisabled();
     // The lesson date has passed, so Cancel reads as recording that it didn't happen.
     expect(screen.getByRole("button", { name: /^didn't happen$/i })).toBeDisabled();
   });

@@ -43,18 +43,29 @@ export async function PATCH(
   if (update.status === "confirmed") {
     const { data: existing, error: fetchError } = await admin.supabase
       .from("bookings")
-      .select("status")
+      .select("status,lesson_date,lesson_time")
       .eq("id", id)
       .single();
-    if (fetchError?.code === "PGRST116" || !existing) {
-      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
-    }
-    if (fetchError) {
+    // PGRST116 is "no row". Any other error is a failed lookup, which must not
+    // read as a missing booking.
+    if (fetchError && fetchError.code !== "PGRST116") {
       console.error("[bookings PATCH existing]", fetchError);
       return NextResponse.json({ error: "Failed to update booking." }, { status: 500 });
     }
+    if (!existing) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
     if (existing.status === "cancelled") {
       return NextResponse.json({ error: "Cancelled bookings cannot be confirmed." }, { status: 409 });
+    }
+    // "Confirmed" is what the review cron reads as "the lesson happened". Set
+    // before the lesson, say while confirming the court by text, it would send
+    // a review request even if the lesson were rained out.
+    if (!lessonHasStarted(existing.lesson_date, existing.lesson_time)) {
+      return NextResponse.json(
+        { error: "A lesson can be marked as happened once it has started." },
+        { status: 409 }
+      );
     }
   }
 
@@ -75,12 +86,12 @@ export async function PATCH(
       { status: 409 }
     );
   }
-  if (error?.code === "PGRST116" || !data) {
-    return NextResponse.json({ error: "Booking not found" }, { status: 404 });
-  }
-  if (error) {
+  if (error && error.code !== "PGRST116") {
     console.error("[bookings PATCH]", error);
     return NextResponse.json({ error: "Failed to update booking." }, { status: 500 });
+  }
+  if (!data) {
+    return NextResponse.json({ error: "Booking not found" }, { status: 404 });
   }
 
   // The student's only notice. after() keeps the function alive until it is

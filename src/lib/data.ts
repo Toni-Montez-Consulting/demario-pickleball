@@ -93,6 +93,10 @@ export const LESSONS: Record<LessonKey, Lesson> = {
 export interface DaySlot {
   d: string;
   n: number;
+  /** "Mar". A 30-day strip that crosses February repeats day numbers, so each day shows its month. */
+  m: string;
+  /** "Sunday, March 21", for screen readers. */
+  label: string;
   dateStr: string;
 }
 
@@ -101,6 +105,8 @@ const BOOKING_TIME_ZONE = "America/Chicago";
 export function generateDays(now = new Date(), timeZone = BOOKING_TIME_ZONE): DaySlot[] {
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const result: DaySlot[] = [];
+  const long = (date: Date, options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(date);
   const today = dateInTimeZone(now, timeZone);
   for (let i = 1; i <= 30; i++) {
     const dateStr = addDays(today, i);
@@ -108,6 +114,8 @@ export function generateDays(now = new Date(), timeZone = BOOKING_TIME_ZONE): Da
     result.push({
       d: days[date.getUTCDay()],
       n: date.getUTCDate(),
+      m: long(date, { month: "short" }),
+      label: long(date, { weekday: "long", month: "long", day: "numeric" }),
       dateStr,
     });
   }
