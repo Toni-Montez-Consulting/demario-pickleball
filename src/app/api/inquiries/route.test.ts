@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   serviceClient: undefined as unknown,
   checkRateLimit: vi.fn(),
   sendInquiryNotificationEmail: vi.fn(),
+  sendInquiryAlertsPausedEmail: vi.fn(),
   captureMessage: vi.fn(),
   afterCallbacks: [] as Array<() => unknown>,
 }));
@@ -26,6 +27,7 @@ vi.mock("next/server", async (importOriginal) => ({
 
 vi.mock("@/lib/email/client", () => ({
   sendInquiryNotificationEmail: mocks.sendInquiryNotificationEmail,
+  sendInquiryAlertsPausedEmail: mocks.sendInquiryAlertsPausedEmail,
 }));
 
 async function runAfterCallbacks() {
@@ -109,6 +111,8 @@ describe("POST /api/inquiries", () => {
     mocks.sendInquiryNotificationEmail.mockReset();
     mocks.sendInquiryNotificationEmail.mockResolvedValue(undefined);
     mocks.captureMessage.mockReset();
+    mocks.sendInquiryAlertsPausedEmail.mockReset();
+    mocks.sendInquiryAlertsPausedEmail.mockResolvedValue(undefined);
     mocks.afterCallbacks.length = 0;
   });
 
@@ -175,11 +179,13 @@ describe("POST /api/inquiries", () => {
     expect(inserted).toHaveLength(1);
     await runAfterCallbacks();
     expect(mocks.sendInquiryNotificationEmail).not.toHaveBeenCalled();
-    // Reported once, on the first message over the cap.
+    // Reported once, on the first message over the cap, and Mario is told.
     expect(mocks.captureMessage).toHaveBeenCalledWith(
       "Inquiry alerts paused: more than 20 messages in 24 hours",
       "warning"
     );
+    expect(mocks.sendInquiryAlertsPausedEmail).toHaveBeenCalledOnce();
+    expect(mocks.sendInquiryAlertsPausedEmail).toHaveBeenCalledWith(20);
   });
 
   it("reports the pause only once", async () => {
@@ -190,6 +196,7 @@ describe("POST /api/inquiries", () => {
 
     expect(mocks.sendInquiryNotificationEmail).not.toHaveBeenCalled();
     expect(mocks.captureMessage).not.toHaveBeenCalled();
+    expect(mocks.sendInquiryAlertsPausedEmail).not.toHaveBeenCalled();
   });
 
   it("still emails Mario when the daily count fails", async () => {

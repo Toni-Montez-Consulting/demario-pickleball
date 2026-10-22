@@ -22,6 +22,18 @@ export async function checkRateLimit(
   const ipHash = hashRequestIp(req);
   const windowStart = new Date(Date.now() - options.windowMs).toISOString();
 
+  // Record first, then count, so the count includes this request. Counting
+  // first let a burst of parallel requests all read the same low count and all
+  // pass before any of them was recorded. Blocked attempts are recorded too,
+  // which keeps a persistent caller blocked.
+  const { error: insertError } = await supabase
+    .from("rate_limit_events")
+    .insert({ route: options.route, ip_hash: ipHash });
+
+  if (insertError) {
+    return failOpen(options.route, "insert", insertError);
+  }
+
   const { data, error } = await supabase
     .from("rate_limit_events")
     .select("created_at")
@@ -30,32 +42,30 @@ export async function checkRateLimit(
     .gte("created_at", windowStart);
 
   if (error) {
-    // Deliberately fail open: a rate-limit outage must not block real students
-    // from booking. That leaves the endpoint uncapped, so it is reported rather
-    // than logged and forgotten.
-    console.error("[rate-limit] count failed; failing open", options.route, error);
-    Sentry.captureException(error, {
-      tags: { route: options.route, subsystem: "rate-limit" },
-      level: "warning",
-    });
-    return { limited: false };
+    return failOpen(options.route, "count", error);
   }
 
-  if ((data?.length ?? 0) >= options.limit) {
+  if ((data?.length ?? 0) > options.limit) {
     return {
       limited: true,
       retryAfterSeconds: Math.ceil(options.windowMs / 1000),
     };
   }
 
-  const { error: insertError } = await supabase
-    .from("rate_limit_events")
-    .insert({ route: options.route, ip_hash: ipHash });
+  return { limited: false };
+}
 
-  if (insertError) {
-    console.error("[rate-limit] insert failed", insertError);
-  }
-
+/**
+ * Deliberately fail open: a rate-limit outage must not block real students
+ * from booking. That leaves the endpoint uncapped, so it is reported rather
+ * than logged and forgotten.
+ */
+function failOpen(route: string, step: "insert" | "count", error: unknown): RateLimitResult {
+  console.error(`[rate-limit] ${step} failed; failing open`, route, error);
+  Sentry.captureException(error, {
+    tags: { route, subsystem: "rate-limit" },
+    level: "warning",
+  });
   return { limited: false };
 }
 

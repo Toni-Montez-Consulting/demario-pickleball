@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextRequest } from "next/server";
 
 type Row = Record<string, string | number | boolean | null>;
@@ -64,6 +64,12 @@ function requestFor(date: string) {
 describe("GET /api/availability", () => {
   beforeEach(() => {
     vi.resetModules();
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-05-01T12:00:00-05:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("returns booked and blocked times from the server-side availability client", async () => {
@@ -83,6 +89,17 @@ describe("GET /api/availability", () => {
       unavailable: ["9:00 AM", "2:00 PM"],
       booked: ["9:00 AM", "2:00 PM"],
     });
+  });
+
+  // Each answer can cost a Google Calendar query, and no student can book
+  // outside the window, so dates outside it get no answer.
+  it("answers only for dates inside the 30-day booking window", async () => {
+    mocks.serviceClient = createMockClient({});
+    const { GET } = await import("./route");
+
+    expect((await GET(requestFor("2026-05-01"))).status).toBe(400); // today
+    expect((await GET(requestFor("2026-06-15"))).status).toBe(400); // beyond 30 days
+    expect((await GET(requestFor("2025-05-04"))).status).toBe(400);
   });
 
   it("rejects invalid calendar dates", async () => {

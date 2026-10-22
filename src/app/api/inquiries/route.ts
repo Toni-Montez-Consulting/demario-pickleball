@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse, after } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { sendInquiryNotificationEmail } from "@/lib/email/client";
+import { sendInquiryAlertsPausedEmail, sendInquiryNotificationEmail } from "@/lib/email/client";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -81,6 +81,11 @@ export async function POST(req: NextRequest) {
         Sentry.captureMessage(
           `Inquiry alerts paused: more than ${INQUIRY_ALERTS_PER_DAY} messages in 24 hours`,
           "warning"
+        );
+        // Sentry alone reached no one (it has no DSN yet), so a burst of spam
+        // hid real leads in /admin. One email tells Mario to look.
+        await sendInquiryAlertsPausedEmail(INQUIRY_ALERTS_PER_DAY).catch((err) =>
+          console.error("[inquiries POST] pause notice failed", err)
         );
       }
       return;

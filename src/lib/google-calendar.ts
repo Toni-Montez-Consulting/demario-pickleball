@@ -106,6 +106,37 @@ async function getAccessToken(config: OAuthCalendarConfig): Promise<string> {
   return data.access_token;
 }
 
+const BUSY_CACHE_MS = 60_000;
+const busyCache = new Map<string, { at: number; result: Promise<BusyResult> }>();
+
+/**
+ * The same free/busy answer, reused for a minute per date, for the public
+ * availability endpoint. Every uncached call spends one Google query as
+ * DeMario, and Google rate-limits those per user, so a script hammering the
+ * endpoint could otherwise take booking offline for everyone. Concurrent
+ * requests share one query. Failed answers are not kept. The booking itself
+ * still checks Google uncached, so a minute-old answer can never book a slot
+ * that has since filled.
+ */
+export function getGoogleCalendarBusyForDateCached(date: string): Promise<BusyResult> {
+  const now = Date.now();
+  const hit = busyCache.get(date);
+  if (hit && now - hit.at < BUSY_CACHE_MS) return hit.result;
+
+  const result = getGoogleCalendarBusyForDate(date);
+  busyCache.set(date, { at: now, result });
+  void result.then(
+    (answer) => {
+      if (answer.error && busyCache.get(date)?.result === result) busyCache.delete(date);
+    },
+    () => busyCache.delete(date)
+  );
+  for (const [key, entry] of busyCache) {
+    if (now - entry.at >= BUSY_CACHE_MS) busyCache.delete(key);
+  }
+  return result;
+}
+
 export async function getGoogleCalendarBusyForDate(date: string): Promise<BusyResult> {
   if (!isGoogleCalendarSyncEnabled()) {
     return { busy: [], error: null };
