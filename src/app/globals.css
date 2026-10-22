@@ -976,6 +976,8 @@ footer .contact-line a:hover { color: var(--fg); }
 .slot .n { font-family: var(--font-space-grotesk); font-size: 18px; margin-top: 3px; font-weight: 600; }
 .slot.selected { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .slot.selected .d { color: var(--accent-ink); opacity: 0.7; }
+.slot .m { font-size: 10px; color: var(--fg-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+.slot.selected .m { color: var(--accent-ink); opacity: 0.7; }
 
 .time-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 6px; }
 .time-slot {
@@ -1088,6 +1090,7 @@ footer .contact-line a:hover { color: var(--fg); }
   font-size: 12px;
   line-height: 1.4;
 }
+.field-hint-error { color: var(--danger); }
 .venue-route-list {
   display: grid;
   gap: 10px;
@@ -1189,6 +1192,7 @@ footer .contact-line a:hover { color: var(--fg); }
   cursor: pointer;
   appearance: none;
 }
+.admin-load-error { margin-bottom: 16px; }
 .modal-error {
   background: color-mix(in oklab, var(--danger) 15%, var(--bg-3));
   border: 1px solid color-mix(in oklab, var(--danger) 40%, transparent);
@@ -3279,6 +3283,7 @@ a.pay-card:focus-visible {
   font-size: 0.85rem;
   margin-left: auto;
 }
+.review-stars-only { font-style: italic; }
 .review-body {
   color: var(--fg);
   margin-bottom: 0.75rem;

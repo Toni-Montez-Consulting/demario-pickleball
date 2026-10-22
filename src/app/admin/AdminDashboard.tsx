@@ -70,6 +70,8 @@ interface CalendarSyncStatus {
 interface Props {
   initialBookings: Booking[];
   initialInquiries: Inquiry[];
+  /** Set when the server could not load bookings or messages. */
+  loadError?: string | null;
 }
 
 type BookingFilter = "all" | "upcoming" | "needs_outcome" | "pending" | "unpaid" | "cancelled";
@@ -121,7 +123,7 @@ function contactHref(phone: string | null, scheme: "sms" | "tel"): string | null
   return `${scheme}:${digits}`;
 }
 
-export default function AdminDashboard({ initialBookings, initialInquiries }: Props) {
+export default function AdminDashboard({ initialBookings, initialInquiries, loadError = null }: Props) {
   const [tab, setTab] = useState<"bookings" | "inquiries" | "availability">(() => {
     if (typeof window === "undefined") return "bookings";
     const saved = localStorage.getItem("admin-dashboard-tab");
@@ -472,6 +474,11 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
 
   return (
     <div className="admin-wrap">
+      {loadError && (
+        <div className="modal-error admin-load-error" role="alert">
+          {loadError}
+        </div>
+      )}
       <div className="admin-header">
         <h1>Dashboard</h1>
         <span className="admin-count">
@@ -590,10 +597,15 @@ export default function AdminDashboard({ initialBookings, initialInquiries }: Pr
                             <button
                               type="button"
                               className="admin-btn confirm"
-                              disabled={b.status !== "pending" || updating === b.id}
+                              title={
+                                started
+                                  ? "The lesson happened. Lets the site ask the student for a review."
+                                  : "Available once the lesson has started."
+                              }
+                              disabled={b.status !== "pending" || !started || updating === b.id}
                               onClick={() => updateBookingStatus(b.id, "confirmed")}
                             >
-                              Confirm
+                              Lesson happened
                             </button>
                             <button
                               type="button"

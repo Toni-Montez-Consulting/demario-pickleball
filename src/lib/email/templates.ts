@@ -2,6 +2,7 @@ import { SITE_URL } from "@/lib/site";
 import { COURT_CONFIRMATION_MESSAGE, LESSON_LOCATION } from "@/lib/business";
 import { parseBookingNotes } from "@/lib/booking-notes";
 import { fixedFee, lessonName, storedQuote } from "@/lib/lesson-types";
+import { formatLessonDate } from "@/lib/time";
 import { playersLabel, usd } from "@/lib/session-pricing";
 import { generateGoogleCalendarUrl, type IcsBooking } from "./ics";
 
@@ -55,7 +56,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
     <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
       <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(lesson)}</strong></td></tr>
       ${group ? `<tr><td style="padding:6px 0;color:#777;">Players</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(group.players)}</strong></td></tr>` : ""}
-      <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_date)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(formatLessonDate(booking.lesson_date))}</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Court</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(LESSON_LOCATION)}</strong></td></tr>
       ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Preference</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(court.courtSetup)}</strong></td></tr>` : ""}
@@ -77,7 +78,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
       Court reservation fees, if any, are confirmed separately by Mario before the lesson.
     </p>
     `,
-    `Booking confirmed — ${booking.lesson_date}`
+    `Booking confirmed — ${formatLessonDate(booking.lesson_date)}`
   );
 }
 
@@ -96,7 +97,7 @@ export function adminNotificationHtml(booking: IcsBooking): string {
       <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;">${escapeHtml(lesson)}</td></tr>
       ${group ? `<tr><td style="padding:6px 0;color:#777;">Players</td><td style="padding:6px 0;text-align:right;">${escapeHtml(group.players)}</td></tr>
       <tr><td style="padding:6px 0;color:#777;">Booker pays</td><td style="padding:6px 0;text-align:right;">${escapeHtml(group.total)}</td></tr>` : ""}
-      <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;">${escapeHtml(booking.lesson_date)} · ${escapeHtml(booking.lesson_time)} CT</td></tr>
+      <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;">${escapeHtml(formatLessonDate(booking.lesson_date))} · ${escapeHtml(booking.lesson_time)} CT</td></tr>
       ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Court setup</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.courtSetup)}</td></tr>` : ""}
       ${court.preferredArea ? `<tr><td style="padding:6px 0;color:#777;">Area/court note</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.preferredArea)}</td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;">${shortId}</td></tr>
@@ -205,13 +206,13 @@ export function studentCancelledHtml(booking: IcsBooking): string {
       The attached calendar file will remove this lesson from your calendar.
     </p>
     <p style="font-size:14px;line-height:1.5;margin:0 0 16px;color:#555;">
-      <strong>${escapeHtml(lesson)}</strong> — ${escapeHtml(booking.lesson_date)} at ${escapeHtml(booking.lesson_time)} CT
+      <strong>${escapeHtml(lesson)}</strong> — ${escapeHtml(formatLessonDate(booking.lesson_date))} at ${escapeHtml(booking.lesson_time)} CT
     </p>
     <p style="font-size:14px;color:#666;margin:0;">
       Questions? Reply to this email or text <a href="tel:4693719220">(469) 371-9220</a>.
     </p>
     `,
-    `Lesson cancelled — ${booking.lesson_date}`
+    `Lesson cancelled — ${formatLessonDate(booking.lesson_date)}`
   );
 }
 
@@ -272,7 +273,7 @@ export function reviewRequestHtml({
     `
     <h1 style="font-size:22px;margin:0 0 12px;">How was it, ${escapeHtml(first)}?</h1>
     <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">
-      Thanks for training with me on ${escapeHtml(lessonDate)}. I hope the ${escapeHtml(lessonName)} session
+      Thanks for training with me on ${escapeHtml(lessonDate)}. I hope the ${escapeHtml(lessonName)}
       gave you something specific to work on.
     </p>
     <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">

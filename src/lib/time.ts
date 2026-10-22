@@ -26,6 +26,18 @@ export function dateInTimeZone(date: Date, timeZone = "America/Chicago"): string
   return `${value("year")}-${value("month")}-${value("day")}`;
 }
 
+/** "Sat, Oct 18" for a YYYY-MM-DD lesson date; the date itself if it does not parse. */
+export function formatLessonDate(date: string): string {
+  const parsed = new Date(`${date}T12:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(parsed);
+}
+
 export function addDays(date: string, days: number): string {
   const parsed = new Date(`${date}T00:00:00Z`);
   parsed.setUTCDate(parsed.getUTCDate() + days);
@@ -81,8 +93,12 @@ export function zonedDateTimeToUtc(
   timeZone = "America/Chicago"
 ): Date {
   const [year, month, day] = date.split("-").map((n) => parseInt(n, 10));
-  const utcGuess = new Date(Date.UTC(year, month - 1, day, time.hour, time.minute, 0));
-  const offset = getTimeZoneOffsetMs(utcGuess, timeZone);
-  return new Date(utcGuess.getTime() - offset);
+  const wallClock = Date.UTC(year, month - 1, day, time.hour, time.minute, 0);
+  // The offset depends on the instant being solved for. The first guess reads
+  // it at the wall-clock time taken as UTC, which on the two daylight-saving
+  // Sundays can fall on the other side of the switch: 7:00 AM on 2027-03-14
+  // came out as 8:00 AM. Reading the offset again at the first answer fixes it.
+  const first = wallClock - getTimeZoneOffsetMs(new Date(wallClock), timeZone);
+  return new Date(wallClock - getTimeZoneOffsetMs(new Date(first), timeZone));
 }
 

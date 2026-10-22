@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { Resend, type CreateEmailOptions } from "resend";
 import { shortName } from "@/lib/lesson-outcomes";
 import { lessonName } from "@/lib/lesson-types";
+import { formatLessonDate } from "@/lib/time";
 import { generateIcs, type IcsBooking, type IcsMethod } from "./ics";
 import {
   studentRequestedHtml,
@@ -79,7 +80,7 @@ export async function sendBookingCreatedEmails(booking: IcsBooking): Promise<voi
   const studentResult = await resend.emails.send({
     from: emailFrom(),
     to: booking.email,
-    subject: `You're booked — ${lesson} on ${booking.lesson_date}`,
+    subject: `You're booked — ${lesson} on ${formatLessonDate(booking.lesson_date)}`,
     html: studentRequestedHtml(booking),
     attachments: [{ filename, content: icsContent, contentType: "text/calendar; method=REQUEST" }],
     // Without this a student replying to their confirmation hits the no-reply
@@ -91,7 +92,7 @@ export async function sendBookingCreatedEmails(booking: IcsBooking): Promise<voi
   await sendAlertToMario(resend, "booking alert", {
     from: emailFrom(),
     to: adminEmail(),
-    subject: `New booking — ${oneLine(booking.name)} · ${booking.lesson_date} ${booking.lesson_time}`,
+    subject: `New booking — ${oneLine(booking.name)} · ${formatLessonDate(booking.lesson_date)} ${booking.lesson_time}`,
     html: adminNotificationHtml(booking),
     replyTo: booking.email,
   });
@@ -138,7 +139,7 @@ export async function sendBookingCancelledEmail(booking: IcsBooking): Promise<vo
   const result = await resend.emails.send({
     from: emailFrom(),
     to: booking.email,
-    subject: `Cancelled: your lesson on ${booking.lesson_date}`,
+    subject: `Cancelled: your lesson on ${formatLessonDate(booking.lesson_date)}`,
     html: studentCancelledHtml(booking),
     attachments: [{ filename, content: icsContent, contentType: "text/calendar; method=CANCEL" }],
     replyTo: adminEmail(),

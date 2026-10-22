@@ -29,8 +29,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Description is required." }, { status: 400 });
   }
 
-  const { data: { user } } = await admin.supabase.auth.getUser();
-  const submitter = user?.email ?? "unknown";
+  // requireAdmin already read the signed-in user. Its client is the service
+  // role, which has no session, so asking it for the user always said "unknown".
+  const submitter = admin.user.email ?? "unknown";
 
   const { data, error } = await admin.supabase
     .from("admin_tasks")

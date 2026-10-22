@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ReviewForm from "@/components/ReviewForm";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { lessonName } from "@/lib/lesson-types";
+import { formatLessonDate } from "@/lib/time";
 import { hashReviewToken } from "@/lib/reviews";
 
 export const metadata: Metadata = {
@@ -44,7 +45,7 @@ export default async function TokenReviewPage({
       .eq("id", review.booking_id)
       .maybeSingle();
     if (booking) {
-      lessonLabel = `${lessonName(booking.lesson_type)} on ${booking.lesson_date}`;
+      lessonLabel = `${lessonName(booking.lesson_type)} on ${formatLessonDate(booking.lesson_date)}`;
     }
   }
 

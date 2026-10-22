@@ -71,6 +71,24 @@ export function quoteLesson(type: LessonType, groupSize: number): SessionQuote |
   return group ? quoteSession(group.format, groupSize, group.length) : null;
 }
 
+/**
+ * The lesson as a noun phrase inside a sentence: "I hope the drilling session
+ * gave you something to work on." The names alone read badly there
+ * ("the Drilling Session, 60 min session").
+ */
+const LESSON_PHRASES: Record<LessonType, string> = {
+  beginner: "Foundations session",
+  advanced: "Strategy Lab session",
+  clinic: "Group Clinic",
+  drill_60: "drilling session",
+  drill_90: "drilling session",
+  play_pro: "Play with the Pro session",
+};
+
+export function lessonPhrase(type: string): string {
+  return isLessonType(type) ? LESSON_PHRASES[type] : `${type} lesson`;
+}
+
 /** A booking's lesson name. A value this code does not know is shown as stored, never hidden. */
 export function lessonName(type: string): string {
   return isLessonType(type) ? LESSON_NAMES[type] : type;

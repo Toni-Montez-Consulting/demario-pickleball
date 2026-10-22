@@ -142,7 +142,14 @@ export default function ReviewsDashboard({ initialReviews }: Props) {
                 <time dateTime={r.created_at}>{formatDate(r.created_at)}</time>
               </header>
 
-              {r.body && <p className="review-body">{r.body}</p>}
+              {r.body ? (
+                <p className="review-body">{r.body}</p>
+              ) : (
+                // The homepage shows only reviews with words (/api/reviews/published).
+                <p className="review-meta review-stars-only">
+                  Stars only, no words. It stays off the website even if you publish it.
+                </p>
+              )}
 
               <p className="review-meta">
                 {r.display_name}

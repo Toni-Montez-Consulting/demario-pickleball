@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { lessonName } from "@/lib/lesson-types";
 import { defaultDisplayName } from "@/lib/reviews";
 import { playersLabel } from "@/lib/session-pricing";
-import { addDays, dateInTimeZone } from "@/lib/time";
+import { addDays, dateInTimeZone, formatLessonDate } from "@/lib/time";
 
 /**
  * One-tap lesson outcomes from Mario's morning email.
@@ -95,17 +95,8 @@ export function reminderWindow(now: Date): { from: string; to: string } {
   return { from: addDays(today, -REMINDER_DAYS), to: addDays(today, -1) };
 }
 
-/** "Sat, Oct 18" for a YYYY-MM-DD lesson date. */
-export function formatLessonDate(date: string): string {
-  const parsed = new Date(`${date}T12:00:00Z`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  }).format(parsed);
-}
+// Moved to time.ts so emails can use it too; kept here for existing imports.
+export { formatLessonDate };
 
 /** "Jane S." — the most the public confirmation page shows of a student. */
 export function shortName(fullName: string): string {

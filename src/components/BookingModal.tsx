@@ -92,7 +92,8 @@ function clampGroupSize(type: LessonType, groupSize: number): number {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_RE = /^[\d\s\-()+]{7,20}$/;
+// Dots too: "214.555.0134" is a common way to write a US number.
+const PHONE_RE = /^[\d\s\-().+]{7,20}$/;
 
 const RouteArrowIcon = () => (
   <svg
@@ -177,8 +178,13 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   const [allDay, setAllDay] = useState(false);
   const [availLoading, setAvailLoading] = useState(false);
   const [availError, setAvailError] = useState("");
+  // The lesson-time list failing is its own error: the picker would otherwise
+  // say "No lesson times available yet" and its Retry reloads only availability.
+  const [timesError, setTimesError] = useState("");
   const [pickerError, setPickerError] = useState("");
   const [waiverAgreed, setWaiverAgreed] = useState(false);
+  // The phone message waits until the student leaves the field, not the first digit.
+  const [phoneTouched, setPhoneTouched] = useState(false);
   const [company, setCompany] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [bookingId, setBookingId] = useState("");
@@ -188,6 +194,9 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   // Steps already reported in this opening of the form. See showStep.
   const viewedStepsRef = useRef<Set<BookingStep>>(new Set());
+  // Only the latest availability request may set state. Tapping Saturday, then
+  // Sunday, let a slow Saturday answer land last and show it under Sunday.
+  const availRequestRef = useRef(0);
 
   // What the server is asked to book, and for a group format what it will
   // charge. The server quotes again from the same table; this is the preview.
@@ -200,6 +209,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     availableTimes: string[],
     type: LessonType
   ) => {
+    const request = ++availRequestRef.current;
     setAvailLoading(true);
     setAvailError("");
     try {
@@ -210,6 +220,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       const res = await fetch(`/api/availability?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load availability.");
       const { unavailable = [], allDay: fullDay = false } = await res.json();
+      if (request !== availRequestRef.current) return;
       const unavailableSet = new Set<string>(unavailable);
       setBookedTimes(unavailableSet);
       setAllDay(fullDay);
@@ -219,9 +230,29 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
         return availableTimes.find((t) => !unavailableSet.has(t)) ?? "";
       });
     } catch {
-      setAvailError("Could not load availability. Please try again.");
+      if (request === availRequestRef.current) {
+        setAvailError("Could not load availability. Please try again.");
+      }
     } finally {
-      setAvailLoading(false);
+      if (request === availRequestRef.current) setAvailLoading(false);
+    }
+  }, []);
+
+  const loadTimes = useCallback(async (): Promise<string[] | null> => {
+    setTimesLoaded(false);
+    setTimesError("");
+    try {
+      const res = await fetch("/api/time-slots");
+      if (!res.ok) throw new Error("Failed to load times");
+      const data: { display_label: string }[] = await res.json();
+      const loaded = data.map((d) => d.display_label);
+      setTimes(loaded);
+      return loaded;
+    } catch {
+      setTimesError("Could not load lesson times. Check your connection and try again.");
+      return null;
+    } finally {
+      setTimesLoaded(true);
     }
   }, []);
 
@@ -253,23 +284,14 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       setAllDay(false);
       setSelectedTime("");
       setWaiverAgreed(false);
+      setPhoneTouched(false);
       setCompany("");
       setAvailError("");
       setPickerError("");
       setErrorMsg("");
       setBookingId("");
 
-      fetch("/api/time-slots")
-        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("Failed to load times"))))
-        .then((data: { display_label: string }[]) => {
-          const loaded = data.map((d) => d.display_label);
-          setTimes(loaded);
-          setTimesLoaded(true);
-        })
-        .catch(() => {
-          setTimesLoaded(true);
-          setAvailError("Could not load times. Please refresh.");
-        });
+      void loadTimes();
     } else {
       document.body.style.overflow = "";
     }
@@ -277,7 +299,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
       document.body.style.overflow = "";
       previouslyFocusedRef.current?.focus();
     };
-  }, [isOpen, initialLessonType]);
+  }, [isOpen, initialLessonType, loadTimes]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -409,14 +431,38 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
     }
   }
 
+  /**
+   * The day strip is built when the form opens. Left open past midnight, its
+   * first day becomes today, which the server refuses. Rebuild it on the way
+   * to the picker, keeping the chosen date when it is still bookable.
+   */
+  function currentDay(): DaySlot {
+    const fresh = generateDays();
+    if (fresh[0].dateStr === days[0]?.dateStr) return days[selectedDay];
+    const kept = fresh.findIndex((d) => d.dateStr === days[selectedDay]?.dateStr);
+    const index = kept >= 0 ? kept : 0;
+    setDays(fresh);
+    setSelectedDay(index);
+    return fresh[index];
+  }
+
+  function openPicker() {
+    fetchAvailability(currentDay().dateStr, times, lessonType);
+    showStep("picker");
+  }
+
   function handleContinue() {
     if (form.courtSetup === "Indoor / weather-proof") {
       setPickerError("");
       showStep("indoorRouting");
       return;
     }
-    fetchAvailability(days[selectedDay].dateStr, times, lessonType);
-    showStep("picker");
+    openPicker();
+  }
+
+  async function retryTimes() {
+    const loaded = await loadTimes();
+    if (loaded) fetchAvailability(currentDay().dateStr, loaded, lessonType);
   }
 
   function handleBackdropClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -514,8 +560,16 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                 value={form.phone}
                 maxLength={20}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                onBlur={() => setPhoneTouched(true)}
               />
-              <p className="field-hint">Used for court confirmation and weather updates.</p>
+              {phoneTouched && phoneValue && !phoneValid ? (
+                <p className="field-hint field-hint-error" role="alert">
+                  Enter a phone number with at least 7 digits. Spaces, dashes, dots, and
+                  parentheses are fine.
+                </p>
+              ) : (
+                <p className="field-hint">Used for court confirmation and weather updates.</p>
+              )}
             </div>
             <div className="modal-form-group">
               <label htmlFor="lesson-type">Lesson type</label>
@@ -760,10 +814,12 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
                     type="button"
                     className={`slot${selectedDay === i ? " selected" : ""}`}
                     aria-pressed={selectedDay === i ? "true" : "false"}
+                    aria-label={s.label}
                     onClick={() => handleDaySelect(i)}
                   >
                     <div className="d">{s.d}</div>
                     <div className="n">{s.n}</div>
+                    <div className="m">{s.m}</div>
                   </button>
                 ))}
               </div>
@@ -782,6 +838,13 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
             {availLoading || !timesLoaded ? (
               <div className="avail-loading">
                 <div className="spinner" />
+              </div>
+            ) : timesError ? (
+              <div className="avail-fetch-error">
+                <div className="modal-error">{timesError}</div>
+                <button type="button" className="btn btn-ghost avail-retry-btn" onClick={retryTimes}>
+                  Retry
+                </button>
               </div>
             ) : availError ? (
               <div className="avail-fetch-error">
@@ -858,7 +921,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
           <>
             <h3 id="booking-modal-title">Something went wrong</h3>
             <div className="modal-error">{errorMsg}</div>
-            <button type="button" className="btn btn-ghost" onClick={() => showStep("picker")}>
+            <button type="button" className="btn btn-ghost" onClick={openPicker}>
               Try again
             </button>
           </>
@@ -873,13 +936,13 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
             </div>
             <h3 id="booking-modal-title">You&apos;re booked.</h3>
             <p className="m-sub">
-              {day.d} {day.n} at {selectedTime} CT · confirmation email sent.
+              {day.d}, {day.m} {day.n} at {selectedTime} CT · confirmation email sent.
             </p>
             <p className="confirm-note">{COURT_CONFIRMATION_MESSAGE}</p>
             <div className="booking-summary">
               <div className="booking-summary-row">
                 <span>Date and time</span>
-                <strong>{day.d} {day.n} · {selectedTime}</strong>
+                <strong>{day.d}, {day.m} {day.n} · {selectedTime}</strong>
               </div>
               <div className="booking-summary-row">
                 <span>Lesson</span>

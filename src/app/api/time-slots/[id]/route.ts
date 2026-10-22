@@ -27,12 +27,13 @@ export async function PATCH(
     .select()
     .single();
 
-  if (error?.code === "PGRST116" || !data) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  if (error) {
+  // PGRST116 is "no row"; any other error is a failure, not a missing slot.
+  if (error && error.code !== "PGRST116") {
     console.error("[time-slots PATCH]", error);
     return NextResponse.json({ error: "Failed to update time slot." }, { status: 500 });
+  }
+  if (!data) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   return NextResponse.json(data);
 }

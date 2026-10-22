@@ -359,6 +359,23 @@ describe("POST /api/bookings", () => {
     expect(inserted).toHaveLength(0);
   });
 
+  it("accepts a phone number written with dots", async () => {
+    mocks.serviceClient = createMockClient(
+      {
+        time_slots: [{ display_label: "9:00 AM", active: true }],
+        bookings: [],
+        blocked_slots: [],
+        recurring_blocks: [],
+      },
+      inserted
+    );
+
+    const response = await postBooking({ ...VALID_BOOKING_BODY, phone: "214.555.0134" });
+
+    expect(response.status).toBe(201);
+    expect(inserted[0]).toMatchObject({ phone: "214.555.0134" });
+  });
+
   it("requires a preferred court setup in notes", async () => {
     mocks.serviceClient = createMockClient({}, inserted);
 

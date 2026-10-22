@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   row: null as Record<string, unknown> | null,
+  error: null as { code: string; message: string } | null,
   sendBookingCancelledEmail: vi.fn(),
   afterCallbacks: [] as Array<() => unknown>,
 }));
@@ -30,7 +31,7 @@ vi.mock("@/lib/supabase/server", () => ({
           update: () => chain,
           eq: () => chain,
           select: () => chain,
-          single: () => Promise.resolve({ data: mocks.row, error: null }),
+          single: () => Promise.resolve({ data: mocks.row, error: mocks.error }),
         };
         return chain;
       },
@@ -52,17 +53,20 @@ function cancelledRow(lesson_date: string, lesson_time: string) {
   };
 }
 
-async function cancel() {
+async function patch(body: Record<string, unknown>) {
   const { PATCH } = await import("./route");
-  return PATCH({ json: async () => ({ status: "cancelled" }) } as unknown as NextRequest, {
+  return PATCH({ json: async () => body } as unknown as NextRequest, {
     params: Promise.resolve({ id: ID }),
   });
 }
+
+const cancel = () => patch({ status: "cancelled" });
 
 describe("PATCH /api/bookings/[id] cancellation email", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-19T15:00:00Z")); // 10:00 AM Central
+    mocks.error = null;
     mocks.sendBookingCancelledEmail.mockReset();
     mocks.sendBookingCancelledEmail.mockResolvedValue(undefined);
     mocks.afterCallbacks.length = 0;
@@ -89,5 +93,51 @@ describe("PATCH /api/bookings/[id] cancellation email", () => {
 
     expect(mocks.afterCallbacks).toHaveLength(0);
     expect(mocks.sendBookingCancelledEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe("PATCH /api/bookings/[id] lesson happened", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-19T15:00:00Z")); // 10:00 AM Central
+    mocks.error = null;
+    mocks.afterCallbacks.length = 0;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  // "Confirmed" is what the review cron reads as "the lesson happened".
+  it("refuses to mark a lesson that has not started as happened", async () => {
+    mocks.row = { ...cancelledRow("2026-10-19", "11:00 AM"), status: "pending" };
+
+    const response = await patch({ status: "confirmed" });
+
+    expect(response.status).toBe(409);
+    expect((await response.json()).error).toMatch(/once it has started/);
+  });
+
+  it("marks a lesson that has started as happened", async () => {
+    mocks.row = { ...cancelledRow("2026-10-19", "9:00 AM"), status: "pending" };
+
+    expect((await patch({ status: "confirmed" })).status).toBe(200);
+  });
+
+  it("reports a failed lookup as a 500, not a missing booking", async () => {
+    mocks.row = null;
+    mocks.error = { code: "08006", message: "connection failure" };
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    expect((await patch({ status: "cancelled" })).status).toBe(500);
+    expect((await patch({ status: "confirmed" })).status).toBe(500);
+  });
+
+  it("still answers 404 for a booking that does not exist", async () => {
+    mocks.row = null;
+    mocks.error = { code: "PGRST116", message: "no rows" };
+
+    expect((await patch({ status: "cancelled" })).status).toBe(404);
   });
 });
