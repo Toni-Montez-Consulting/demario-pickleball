@@ -73,6 +73,7 @@ describe("rate limit", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
   it("allows and records under-limit requests", async () => {
@@ -111,13 +112,51 @@ describe("rate limit", () => {
     });
 
     expect(result.limited).toBe(true);
-    expect(tables.rate_limit_events).toHaveLength(5);
+    // The blocked attempt is recorded too, so hammering keeps the block in place.
+    expect(tables.rate_limit_events).toHaveLength(6);
+  });
+
+  // Counting before recording let every request in a parallel burst read the
+  // same empty count and pass.
+  it("holds a parallel burst to the limit", async () => {
+    const tables: Tables = { rate_limit_events: [] };
+    const supabase = mockSupabase(tables) as never;
+    const req = request("203.0.113.40");
+
+    const results = await Promise.all(
+      Array.from({ length: 8 }, () =>
+        checkRateLimit(supabase, req, { route: "bookings", limit: 5, windowMs: 60 * 60 * 1000 })
+      )
+    );
+
+    expect(results.filter((result) => !result.limited).length).toBeLessThanOrEqual(5);
+  });
+
+  it("still allows the request that reaches the limit exactly", async () => {
+    const req = request("203.0.113.50");
+    const ip_hash = hashRequestIp(req);
+    const tables: Tables = {
+      rate_limit_events: Array.from({ length: 4 }, () => ({
+        route: "bookings",
+        ip_hash,
+        created_at: new Date().toISOString(),
+      })),
+    };
+
+    const result = await checkRateLimit(mockSupabase(tables) as never, req, {
+      route: "bookings",
+      limit: 5,
+      windowMs: 60 * 60 * 1000,
+    });
+
+    expect(result.limited).toBe(false);
   });
 
   it("fails open if storage is unavailable", async () => {
     const supabase = {
       from() {
         return {
+          insert: () => Promise.resolve({ error: { message: "missing table" } }),
           select: () => ({
             eq: () => ({
               eq: () => ({
@@ -128,6 +167,7 @@ describe("rate limit", () => {
         };
       },
     };
+    vi.spyOn(console, "error").mockImplementation(() => {});
 
     await expect(
       checkRateLimit(supabase as never, request("203.0.113.30"), {

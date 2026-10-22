@@ -223,13 +223,7 @@ MFA is rejected before private data can be read or changed.
 
 ### Admin accounts
 
-| Email | Role |
-|-------|------|
-| `demariomontez10@gmail.com` | DeMario — primary admin, receives booking notifications |
-| `tonio.montez@gmail.com` | Developer access |
-| `tony.montez@gmail.com` | Additional access |
-| `ericaxholloway@gmail.com` | Additional access |
-| `leahmontez@hotmail.com` | Additional access |
+Five accounts have admin access: DeMario (primary admin; his business address `demariomontez10@gmail.com` receives the booking notifications), one developer account, and three more with additional access. The addresses themselves live only in the `ADMIN_EMAIL` variable in Vercel, not in this public repo. DeMario's must stay first: the first address receives every admin email.
 
 ### MFA enrollment (one-time per account)
 
@@ -267,7 +261,7 @@ The task should tell the new admin to:
 ```bash
 # 1. Add their email to the ADMIN_EMAIL list in Vercel
 npx vercel env rm ADMIN_EMAIL production --yes
-printf "%s" "demariomontez10@gmail.com,tonio.montez@gmail.com,tony.montez@gmail.com,ericaxholloway@gmail.com,leahmontez@hotmail.com,newperson@email.com" | npx vercel env add ADMIN_EMAIL production
+printf "%s" "<the current list, DeMario's address first>,new.admin@example.com" | npx vercel env add ADMIN_EMAIL production
 npx vercel --prod
 
 # 2. Create their Supabase Auth account via the API
@@ -275,7 +269,7 @@ curl -X POST "https://vowwokjesgdjridrikqp.supabase.co/auth/v1/invite" \
   -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
   -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"email":"newperson@email.com"}'
+  -d '{"email":"new.admin@example.com"}'
 
 # 3. They accept the invite email, set a password, then enroll MFA as above
 
@@ -537,12 +531,7 @@ Reconciled against production on 2026-10-19. `docs/LAUNCH_OUTSTANDING.md` is the
 - [ ] **Verify domain in Resend** — so emails come from `bookings@demariomontezpb.com` (see Section 4)
 - [ ] **Update EMAIL_FROM** after domain verified (see Section 4)
 - [ ] **Post-launch: configure Sentry** — add `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` in production, then verify a test event from `POST /api/monitoring-test` while logged in as an MFA-verified admin. No DSN in production as of 2026-10-19.
-- [x] **Enroll MFA** for each admin account (see Section 3) — nobody can access the admin panel until their account has MFA set up. All five accounts below had a verified factor on 2026-10-19.
-  - [x] `tonio.montez@gmail.com`
-  - [x] `demariomontez10@gmail.com`
-  - [x] `tony.montez@gmail.com`
-  - [x] `ericaxholloway@gmail.com`
-  - [x] `leahmontez@hotmail.com`
+- [x] **Enroll MFA** for each admin account (see Section 3) — nobody can access the admin panel until their account has MFA set up. All five admin accounts (the `ADMIN_EMAIL` list in Vercel) had a verified factor on 2026-10-19.
 - [x] **Add time slots** — go to Admin → Availability → Settings: lesson times & blocked dates list → add the times you offer lessons (e.g. `9:00 AM`, `10:00 AM`, etc.) — students can't book until at least one slot exists. 15 active slots (2026-10-19).
 - [x] **Confirm venue routing copy** — verify public courts book through the site and platform-required venues match `docs/VENUE_RULES.md`. Settled; see `docs/LAUNCH_OUTSTANDING.md`.
 - [ ] **Submit one live booking test** — confirm student/admin emails include phone and court preference, the calendar invite says Mario confirms the exact court, payment links work, and the test booking can be cancelled

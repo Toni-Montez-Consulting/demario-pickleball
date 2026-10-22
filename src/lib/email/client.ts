@@ -10,6 +10,7 @@ import {
   feedbackNotificationHtml,
   reviewRequestHtml,
   inquiryNotificationHtml,
+  inquiryAlertsPausedHtml,
   lessonOutcomeDigestHtml,
   firstName,
   type OutcomeDigestLesson,
@@ -119,6 +120,22 @@ export async function sendInquiryNotificationEmail(inquiry: {
     html: inquiryNotificationHtml(inquiry),
     replyTo: inquiry.email,
   });
+}
+
+/** Tells Mario, once, that contact-form alerts paused for the day. */
+export async function sendInquiryAlertsPausedEmail(limit: number): Promise<void> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping inquiry pause notice");
+    return;
+  }
+  const result = await resend.emails.send({
+    from: emailFrom(),
+    to: adminEmail(),
+    subject: `Contact alerts paused: more than ${limit} messages today`,
+    html: inquiryAlertsPausedHtml(limit),
+  });
+  if (result.error) reportSendFailure("inquiry pause notice", result.error);
 }
 
 export async function sendBookingCancelledEmail(booking: IcsBooking): Promise<void> {

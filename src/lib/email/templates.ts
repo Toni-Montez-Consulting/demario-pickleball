@@ -48,7 +48,7 @@ export function studentRequestedHtml(booking: IcsBooking): string {
   const court = parseBookingNotes(booking.notes);
   return wrap(
     `
-    <h1 style="font-size:22px;margin:0 0 12px;">You're booked, ${escapeHtml(firstName(booking.name, "there"))}.</h1>
+    <h1 style="font-size:22px;margin:0 0 12px;">You're booked, ${escapeHtml(greetingName(booking.name))}.</h1>
     <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">
       Your lesson time is reserved. Mario will confirm the exact court shortly.
     </p>
@@ -59,7 +59,6 @@ export function studentRequestedHtml(booking: IcsBooking): string {
       <tr><td style="padding:6px 0;color:#777;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
       <tr><td style="padding:6px 0;color:#777;">Court</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(LESSON_LOCATION)}</strong></td></tr>
       ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Preference</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(court.courtSetup)}</strong></td></tr>` : ""}
-      ${court.preferredArea ? `<tr><td style="padding:6px 0;color:#777;">Area/court note</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(court.preferredArea)}</strong></td></tr>` : ""}
       <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;"><strong>${shortId}</strong></td></tr>
       ${price ? `<tr><td style="padding:6px 0;color:#777;">Lesson fee</td><td style="padding:6px 0;text-align:right;"><strong>${price}</strong></td></tr>` : ""}
     </table>
@@ -141,6 +140,30 @@ export function inquiryNotificationHtml({
   );
 }
 
+/**
+ * Sent once when contact-form alerts pause for the day, so a burst of spam
+ * cannot silently hide a real student's message in /admin.
+ */
+export function inquiryAlertsPausedHtml(limit: number): string {
+  return wrap(
+    `
+    <h1 style="font-size:20px;margin:0 0 12px;">Contact alerts are paused for today</h1>
+    <p style="font-size:14px;line-height:1.5;margin:0 0 12px;color:#444;">
+      More than ${limit} contact messages arrived in the last 24 hours. That is usually spam, so
+      the site stopped emailing each one to save the booking emails' sending quota.
+    </p>
+    <p style="font-size:14px;line-height:1.5;margin:0 0 12px;color:#444;">
+      Every message is still saved. A real student may be among them, so look through them in
+      Admin. Alerts start again on their own once the count drops.
+    </p>
+    <p style="margin:20px 0 0;">
+      <a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open admin dashboard</a>
+    </p>
+    `,
+    "Contact alerts paused"
+  );
+}
+
 export interface OutcomeDigestLesson {
   name: string;
   lessonName: string;
@@ -214,6 +237,22 @@ export function studentCancelledHtml(booking: IcsBooking): string {
     `Lesson cancelled — ${booking.lesson_date}`
   );
 }
+
+/**
+ * The first name for the booking confirmation's greeting, or "there".
+ *
+ * The confirmation goes to whatever address the booker typed, before anyone
+ * has proved they own it. Echoing free text there would let a stranger send a
+ * link like "evil.example/pay" from bookings@demariomontezpb.com, so only a
+ * plain name is used: letters, apostrophes, and hyphens.
+ */
+export function greetingName(name: string): string {
+  const first = firstName(name, "");
+  return PLAIN_NAME.test(first) ? first : "there";
+}
+
+// Built at runtime: a \p{L} literal needs an ES2018 target, and tsconfig targets ES2017.
+const PLAIN_NAME = new RegExp("^[\\p{L}'\u2019-]{1,30}$", "u");
 
 /** The first word of a name, or the fallback when there is none. */
 export function firstName(name: string, fallback: string): string {

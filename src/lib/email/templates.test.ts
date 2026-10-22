@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   adminNotificationHtml,
+  greetingName,
   studentRequestedHtml,
   reviewRequestHtml,
   inquiryNotificationHtml,
@@ -24,7 +25,9 @@ describe("email templates", () => {
 
     expect(html).toContain("Mario will confirm the exact court");
     expect(html).toContain("Outdoor public court");
-    expect(html).toContain("Lake Highlands");
+    // The free-text note goes to Mario, not back to an address nobody has confirmed.
+    expect(html).not.toContain("Lake Highlands");
+    expect(adminNotificationHtml(booking)).toContain("Lake Highlands");
     expect(html).toContain("Lesson fee");
     expect(html).toContain("Court reservation fees, if any, are confirmed separately");
   });
@@ -62,6 +65,16 @@ describe("email templates", () => {
     expect(html).toContain("$70");
     expect(html).not.toContain("Players");
     expect(adminNotificationHtml(booking)).not.toContain("Booker pays");
+  });
+
+  it("greets by a plain first name only", () => {
+    expect(greetingName("Jane Student")).toBe("Jane");
+    expect(greetingName("José María")).toBe("José");
+    expect(greetingName("Mary-Kate O'Neil")).toBe("Mary-Kate");
+    expect(greetingName("evil.example/pay now")).toBe("there");
+    expect(greetingName("https://evil.example")).toBe("there");
+    expect(greetingName("   ")).toBe("there");
+    expect(studentRequestedHtml({ ...booking, name: "evil.example/pay" })).toContain("You're booked, there.");
   });
 
   it("escapes a student's name everywhere, including the <title>", () => {

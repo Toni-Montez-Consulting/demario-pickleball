@@ -6,6 +6,11 @@ on:
     branches:
       - master
 
+# The job only reads the code. Without this, the token got the repository's
+# default permissions (code scanning alert #1).
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
