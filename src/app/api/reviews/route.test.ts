@@ -135,7 +135,8 @@ describe("POST /api/reviews", () => {
     const response = await submit({ token: "emailed-token", rating: 4, body: "Good.", displayName: "Sam P.", consent: true });
 
     expect(response.status).toBe(201);
-    await expect(runAfterCallbacks()).resolves.toBeDefined();
+    // The rejection is caught inside the callback, so nothing escapes it.
+    await expect(runAfterCallbacks()).resolves.toBeUndefined();
   });
 
   it("still saves and emails without a one-tap link when links are not set up", async () => {
