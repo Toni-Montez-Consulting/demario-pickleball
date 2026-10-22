@@ -229,7 +229,7 @@ describe("AdminDashboard availability", () => {
       />
     );
 
-    expect(screen.getByRole("button", { name: /^confirm$/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^lesson happened$/i })).toBeDisabled();
     // The lesson date has passed, so Cancel reads as recording that it didn't happen.
     expect(screen.getByRole("button", { name: /^didn't happen$/i })).toBeDisabled();
   });
