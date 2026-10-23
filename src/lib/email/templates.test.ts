@@ -6,6 +6,7 @@ import {
   reviewRequestHtml,
   inquiryNotificationHtml,
   lessonOutcomeDigestHtml,
+  lessonReminderHtml,
 } from "./templates";
 
 const booking = {
@@ -85,6 +86,34 @@ describe("email templates", () => {
     expect(html).not.toContain("</title><a");
     expect(html).not.toContain('<a href="https://evil.example"');
     expect(html).toContain("&lt;/title&gt;");
+  });
+});
+
+describe("lessonReminderHtml", () => {
+  it("gives tomorrow's details, how to reach DeMario, and what to do if plans changed", () => {
+    const html = lessonReminderHtml(booking);
+    expect(html).toContain("See you tomorrow, Jane.");
+    expect(html).toContain("Mon, May 4");
+    expect(html).toContain("9:00 AM CT");
+    expect(html).toContain('href="sms:4693719220"');
+    expect(html).toContain("If you and DeMario already changed plans, you can ignore this email.");
+    // It never repeats the student's free-text note or claims a court.
+    expect(html).not.toContain("Lake Highlands");
+  });
+
+  it("shows a group's players", () => {
+    const html = lessonReminderHtml({
+      ...booking,
+      lesson_type: "drill_90",
+      group_size: 3,
+      quoted_per_person_cents: 3500,
+      quoted_total_cents: 10500,
+    });
+    expect(html).toContain("3 players · $35 per person");
+  });
+
+  it("escapes the student's name", () => {
+    expect(lessonReminderHtml({ ...booking, name: "<b>x</b>" })).not.toContain("<b>x</b>");
   });
 });
 

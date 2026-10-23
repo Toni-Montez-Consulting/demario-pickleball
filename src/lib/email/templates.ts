@@ -1,5 +1,5 @@
 import { SITE_URL } from "@/lib/site";
-import { COURT_CONFIRMATION_MESSAGE, LESSON_LOCATION } from "@/lib/business";
+import { COACH_PHONE_DISPLAY, COACH_PHONE_TEL, COURT_CONFIRMATION_MESSAGE, LESSON_LOCATION } from "@/lib/business";
 import { parseBookingNotes } from "@/lib/booking-notes";
 import { fixedFee, lessonName, storedQuote } from "@/lib/lesson-types";
 import { formatLessonDate } from "@/lib/time";
@@ -293,6 +293,37 @@ export function feedbackNotificationHtml({
     <p style="font-size:13px;color:#888;margin:20px 0 0;">This was automatically added to the Tasks list in the admin portal.</p>
     `,
     `Admin Feedback: ${type}`
+  );
+}
+
+/**
+ * The day-before reminder for a lesson booked on the site. DeMario sometimes
+ * changes plans by text without updating the site, so it says what to do if
+ * something changed and never claims the court is settled.
+ */
+export function lessonReminderHtml(booking: IcsBooking): string {
+  const lesson = lessonName(booking.lesson_type);
+  const group = groupRows(booking);
+  const shortId = booking.id.slice(0, 8).toUpperCase();
+  return wrap(
+    `
+    <h1 style="font-size:22px;margin:0 0 12px;">See you tomorrow, ${escapeHtml(greetingName(booking.name))}.</h1>
+    <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
+      <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(lesson)}</strong></td></tr>
+      ${group ? `<tr><td style="padding:6px 0;color:#777;">Players</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(group.players)}</strong></td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(formatLessonDate(booking.lesson_date))}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#777;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;"><strong>${shortId}</strong></td></tr>
+    </table>
+    <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">
+      DeMario confirms the exact court by text. If you have not heard from him, or something
+      has changed, text him at <a href="sms:${COACH_PHONE_TEL}" style="color:#0070ba;">${escapeHtml(COACH_PHONE_DISPLAY)}</a>.
+    </p>
+    <p style="font-size:13px;color:#666;line-height:1.5;margin:0;">
+      If you and DeMario already changed plans, you can ignore this email.
+    </p>
+    `,
+    `Lesson tomorrow — ${formatLessonDate(booking.lesson_date)}`
   );
 }
 
