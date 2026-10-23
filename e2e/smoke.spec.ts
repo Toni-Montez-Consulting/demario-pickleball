@@ -120,6 +120,11 @@ test("a tagged bio link lands on the homepage and the booking says where it came
   await page.goto("/ig");
   await expect(page).toHaveURL(/\/\?utm_source=instagram&utm_medium=bio$/);
   await expect(page.getByRole("heading", { name: /train smarter/i })).toBeVisible();
+  // The heading is server-rendered, so it shows before the page's scripts run.
+  // Wait for the tag to be saved before leaving the page.
+  await expect
+    .poll(() => page.evaluate(() => window.sessionStorage.getItem("dm_arrival_source")))
+    .toBe("instagram");
 
   // openBookingPicker loads "/" again, untagged: the tab still remembers the tag.
   const dialog = await openBookingPicker(page);
