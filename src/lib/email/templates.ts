@@ -5,6 +5,7 @@ import { fixedFee, lessonName, storedQuote } from "@/lib/lesson-types";
 import { formatLessonDate } from "@/lib/time";
 import { playersLabel, usd } from "@/lib/session-pricing";
 import { generateGoogleCalendarUrl, type IcsBooking } from "./ics";
+import { arrivalSourceLabel, type ArrivalSource } from "@/lib/arrival-source";
 
 /**
  * A group booking's players and the total the person booking pays, from the
@@ -81,7 +82,12 @@ export function studentRequestedHtml(booking: IcsBooking): string {
   );
 }
 
-export function adminNotificationHtml(booking: IcsBooking): string {
+/** A new booking as Mario's alert sees it: the booking plus where the student came from. */
+export interface NewBookingAlert extends IcsBooking {
+  arrival_source?: ArrivalSource | null;
+}
+
+export function adminNotificationHtml(booking: NewBookingAlert): string {
   const lesson = lessonName(booking.lesson_type);
   const group = groupRows(booking);
   const shortId = booking.id.slice(0, 8).toUpperCase();
@@ -99,6 +105,7 @@ export function adminNotificationHtml(booking: IcsBooking): string {
       <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;">${escapeHtml(formatLessonDate(booking.lesson_date))} · ${escapeHtml(booking.lesson_time)} CT</td></tr>
       ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Court setup</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.courtSetup)}</td></tr>` : ""}
       ${court.preferredArea ? `<tr><td style="padding:6px 0;color:#777;">Area/court note</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.preferredArea)}</td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#777;">Found you through</td><td style="padding:6px 0;text-align:right;">${escapeHtml(arrivalSourceLabel(booking.arrival_source))}</td></tr>
       <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;">${shortId}</td></tr>
     </table>
     <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">

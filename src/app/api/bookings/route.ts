@@ -10,6 +10,7 @@ import { courtSetupCode } from "@/lib/analytics";
 import { trackServerEvent } from "@/lib/analytics-server";
 import { isGroupLessonType, isLessonType, quoteColumns, quoteLesson } from "@/lib/lesson-types";
 import type { SessionQuote } from "@/lib/session-pricing";
+import { isArrivalSource } from "@/lib/arrival-source";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -17,7 +18,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
 
-  const { name, email, phone, lesson_type, lesson_date, lesson_time, notes, waiver_accepted, company, group_size } = body;
+  const { name, email, phone, lesson_type, lesson_date, lesson_time, notes, waiver_accepted, company, group_size, arrival_source } = body;
+  // Where the student found DeMario, from a tagged link. Only the closed set is
+  // kept. Anything else is dropped, never rejected: a label must not cost a booking.
+  const arrivalSource = isArrivalSource(arrival_source) ? arrival_source : null;
 
   if (typeof company === "string" && company.trim()) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
@@ -132,6 +136,8 @@ export async function POST(req: NextRequest) {
     name: data.name,
     email: data.email,
     phone: data.phone,
+    // Recorded once, on a new student: where they first found DeMario.
+    metadata: arrivalSource ? { arrived_via: arrivalSource } : undefined,
   });
   if (match) {
     const { error: linkError } = await supabase
@@ -161,6 +167,7 @@ export async function POST(req: NextRequest) {
     group_size: data.group_size,
     quoted_per_person_cents: data.quoted_per_person_cents,
     quoted_total_cents: data.quoted_total_cents,
+    arrival_source: arrivalSource,
   };
   // These emails are Mario's only alert that a lesson was booked. A bare
   // un-awaited promise could be frozen with the serverless function once the

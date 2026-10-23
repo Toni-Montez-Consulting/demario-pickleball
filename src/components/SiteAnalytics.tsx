@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { parseEventAttributes, trackEvent } from "@/lib/analytics";
+import { rememberArrivalSource } from "@/lib/arrival-source";
 
 /**
  * Vercel Web Analytics with the review token stripped out of the path.
@@ -23,6 +24,14 @@ import { parseEventAttributes, trackEvent } from "@/lib/analytics";
  * before the browser follows the link.
  */
 export default function SiteAnalytics() {
+  // A visitor who came through a tagged link (/ig, /tiktok, /card) is counted
+  // once per page load and keeps the tag for the rest of the visit, so a
+  // booking can say where they came from.
+  useEffect(() => {
+    const source = rememberArrivalSource(window.location.search);
+    if (source) trackEvent("tagged_arrival", { source });
+  }, []);
+
   useEffect(() => {
     function onClick(e: MouseEvent) {
       // A middle click opens the link in a new tab and fires auxclick, not

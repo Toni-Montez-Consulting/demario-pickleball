@@ -14,6 +14,7 @@ import {
   inquiryAlertsPausedHtml,
   lessonOutcomeDigestHtml,
   firstName,
+  type NewBookingAlert,
   type OutcomeDigestLesson,
 } from "./templates";
 
@@ -63,7 +64,7 @@ async function sendAlertToMario(resend: Resend, label: string, email: CreateEmai
   if (result.error) reportSendFailure(label, result.error);
 }
 
-export async function sendBookingCreatedEmails(booking: IcsBooking): Promise<void> {
+export async function sendBookingCreatedEmails(booking: NewBookingAlert): Promise<void> {
   const resend = getResend();
   if (!resend) {
     console.warn("[email] RESEND_API_KEY not set; skipping booking email");

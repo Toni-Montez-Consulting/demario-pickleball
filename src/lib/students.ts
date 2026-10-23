@@ -57,6 +57,8 @@ export async function findOrCreateStudent(
     email: string;
     phone: string;
     source?: string;
+    /** Written only when a new student is created; an existing student's is left alone. */
+    metadata?: Record<string, string>;
     /** Set false when `name` is a display name, not the name they booked under. */
     compareName?: boolean;
   }
@@ -122,6 +124,7 @@ export async function findOrCreateStudent(
         phone_normalized: phone,
         email_normalized: email,
         source: input.source ?? "site",
+        ...(input.metadata ? { metadata: input.metadata } : {}),
       })
       .select()
       .single();

@@ -265,6 +265,50 @@ describe("POST /api/bookings", () => {
     );
   });
 
+  it("tells Mario and the new student record where a tagged visitor came from", async () => {
+    mocks.serviceClient = createMockClient(
+      {
+        time_slots: [{ display_label: "9:00 AM", active: true }],
+        bookings: [],
+        blocked_slots: [],
+        recurring_blocks: [],
+      },
+      inserted
+    );
+
+    const response = await postBooking({ ...VALID_BOOKING_BODY, arrival_source: "instagram" });
+
+    expect(response.status).toBe(201);
+    const student = inserted.find((row) => row.phone_normalized !== undefined);
+    expect(student).toMatchObject({ metadata: { arrived_via: "instagram" } });
+    await runAfterCallbacks();
+    expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledWith(
+      expect.objectContaining({ arrival_source: "instagram" })
+    );
+  });
+
+  it("drops an unknown source label without costing the booking", async () => {
+    mocks.serviceClient = createMockClient(
+      {
+        time_slots: [{ display_label: "9:00 AM", active: true }],
+        bookings: [],
+        blocked_slots: [],
+        recurring_blocks: [],
+      },
+      inserted
+    );
+
+    const response = await postBooking({ ...VALID_BOOKING_BODY, arrival_source: "<b>spam</b>" });
+
+    expect(response.status).toBe(201);
+    const student = inserted.find((row) => row.phone_normalized !== undefined);
+    expect(student).not.toHaveProperty("metadata");
+    await runAfterCallbacks();
+    expect(mocks.sendBookingCreatedEmails).toHaveBeenCalledWith(
+      expect.objectContaining({ arrival_source: null })
+    );
+  });
+
   it("keeps the booking when the confirmation emails fail", async () => {
     mocks.serviceClient = createMockClient(
       {

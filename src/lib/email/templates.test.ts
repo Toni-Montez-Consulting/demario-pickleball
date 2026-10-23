@@ -60,6 +60,13 @@ describe("email templates", () => {
     expect(admin).toContain("$105 total");
   });
 
+  it("tells Mario where the student found him, and says so when nobody knows", () => {
+    expect(adminNotificationHtml({ ...booking, arrival_source: "card" })).toContain("QR card");
+    expect(adminNotificationHtml(booking)).toContain("No tagged link");
+    // The student's own email never carries it.
+    expect(studentRequestedHtml({ ...booking, arrival_source: "card" } as typeof booking)).not.toContain("QR card");
+  });
+
   it("keeps a one-on-one lesson's fee and adds no group rows", () => {
     const html = studentRequestedHtml(booking);
     expect(html).toContain("$70");

@@ -14,6 +14,7 @@ async function mockBookingFlow(
     bookingStatus?: number;
     refreshAvailability?: { allDay: boolean; unavailable: string[] };
     availabilityStatus?: number;
+    onBooking?: (body: Record<string, unknown>) => void;
   } = {}
 ) {
   let availabilityCalls = 0;
@@ -42,6 +43,7 @@ async function mockBookingFlow(
   await page.route("**/api/bookings", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
     const body = route.request().postDataJSON();
+    options.onBooking?.(body);
     expect(body).toMatchObject({
       phone: "(469) 371-9220",
       notes: "Preferred court setup: Outdoor public court\nPreferred area or court: Lake Highlands",
@@ -109,6 +111,21 @@ test("homepage loads and booking modal can reach payment options", async ({ page
     "href",
     "https://www.paypal.com/paypalme/DemarioMontez"
   );
+});
+
+test("a tagged bio link lands on the homepage and the booking says where it came from", async ({ page }) => {
+  let posted: Record<string, unknown> | null = null;
+  await mockBookingFlow(page, { onBooking: (body) => (posted = body) });
+
+  await page.goto("/ig");
+  await expect(page).toHaveURL(/\/\?utm_source=instagram&utm_medium=bio$/);
+  await expect(page.getByRole("heading", { name: /train smarter/i })).toBeVisible();
+
+  // openBookingPicker loads "/" again, untagged: the tab still remembers the tag.
+  const dialog = await openBookingPicker(page);
+  await dialog.getByRole("button", { name: /reserve/i }).click();
+  await expect(page.getByRole("dialog", { name: /you're booked/i })).toBeVisible();
+  expect(posted).toMatchObject({ arrival_source: "instagram" });
 });
 
 test("indoor students are routed to partner booking paths", async ({ page }) => {

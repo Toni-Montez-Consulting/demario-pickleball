@@ -97,6 +97,14 @@ export default function PrivacyPage() {
           does not set cookies, does not build a profile of you, and does not follow you to other
           websites.
         </p>
+        <p>
+          Some links DeMario shares, such as the one in his Instagram or TikTok bio or on his QR
+          card, carry a short label naming where they were shared. If you arrive through one,
+          your browser keeps that label for the current tab only (session storage, not a
+          cookie), and a booking you make sends it along so DeMario knows where you found him.
+          It is one of a few fixed words, such as &ldquo;instagram&rdquo;, and never anything
+          about you.
+        </p>
 
         <h2>Contact</h2>
         <p>

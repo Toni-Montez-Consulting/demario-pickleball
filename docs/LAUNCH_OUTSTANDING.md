@@ -244,3 +244,24 @@ reserved court fee is confirmed separately by Mario before the lesson.
 - Add a short availability debounce or cache if public traffic increases.
 - Link more review sources as Mario's profiles are ready. TeachMe.To is linked
   (#13); Google reviews wait on a Business Profile.
+
+### Backlog from the 2026-10-23 growth session
+
+Parked by Tonio on 2026-10-23 ("We can backlog those pages"). The goal is more students, then
+higher prices. DeMario wants more groups, adult and older-adult beginners, and competitive
+adults who do not want to go pro.
+
+- **Scheduled group sessions people join on their own** (for example "Saturday 9 AM drilling,
+  3 of 8 spots left"), alongside bring-your-own groups. Both are wanted. Mario decides first:
+  1. The minimum number of players to run a session, and when it is called off.
+  2. The price: a fixed price per player, or one that drops as more join.
+  3. Whether each player pays for their own spot (bring-your-own groups stay booker-pays).
+  4. How he posts a session from his phone in about a minute.
+  5. The levels offered.
+- **Homepage with three clear doors:** new to pickleball, already play and want to get better,
+  and bring or join a group. The copy needs Mario's approval.
+- **Per-player details for group bookings:** each player's name and email, and each one
+  accepting the coaching terms. Waits on the open waiver question in decision 4 of
+  `docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`.
+- **QR card design:** `/card` is live with the tagged links; the printed card's wording needs
+  Mario's approval.
