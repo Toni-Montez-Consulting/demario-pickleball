@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
@@ -20,6 +20,7 @@ import StickyCta from "@/components/StickyCta";
 import BookingModal from "@/components/BookingModal";
 import type { LessonKey } from "@/lib/data";
 import { trackEvent, type CtaSource } from "@/lib/analytics";
+import { wantsBookingOpen, withoutBookingFlag } from "@/lib/arrival-source";
 
 export default function HomePage() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -32,6 +33,17 @@ export default function HomePage() {
     setInitialLessonType(lessonType ?? "beginner");
     setModalOpen(true);
   }
+
+  // A past student who tapped "Book your next lesson" lands with the form open.
+  // The flag is dropped from the address so a refresh or Back does not reopen it.
+  useEffect(() => {
+    const { pathname, search, hash } = window.location;
+    if (!wantsBookingOpen(search)) return;
+    window.history.replaceState(window.history.state, "", withoutBookingFlag(pathname, search, hash));
+    openBooking("link");
+    // Runs once, on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="device" id="device">

@@ -7,6 +7,8 @@ import {
   recalledArrivalSource,
   rememberArrivalSource,
   shortLinkDestination,
+  wantsBookingOpen,
+  withoutBookingFlag,
 } from "./arrival-source";
 
 describe("tagged links", () => {
@@ -20,11 +22,22 @@ describe("tagged links", () => {
       ["/ig", "/?utm_source=instagram&utm_medium=bio"],
       ["/tiktok", "/?utm_source=tiktok&utm_medium=bio"],
       ["/card", "/?utm_source=card&utm_medium=qr"],
+      ["/book-again", "/?utm_source=rebook&utm_medium=email&book=1"],
     ]);
     // Every destination reads back as the source it was made for.
     for (const link of SHORT_LINKS) {
       expect(arrivalSourceFromSearch(shortLinkDestination(link).slice(1))).toBe(link.source);
     }
+  });
+
+  it("opens the booking form only for the book-again link, and drops the flag after", () => {
+    expect(wantsBookingOpen("?utm_source=rebook&utm_medium=email&book=1")).toBe(true);
+    expect(wantsBookingOpen("?utm_source=instagram&utm_medium=bio")).toBe(false);
+    expect(wantsBookingOpen("?book=yes")).toBe(false);
+    expect(withoutBookingFlag("/", "?utm_source=rebook&utm_medium=email&book=1", "")).toBe(
+      "/?utm_source=rebook&utm_medium=email"
+    );
+    expect(withoutBookingFlag("/", "?book=1", "#lessons")).toBe("/#lessons");
   });
 
   it("accepts only the closed set", () => {

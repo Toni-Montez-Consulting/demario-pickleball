@@ -68,6 +68,10 @@ test.describe("public review page", () => {
 
     await expect(page.getByRole("heading", { name: /thank you/i })).toBeVisible();
     await expect(page.getByText(/with demario for approval/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /book your next lesson/i })).toHaveAttribute(
+      "href",
+      "/book-again"
+    );
 
     expect(payload).toMatchObject({
       rating: 4,

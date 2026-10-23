@@ -26,6 +26,12 @@ place DeMario shares the site gets its own short link, defined in
 | `/ig` | `/?utm_source=instagram&utm_medium=bio` |
 | `/tiktok` | `/?utm_source=tiktok&utm_medium=bio` |
 | `/card` | `/?utm_source=card&utm_medium=qr` |
+| `/book-again` | `/?utm_source=rebook&utm_medium=email&book=1` |
+
+`/book-again` is the "Book your next lesson" link in the review request email and on the
+review thank-you page. Its `book=1` opens the booking form on arrival (counted as
+`book_cta_click` with `source` `link`), and the homepage then drops `book=1` from the address
+so a refresh does not reopen the form.
 
 - **Visits by source:** the `tagged_arrival` event, by its `source` property. Grouping
   pageviews by UTM would be simpler, but the API answers "UTM dimensions require an
@@ -78,7 +84,7 @@ within two properties. Web Analytics Plus ($10/month) raises the limit to 8 prop
 
 | Event | Properties | Question |
 |---|---|---|
-| `book_cta_click` | `source` (nav, hero, testimonials, lessons, final_cta, sticky), `lesson_type` (the card: beginner, advanced, clinic, drill, play_pro) | Which Book button starts bookings? |
+| `book_cta_click` | `source` (nav, hero, testimonials, lessons, final_cta, sticky, link), `lesson_type` (the card: beginner, advanced, clinic, drill, play_pro) | Which Book button starts bookings? |
 | `booking_step_viewed` | `step` (details, terms, indoor_routing, picker, error, confirmed), `court_setup` | Where does the booking form lose people? Sent once per step per opening of the form, so Back, Try again, and a taken slot do not count a step twice. |
 | `booking_failed` | `reason` (slot_taken, rate_limited, invalid, server, network) | Are bookings failing, and why? |
 | `booking_created` | `lesson_type` (as stored: beginner, advanced, clinic, drill_60, drill_90, play_pro), `court_setup` | How many bookings were actually saved (server-side)? Group size is not sent; the event's two properties are taken, and the database has it. |
@@ -88,7 +94,7 @@ within two properties. Web Analytics Plus ($10/month) raises the limit to 8 prop
 | `inquiry_submit` | `result` | Does the contact form work for real visitors? |
 | `review_submit` | `result`, `path` (public, token) | Does the review form work, and where do people stop? |
 | `outbound_click` | `dest` (instagram, tiktok, facebook, google_review, teachme_reviews) | Do visitors check the social and review profiles? |
-| `tagged_arrival` | `source` (instagram, tiktok, card) | Which shared link brings visitors? Sent once per page load that arrives tagged. |
+| `tagged_arrival` | `source` (instagram, tiktok, card, rebook) | Which shared link brings visitors? Sent once per page load that arrives tagged. |
 
 The funnel to watch is `book_cta_click` -> `booking_step_viewed` (details -> picker or
 indoor_routing -> confirmed) -> `booking_created`. Link clicks count left and middle clicks;

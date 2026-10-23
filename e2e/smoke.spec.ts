@@ -128,6 +128,18 @@ test("a tagged bio link lands on the homepage and the booking says where it came
   expect(posted).toMatchObject({ arrival_source: "instagram" });
 });
 
+test("the book-again link opens the booking form once and keeps its tag", async ({ page }) => {
+  await mockBookingFlow(page);
+
+  await page.goto("/book-again");
+  await expect(page.getByRole("dialog", { name: /book a lesson/i })).toBeVisible();
+  // The open flag is gone, so a refresh shows the page, not the form again.
+  await expect(page).toHaveURL(/\/\?utm_source=rebook&utm_medium=email$/);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: /train smarter/i })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: /book a lesson/i })).toHaveCount(0);
+});
+
 test("indoor students are routed to partner booking paths", async ({ page }) => {
   await mockBookingFlow(page);
 

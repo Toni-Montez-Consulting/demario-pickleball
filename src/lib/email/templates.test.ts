@@ -104,6 +104,9 @@ describe("reviewRequestHtml", () => {
       reviewUrl: "https://demariomontezpb.com/review/abc123",
     });
     expect(html).toContain("https://demariomontezpb.com/review/abc123");
+    // A second, quieter link for the student's next booking.
+    expect(html).toContain("/book-again");
+    expect(html).toContain("Book your next lesson");
     expect(html).toContain("Foundations");
     expect(html).toContain("Rachel");
   });

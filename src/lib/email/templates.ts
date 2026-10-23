@@ -329,6 +329,9 @@ export function reviewRequestHtml({
     <p style="margin:0 0 20px;">
       <a href="${reviewUrl}" style="display:inline-block;padding:10px 16px;background:#111;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">Leave a review</a>
     </p>
+    <p style="font-size:14px;line-height:1.5;margin:0 0 20px;color:#444;">
+      Ready for the next one? <a href="${SITE_URL}/book-again" style="color:#0070ba;text-decoration:underline;font-weight:600;">Book your next lesson</a>
+    </p>
     <p style="font-size:13px;color:#666;line-height:1.5;margin:0;">
       Nothing gets posted without your ok, and you choose how your name appears.
       See you on the court.<br>DeMario
