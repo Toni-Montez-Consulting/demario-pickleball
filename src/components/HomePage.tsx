@@ -42,7 +42,6 @@ export default function HomePage() {
     window.history.replaceState(window.history.state, "", withoutBookingFlag(pathname, search, hash));
     openBooking("link");
     // Runs once, on arrival.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
