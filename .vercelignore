@@ -12,3 +12,6 @@ coverage
 playwright-report
 test-results
 *.tsbuildinfo
+
+# Private audit reports and machine notes (see docs/AUDIT_PROMPT.md).
+private
