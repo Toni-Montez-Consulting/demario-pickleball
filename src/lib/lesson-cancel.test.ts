@@ -76,6 +76,10 @@ describe("cancelView", () => {
     expect(
       cancelView({ configured: true, check: ok, booking: { ...pending, lesson_date: "2026-10-23", lesson_time: "9:00 AM" }, now: NOW }).state
     ).toBe("started");
+    // A time that cannot be read is refused, not treated as "not started".
+    expect(cancelView({ configured: true, check: ok, booking: { ...pending, lesson_time: "9am" }, now: NOW }).state).toBe(
+      "unreadable"
+    );
   });
 
   it("shows why the last tap did not save", () => {

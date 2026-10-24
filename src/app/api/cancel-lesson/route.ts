@@ -4,7 +4,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { outcomeSecret } from "@/lib/lesson-outcomes";
 import { verifyCancelToken, type CancelFailure } from "@/lib/lesson-cancel";
 import { sendBookingCancelledEmail } from "@/lib/email/client";
-import { lessonHasStarted } from "@/lib/time";
+import { lessonHasStarted, parseDisplayTime } from "@/lib/time";
 
 // base64url payload, a dot, base64url signature: the only shape a real link has.
 const TOKEN_SHAPE = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
@@ -62,8 +62,10 @@ export async function POST(req: NextRequest) {
     console.error("[cancel-lesson POST] booking lookup failed", check.bookingId, loadError);
     return backToPage("save");
   }
-  // The page explains a missing, settled, or started lesson.
+  // The page explains a missing, settled, started, or unreadable lesson. An
+  // unreadable time is refused: it cannot be shown that the lesson is ahead.
   if (!booking || booking.status !== "pending") return backToPage();
+  if (!parseDisplayTime(booking.lesson_time)) return backToPage();
   if (lessonHasStarted(booking.lesson_date, booking.lesson_time)) return backToPage();
 
   // Only a still-pending booking moves, and only the request that moved it

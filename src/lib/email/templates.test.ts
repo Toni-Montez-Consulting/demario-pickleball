@@ -110,16 +110,12 @@ describe("email templates", () => {
     expect(studentRequestedHtml({ ...booking, arrival_source: "card" } as typeof booking)).not.toContain("QR card");
   });
 
-  it("gives Mario Add to my calendar, and Cancel only when the link exists", () => {
-    const withLink = adminNotificationHtml({ ...booking, cancel_url: "https://demariomontezpb.com/cancel-lesson/abc.def" });
-    expect(withLink).toContain("Add to my calendar");
-    expect(withLink).toContain("calendar.google.com");
-    expect(withLink).toContain("https://demariomontezpb.com/cancel-lesson/abc.def");
-    expect(withLink).toContain("so Jane gets the cancellation email");
-
-    const without = adminNotificationHtml({ ...booking, cancel_url: null });
-    expect(without).toContain("Add to my calendar");
-    expect(without).not.toContain("Cancel this lesson");
+  it("gives Mario Add to my calendar, and never a cancel link: replies go to the student", () => {
+    const html = adminNotificationHtml(booking);
+    expect(html).toContain("Add to my calendar");
+    expect(html).toContain("calendar.google.com");
+    expect(html).not.toContain("Cancel this lesson");
+    expect(html).not.toContain("/cancel-lesson/");
   });
 
   it("keeps a one-on-one lesson's fee and adds no group rows", () => {

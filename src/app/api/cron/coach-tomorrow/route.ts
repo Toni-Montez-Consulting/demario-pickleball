@@ -14,6 +14,10 @@ import { formatLessonDate, parseDisplayTime } from "@/lib/time";
  * student's number and a one-tap Cancel, so a lesson he called off by text is
  * cancelled before its student hears "See you tomorrow". Sends nothing when
  * there are no lessons tomorrow.
+ *
+ * No claim before sending, the same as the morning outcome digest: if Vercel
+ * starts a run twice, DeMario gets the email twice. Nothing reaches a student,
+ * so a duplicate is tolerated rather than adding a column to prevent it.
  * Design: docs/specs/2026-10-23-one-tap-cancel.md
  */
 export async function GET(req: NextRequest) {
@@ -42,10 +46,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ lessons: 0, sent: false });
   }
 
-  // lesson_time is a label ("9:00 AM"), which sorts wrong as text.
+  // lesson_time is a label ("9:00 AM"), which sorts wrong as text. A label
+  // that does not parse is listed first and logged, never silently placed.
   const minutes = (label: string) => {
     const t = parseDisplayTime(label);
-    return t ? t.hour * 60 + t.minute : 0;
+    if (!t) {
+      console.warn("[cron coach-tomorrow] unreadable lesson time; listed first", label);
+      return -1;
+    }
+    return t.hour * 60 + t.minute;
   };
   const lessons = [...bookings]
     .sort((a, b) => minutes(a.lesson_time) - minutes(b.lesson_time))

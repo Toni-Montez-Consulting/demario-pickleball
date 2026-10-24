@@ -276,7 +276,6 @@ export async function sendLessonReminderEmail(booking: IcsBooking): Promise<bool
   return true;
 }
 
-/** Mario's morning digest of lessons that still need an outcome. */
 /** DeMario's look at tomorrow's site lessons. Returns false when it was not sent. */
 export async function sendCoachTomorrowEmail(lessons: CoachTomorrowLesson[], dateLabel: string): Promise<boolean> {
   const resend = getResend();
@@ -303,6 +302,7 @@ export async function sendCoachTomorrowEmail(lessons: CoachTomorrowLesson[], dat
   return true;
 }
 
+/** Mario's morning digest of lessons that still need an outcome. */
 export async function sendLessonOutcomeDigest(lessons: OutcomeDigestLesson[]): Promise<boolean> {
   const resend = getResend();
   if (!resend) {

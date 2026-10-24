@@ -11,7 +11,6 @@ import { trackServerEvent } from "@/lib/analytics-server";
 import { isGroupLessonType, isLessonType, quoteColumns, quoteLesson } from "@/lib/lesson-types";
 import type { SessionQuote } from "@/lib/session-pricing";
 import { isArrivalSource } from "@/lib/arrival-source";
-import { cancelLessonUrl } from "@/lib/lesson-cancel";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -169,8 +168,6 @@ export async function POST(req: NextRequest) {
     quoted_per_person_cents: data.quoted_per_person_cents,
     quoted_total_cents: data.quoted_total_cents,
     arrival_source: arrivalSource,
-    // Null when one-tap links are not set up; the email then leaves the line out.
-    cancel_url: cancelLessonUrl(data.id),
   };
   // These emails are Mario's only alert that a lesson was booked. A bare
   // un-awaited promise could be frozen with the serverless function once the

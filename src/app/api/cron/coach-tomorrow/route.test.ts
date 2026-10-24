@@ -112,6 +112,17 @@ describe("GET /api/cron/coach-tomorrow", () => {
     expect(verifyCancelToken(link, SIGNER)).toMatchObject({ ok: true, bookingId: "11111111-1111-1111-1111-111111111111" });
   });
 
+  it("lists a lesson whose time cannot be read first, and says so in the logs", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mocks.bookings = [lesson(), lesson({ id: "33333333-3333-3333-3333-333333333333", lesson_time: "noonish" })];
+
+    await runCron();
+
+    const [lessons] = mocks.sendCoachTomorrowEmail.mock.calls[0];
+    expect(lessons.map((l: Row) => l.time)).toEqual(["noonish", "9:00 AM"]);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("unreadable lesson time"), "noonish");
+  });
+
   it("still sends, without cancel links, when one-tap links are not set up", async () => {
     vi.stubEnv("LESSON_OUTCOME_SECRET", "");
     mocks.bookings = [lesson()];

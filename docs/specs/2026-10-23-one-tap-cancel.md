@@ -38,12 +38,19 @@ DeMario cancels lessons by text and does not open Admin. A lesson he called off 
 - `/cancel-lesson/[token]` shows the lesson. Its button posts to `/api/cancel-lesson`.
   - The route moves `pending` to `cancelled` only if the row is still pending.
   - Only the request that moved it emails the student.
-- **Where the link appears:**
-  - DeMario's new-booking email, with **Add to my calendar**: a Google Calendar link naming
-    the student, with their phone and court setup.
-  - A new **"Tomorrow" email** (`/api/cron/coach-tomorrow`, 14:00 UTC, 9 AM Dallas time). It
-    lists tomorrow's pending site lessons with time, student, lesson, group size, court notes,
-    and Text and Call links. It sends nothing on a day without one.
+- **Where the link appears:** only in a new **"Tomorrow" email**
+  (`/api/cron/coach-tomorrow`, 14:00 UTC: 9 AM Dallas time, 8 AM in winter). It lists
+  tomorrow's pending site lessons with time, student, lesson, group size, court notes, and Text
+  and Call links, and sends nothing on a day without one.
+  - **Not in the new-booking email.** That email's Reply-To is the student, and a reply would
+    quote the link to them. (Code review, 2026-10-24.)
+  - The new-booking email gets **Add to my calendar** instead: a Google Calendar link naming the
+    student, with their phone and court setup.
+  - **The site reads busy times from DeMario's calendar.** A lesson he adds there stays busy
+    after a one-tap cancel until he deletes the event. The cancel line and the confirmation page
+    both tell him so.
+- **A time that cannot be read is refused.** Cancel acts only when the lesson's time parses and
+  is still ahead; it never guesses that the lesson has not started.
 - **Students' reminders move to 23:00 UTC** (6 PM Dallas, 5 PM in winter). That gives DeMario
   nine hours between his email and theirs. No reminder had been sent yet when this changed.
 - `/cancel-lesson/<token>` joins `TOKEN_ROUTES`, so analytics never sees the token.

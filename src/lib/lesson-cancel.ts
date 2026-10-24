@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { outcomeSecret, shortName } from "@/lib/lesson-outcomes";
 import { lessonName } from "@/lib/lesson-types";
 import { SITE_URL } from "@/lib/site";
-import { formatLessonDate, lessonHasStarted } from "@/lib/time";
+import { formatLessonDate, lessonHasStarted, parseDisplayTime } from "@/lib/time";
 
 /**
  * One-tap "Cancel this lesson" from DeMario's emails.
@@ -102,7 +102,16 @@ export type CancelView =
       alert?: string;
     }
   | {
-      state: "done" | "started" | "settled" | "expired" | "invalid" | "missing" | "unavailable" | "not_configured";
+      state:
+        | "done"
+        | "started"
+        | "unreadable"
+        | "settled"
+        | "expired"
+        | "invalid"
+        | "missing"
+        | "unavailable"
+        | "not_configured";
       heading: string;
       body: string;
     };
@@ -175,6 +184,16 @@ export function cancelView({
       body: "It was marked as happened or a no-show, so there is nothing to cancel. Change it in Admin if that was a mistake.",
     };
   }
+  // Without a readable start time there is no telling whether the lesson has
+  // happened, and cancelling one that has would email the student about a
+  // lesson they already had. Refuse rather than guess.
+  if (!parseDisplayTime(booking.lesson_time)) {
+    return {
+      state: "unreadable",
+      heading: "This lesson's time can't be read",
+      body: "Nothing was changed. Cancel it in Admin if it is still on.",
+    };
+  }
   if (lessonHasStarted(booking.lesson_date, booking.lesson_time, now)) {
     return {
       state: "started",
@@ -192,7 +211,7 @@ export function cancelView({
       name: lessonName(booking.lesson_type),
       when: `${formatLessonDate(booking.lesson_date)} · ${booking.lesson_time} CT`,
     },
-    note: `This emails ${student} that the lesson is cancelled and opens the time on your site again. Settle any payment with them directly.`,
+    note: `This emails ${student} that the lesson is cancelled and opens the time on your site again. If you added it to your Google Calendar, delete it there too, or the site keeps that time blocked. Settle any payment with them directly.`,
     ...(failed ? { alert: FAILURE_ALERTS[failed] } : {}),
   };
 }

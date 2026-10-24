@@ -127,7 +127,7 @@ describe("POST /api/cancel-lesson", () => {
     expect(mocks.sendBookingCancelledEmail).toHaveBeenCalledOnce();
   });
 
-  it("leaves a lesson that has started, or already has an outcome, alone", async () => {
+  it("leaves a lesson that has started, has an outcome, or has an unreadable time alone", async () => {
     const token = signCancelToken({ bookingId: BOOKING_ID, secret: SIGNER });
 
     mocks.booking = { ...mocks.booking, lesson_date: "2026-10-23", lesson_time: "9:00 AM" };
@@ -137,6 +137,11 @@ describe("POST /api/cancel-lesson", () => {
     mocks.booking = { ...mocks.booking, lesson_date: "2026-10-24", status: "confirmed" };
     await post(token);
     expect(mocks.booking?.status).toBe("confirmed");
+
+    // An unreadable time is refused rather than read as "not started".
+    mocks.booking = { ...mocks.booking, status: "pending", lesson_time: "9am" };
+    await post(token);
+    expect(mocks.booking?.status).toBe("pending");
 
     await runAfterCallbacks();
     expect(mocks.sendBookingCancelledEmail).not.toHaveBeenCalled();

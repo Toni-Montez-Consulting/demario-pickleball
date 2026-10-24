@@ -85,16 +85,19 @@ export function studentRequestedHtml(booking: IcsBooking): string {
 /** A new booking as Mario's alert sees it: the booking plus where the student came from. */
 export interface NewBookingAlert extends IcsBooking {
   arrival_source?: ArrivalSource | null;
-  /** The signed one-tap cancel link, or null when one-tap links are not set up. */
-  cancel_url?: string | null;
 }
 
-/** "Called off by text?" with the one-tap cancel link, for DeMario's emails. */
+/**
+ * "Called off by text?" with the one-tap cancel link. Only for emails whose
+ * replies cannot reach a student: the new-booking alert's Reply-To is the
+ * student, so a reply would quote the link to them, and it never carries one.
+ */
 function cancelLine(cancelUrl: string | null | undefined, student: string): string {
   if (!cancelUrl) return "";
   return `<p style="font-size:13px;color:#666;line-height:1.5;margin:12px 0 0;">
       Called off by text? <a href="${escapeHtml(cancelUrl)}" style="color:#b42318;font-weight:600;">Cancel this lesson</a>
       so ${escapeHtml(student)} gets the cancellation email and the time opens up on your site.
+      If you added it to your Google Calendar, delete it there too, or the site keeps that time blocked.
     </p>`;
 }
 
@@ -125,7 +128,6 @@ export function adminNotificationHtml(booking: NewBookingAlert): string {
     <p style="margin:16px 0 0;">
       <a href="${escapeHtml(generateCoachCalendarUrl({ ...booking, court_setup: court.courtSetup }))}" style="display:inline-block;padding:10px 16px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">Add to my calendar</a>
     </p>
-    ${cancelLine(booking.cancel_url, firstName(booking.name, "the student"))}
     <p style="margin:20px 0 0;">
       <a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open admin dashboard</a>
     </p>
