@@ -31,6 +31,9 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
   its own booking on the site, or have the student rebook. Each lesson keeps its own outcome.
   Only **Lesson happened** asks the student for a review; **Didn't happen** and **No-show**
   never do.
+- **Day-before reminder:** each student who booked on the site gets an email the morning
+  before the lesson, with your number to text if anything changed. It skips a lesson marked
+  cancelled, so cancel in Admin when you cancel by text, or they still get "See you tomorrow".
 - **Review emails** arrive for every new review. One from a student's emailed link is already
   live on the site, at any star rating; tap **Take it down** only if it is abusive, fake, or says
   something untrue, never for a low rating. One from the public review page waits; tap

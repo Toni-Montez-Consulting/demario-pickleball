@@ -15,6 +15,7 @@ import {
   reviewNotificationHtml,
   type ReviewNotification,
   lessonOutcomeDigestHtml,
+  lessonReminderHtml,
   firstName,
   type NewBookingAlert,
   type OutcomeDigestLesson,
@@ -247,6 +248,27 @@ export async function sendReviewRequestEmail({
   });
   if (result.error) {
     reportSendFailure("review request", result.error);
+    return false;
+  }
+  return true;
+}
+
+/** The day-before reminder. Returns false when it was not sent, so the cron can retry. */
+export async function sendLessonReminderEmail(booking: IcsBooking): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping lesson reminder");
+    return false;
+  }
+  const result = await resend.emails.send({
+    from: emailFrom(),
+    to: booking.email,
+    subject: `Tomorrow: ${lessonName(booking.lesson_type)} at ${oneLine(booking.lesson_time)} CT`,
+    html: lessonReminderHtml(booking),
+    replyTo: adminEmail(),
+  });
+  if (result.error) {
+    reportSendFailure("lesson reminder", result.error);
     return false;
   }
   return true;

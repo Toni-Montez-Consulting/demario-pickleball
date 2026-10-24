@@ -29,7 +29,7 @@ export default function PrivacyPage() {
         <ul>
           <li>To confirm and manage your lesson booking</li>
           <li>To respond to your inquiries</li>
-          <li>To send lesson reminders (if you opt in)</li>
+          <li>To remind you by email the day before a lesson you booked on this site</li>
         </ul>
         <p>We do not sell, rent, or share your personal information with third parties for marketing purposes.</p>
 
