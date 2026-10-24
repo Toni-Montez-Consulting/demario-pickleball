@@ -30,6 +30,13 @@ vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => mocks.serviceClient),
 }));
 
+// redirect() ends rendering by throwing; the message carries the target.
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn((url: string) => {
+    throw new Error(`NEXT_REDIRECT ${url}`);
+  }),
+}));
+
 describe("admin auth helpers", () => {
   beforeEach(() => {
     process.env.ADMIN_EMAIL = "coach@example.com, demariomontez10@gmail.com";
@@ -83,6 +90,76 @@ describe("admin auth helpers", () => {
     if (!result.ok) throw new Error("Expected admin auth to pass");
     expect(result.user).toBe(user);
     expect(result.auth).toBe(mocks.authClient);
+    expect(result.supabase).toBe(mocks.serviceClient);
+  });
+});
+
+describe("requireAdminPage", () => {
+  beforeEach(async () => {
+    process.env.ADMIN_EMAIL = "coach@example.com";
+    mocks.authClient.auth.getUser.mockReset();
+    mocks.authClient.auth.mfa.getAuthenticatorAssuranceLevel.mockReset();
+    const { createClient } = await import("@supabase/supabase-js");
+    vi.mocked(createClient).mockClear();
+  });
+
+  async function serviceClientsMade() {
+    const { createClient } = await import("@supabase/supabase-js");
+    return vi.mocked(createClient).mock.calls.length;
+  }
+
+  it("sends a visitor with no session to login, before any data client exists", async () => {
+    const { requireAdminPage } = await import("./server");
+    mocks.authClient.auth.getUser.mockResolvedValue({ data: { user: null } });
+
+    await expect(requireAdminPage()).rejects.toThrow("NEXT_REDIRECT /admin/login");
+    expect(await serviceClientsMade()).toBe(0);
+  });
+
+  it("sends a signed-in non-admin to login", async () => {
+    const { requireAdminPage } = await import("./server");
+    mocks.authClient.auth.getUser.mockResolvedValue({ data: { user: { email: "student@example.com" } } });
+
+    await expect(requireAdminPage()).rejects.toThrow("NEXT_REDIRECT /admin/login");
+    expect(await serviceClientsMade()).toBe(0);
+  });
+
+  it("sends an admin with no MFA set up to MFA setup, and one mid-login back to login", async () => {
+    const { requireAdminPage } = await import("./server");
+    mocks.authClient.auth.getUser.mockResolvedValue({ data: { user: { email: "coach@example.com" } } });
+
+    mocks.authClient.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({
+      data: { currentLevel: "aal1", nextLevel: "aal1" },
+      error: null,
+    });
+    await expect(requireAdminPage()).rejects.toThrow("NEXT_REDIRECT /admin/mfa-setup");
+
+    mocks.authClient.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({
+      data: { currentLevel: "aal1", nextLevel: "aal2" },
+      error: null,
+    });
+    await expect(requireAdminPage()).rejects.toThrow("NEXT_REDIRECT /admin/login");
+
+    mocks.authClient.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({
+      data: null,
+      error: { message: "unavailable" },
+    });
+    await expect(requireAdminPage()).rejects.toThrow("NEXT_REDIRECT /admin/login");
+    expect(await serviceClientsMade()).toBe(0);
+  });
+
+  it("returns the user and the data client for an admin with MFA", async () => {
+    const { requireAdminPage } = await import("./server");
+    const user = { email: "coach@example.com" };
+    mocks.authClient.auth.getUser.mockResolvedValue({ data: { user } });
+    mocks.authClient.auth.mfa.getAuthenticatorAssuranceLevel.mockResolvedValue({
+      data: { currentLevel: "aal2", nextLevel: "aal2" },
+      error: null,
+    });
+
+    const result = await requireAdminPage();
+
+    expect(result.user).toBe(user);
     expect(result.supabase).toBe(mocks.serviceClient);
   });
 });
