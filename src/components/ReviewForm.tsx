@@ -12,6 +12,8 @@ interface ReviewFormProps {
 
 export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFormProps) {
   const [text, setText] = useState("");
+  // A review from the emailed link goes live at once; the server says whether it did.
+  const [published, setPublished] = useState(false);
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [error, setError] = useState("");
 
@@ -93,6 +95,8 @@ export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFo
       return;
     }
     report("success");
+    const saved = await res.json().catch(() => ({}));
+    setPublished(saved.published === true);
     setText(body);
     setState("done");
   }
@@ -102,8 +106,11 @@ export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFo
       <div className="review-done">
         <h2>Thank you.</h2>
         <p>
-          Your review is with DeMario for approval. It will appear on the site once he
-          publishes it.
+          {published
+            ? "Your review is on DeMario's site now. Thanks for taking the time."
+            : token && !text.trim()
+              ? "DeMario has your rating. Thanks for taking the time."
+              : "Your review is with DeMario for approval. It will appear on the site once he publishes it."}
         </p>
         {googleUrl && text.trim() && (
           <button

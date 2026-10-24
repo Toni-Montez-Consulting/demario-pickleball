@@ -130,6 +130,8 @@ record of what was done and as the procedure for any future environment.
    `docs/supabase-students-reviews-migration.sql` before running it.
 2. Confirm with DeMario whether the four `REVIEW_WALL` testimonials (David L., Carlos M.,
    Priya S., Tom B.) are real and permissioned. If not, delete that insert from the migration.
+   No answer was recorded when the migration ran on 2026-07-26 with all seven. Tonio confirmed
+   on 2026-10-22 that the four are real students.
 3. Run `docs/supabase-students-reviews-migration.sql` in the Supabase SQL Editor.
 4. Confirm `students` and `reviews` exist, and that `bookings` has `student_id` and
    `review_request_sent_at`.

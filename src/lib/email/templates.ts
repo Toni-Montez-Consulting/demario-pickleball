@@ -172,6 +172,60 @@ export function inquiryAlertsPausedHtml(limit: number): string {
   );
 }
 
+export interface ReviewNotification {
+  displayName: string;
+  rating: number;
+  body: string | null;
+  /** From the emailed link after a lesson booked on the site. */
+  verified: boolean;
+  /** Already showing on the site. */
+  live: boolean;
+  /** "Take it down" for a live review, "Publish it" for a waiting one; null when links are not set up. */
+  actionUrl: string | null;
+}
+
+/**
+ * DeMario's email about one new review. A verified review is already live and
+ * the button takes it down; a public one waits and the button publishes it.
+ * Design: docs/specs/2026-10-22-automatic-reviews.md
+ */
+export function reviewNotificationHtml(review: ReviewNotification): string {
+  const stars = "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
+  const heading = review.live
+    ? "A new review is live on your site"
+    : review.body
+      ? "A new review is waiting for you"
+      : "A new rating came in";
+  const button = (href: string, label: string) =>
+    `<a href="${escapeHtml(href)}" style="display:inline-block;padding:10px 16px;background:#111;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">${label}</a>`;
+  const action = review.actionUrl
+    ? button(review.actionUrl, review.live ? "Take it down" : "Publish it")
+    : `<a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open Admin, then Reviews</a>`;
+  const note = review.live
+    ? "It went live on its own. Take it down only if it is abusive, fake, or says something untrue. Low ratings stay up."
+    : review.body
+      ? "Anyone can use the public review page, so this one waits for you. Publish it if it is from someone you have coached."
+      : "It has stars but no words, so it does not show on the site.";
+
+  return wrap(
+    `
+    <h1 style="font-size:20px;margin:0 0 12px;">${heading}</h1>
+    <p style="font-size:20px;letter-spacing:2px;margin:0 0 4px;" aria-label="${review.rating} out of 5">${stars}</p>
+    <p style="font-size:14px;margin:0 0 12px;color:#444;"><strong>${escapeHtml(review.displayName)}</strong> · ${
+      review.verified ? "after a lesson booked on the site" : "from the public review page"
+    }</p>
+    ${
+      review.body
+        ? `<div style="background:#f5f5f5;border-radius:8px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;margin:0 0 16px;">${escapeHtml(review.body)}</div>`
+        : ""
+    }
+    ${review.live || review.body ? `<p style="margin:0 0 16px;">${action}</p>` : ""}
+    <p style="font-size:13px;color:#666;line-height:1.5;margin:0;">${note}</p>
+    `,
+    heading
+  );
+}
+
 export interface OutcomeDigestLesson {
   name: string;
   lessonName: string;

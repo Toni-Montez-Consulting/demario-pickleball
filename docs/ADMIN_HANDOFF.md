@@ -31,6 +31,12 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
   its own booking on the site, or have the student rebook. Each lesson keeps its own outcome.
   Only **Lesson happened** asks the student for a review; **Didn't happen** and **No-show**
   never do.
+- **Review emails** arrive for every new review. One from a student's emailed link is already
+  live on the site, at any star rating; tap **Take it down** only if it is abusive, fake, or says
+  something untrue, never for a low rating. One from the public review page waits; tap
+  **Publish it** if it is from someone you coached. Text the public review link only to students
+  who booked you directly, never to TeachMe.To students: TeachMe.To's terms forbid asking its
+  students for reviews anywhere else.
 - Open `/admin` and review new bookings.
 - Text each new student using the phone number in the booking row.
 - Confirm the exact court, any court reservation fee, and payment expectation with the
