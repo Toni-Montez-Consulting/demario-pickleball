@@ -4,11 +4,12 @@ import { SITE_URL } from "@/lib/site";
 // When each legal page's text last changed, not the build time, so every deploy
 // does not claim they changed. Bump a date in the same commit as any edit to
 // that page. These differ from the pages' "Effective" lines, which are legal
-// dates: /privacy last changed on 2026-10-19 (the interaction counts), and
-// /terms on 2026-04-29.
+// dates: /privacy last changed on 2026-10-24 (reviews, review requests, IP
+// hashing), and /terms on 2026-10-24 (new version and date; wording as of
+// 2026-10-20).
 const LEGAL_LAST_MODIFIED = {
-  privacy: "2026-10-19",
-  terms: "2026-10-20",
+  privacy: "2026-10-24",
+  terms: "2026-10-24",
 } as const;
 
 // /pay is deliberately absent: it is noindex (see src/app/pay/page.tsx).
