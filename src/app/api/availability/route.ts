@@ -5,7 +5,7 @@ import {
   isValidDateString,
   isWithinPublicBookingWindow,
 } from "@/lib/availability";
-import { getGoogleCalendarBusyForDateCached } from "@/lib/google-calendar";
+import { getGoogleCalendarBusyForDateCached, isGoogleCalendarSyncEnabled } from "@/lib/google-calendar";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest) {
@@ -40,5 +40,9 @@ export async function GET(req: NextRequest) {
     allDay: data.allDay,
     unavailable: data.unavailable,
     booked: data.unavailable,
+    // False means DeMario's Google Calendar was not consulted: the switch is
+    // off or misspelled, so his other lessons show as open times. Any Google
+    // failure is a 500 above. The hourly site-health check fails on false.
+    calendarSync: isGoogleCalendarSyncEnabled(),
   });
 }

@@ -1,10 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { HYBRID_BY_REQUEST_VENUES, PLATFORM_REQUIRED_VENUES } from "@/lib/venue-rules";
 import {
+  OWNER_DEVICE_KEY,
   bookingFailure,
   courtSetupCode,
   eventAttributes,
+  isOwnerPath,
   parseEventAttributes,
+  prepareAnalyticsEvent,
   redactTokenPath,
   submitFailure,
   venueCode,
@@ -128,5 +131,57 @@ describe("redactTokenPath", () => {
     expect(redactTokenPath("/review/")).toBeNull();
     expect(redactTokenPath("/reviews/abc")).toBeNull();
     expect(redactTokenPath("/admin/reviews")).toBeNull();
+  });
+});
+
+describe("prepareAnalyticsEvent", () => {
+  const pageview = (path: string) => ({
+    type: "pageview" as const,
+    url: `https://demariomontezpb.com${path}`,
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("sends public pages as they are, and a review link without its token", () => {
+    expect(prepareAnalyticsEvent(pageview("/?utm_source=card"))).toEqual(pageview("/?utm_source=card"));
+    expect(prepareAnalyticsEvent(pageview("/review/abc123"))).toEqual(pageview("/review/[token]"));
+  });
+
+  it("drops admin and the one-tap pages, and stops counting that device", () => {
+    expect(prepareAnalyticsEvent(pageview("/admin"))).toBeNull();
+    expect(prepareAnalyticsEvent(pageview("/admin/reviews"))).toBeNull();
+    expect(prepareAnalyticsEvent(pageview("/cancel-lesson/eyJh.sig"))).toBeNull();
+    expect(window.localStorage.getItem(OWNER_DEVICE_KEY)).toBe("1");
+    // The same device on the homepage, or tapping a button, is still an owner.
+    expect(prepareAnalyticsEvent(pageview("/"))).toBeNull();
+    expect(prepareAnalyticsEvent({ type: "event" as const, url: "https://demariomontezpb.com/" })).toBeNull();
+  });
+
+  it("knows which pages only the owners open", () => {
+    for (const path of ["/admin", "/admin/login", "/lesson-outcome/x", "/review-action/x", "/cancel-lesson/x"]) {
+      expect(isOwnerPath(path), path).toBe(true);
+    }
+    for (const path of ["/", "/review", "/review/abc", "/administrator", "/terms"]) {
+      expect(isOwnerPath(path), path).toBe(false);
+    }
+  });
+
+  it("still sends public pages and drops owner pages when storage is blocked", () => {
+    const original = Object.getOwnPropertyDescriptor(window, "localStorage");
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      get() {
+        throw new DOMException("The operation is insecure.", "SecurityError");
+      },
+    });
+    try {
+      expect(prepareAnalyticsEvent(pageview("/admin"))).toBeNull();
+      expect(prepareAnalyticsEvent(pageview("/"))).toEqual(pageview("/"));
+    } finally {
+      if (original) Object.defineProperty(window, "localStorage", original);
+      else delete (window as { localStorage?: Storage }).localStorage;
+    }
   });
 });

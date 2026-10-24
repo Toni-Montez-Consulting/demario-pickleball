@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hasCronCredential } from "@/lib/cron-auth";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { sendCoachTomorrowEmail } from "@/lib/email/client";
 import { parseBookingNotes } from "@/lib/booking-notes";
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
     console.error("[cron coach-tomorrow] CRON_SECRET is not set; no email can be sent");
     return NextResponse.json({ error: "Cron is not configured" }, { status: 500 });
   }
-  if (req.headers.get("authorization") !== `Bearer ${cronToken}`) {
+  if (!hasCronCredential(req.headers.get("authorization"), cronToken)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

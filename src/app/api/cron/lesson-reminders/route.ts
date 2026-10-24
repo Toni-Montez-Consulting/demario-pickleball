@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hasCronCredential } from "@/lib/cron-auth";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { sendLessonReminderEmail } from "@/lib/email/client";
 import { isDueForReminder, reminderLessonDate, type ReminderBooking } from "@/lib/lesson-reminders";
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
     console.error("[cron lesson-reminders] CRON_SECRET is not set; no reminders can be sent");
     return NextResponse.json({ error: "Cron is not configured" }, { status: 500 });
   }
-  if (req.headers.get("authorization") !== `Bearer ${expectedToken}`) {
+  if (!hasCronCredential(req.headers.get("authorization"), expectedToken)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

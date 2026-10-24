@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hasCronCredential } from "@/lib/cron-auth";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import {
   isEligibleForReviewRequest,
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
     console.error("[cron review-requests] CRON_SECRET is not set; no review requests can be sent");
     return NextResponse.json({ error: "Cron is not configured" }, { status: 500 });
   }
-  if (req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!hasCronCredential(req.headers.get("authorization"), secret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

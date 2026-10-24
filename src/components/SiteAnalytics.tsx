@@ -2,17 +2,21 @@
 
 import { useEffect } from "react";
 import { Analytics } from "@vercel/analytics/next";
-import { parseEventAttributes, redactTokenPath, trackEvent } from "@/lib/analytics";
+import { parseEventAttributes, prepareAnalyticsEvent, trackEvent } from "@/lib/analytics";
 import { rememberArrivalSource } from "@/lib/arrival-source";
 
 /**
- * Vercel Web Analytics with the review token stripped out of the path.
+ * Vercel Web Analytics with the review token stripped out of the path, and
+ * without the owners' own visits.
  *
  * /review/<token> is a one-time credential emailed to a student. Reporting the
  * raw path would ship that token to a third-party analytics service, where it
  * would sit in logs long after the review was submitted. The page view is still
  * counted — it is just counted against /review/[token]. beforeSend sees custom
  * events too, so their URLs get the same treatment.
+ *
+ * Admin and the one-tap pages in DeMario's emails are never sent, and a device
+ * that opens one stops counting altogether (prepareAnalyticsEvent).
  *
  * beforeSend is a function prop, which is why this wrapper is a client
  * component rather than mounting Analytics directly in the root layout.
@@ -53,21 +57,5 @@ export default function SiteAnalytics() {
     };
   }, []);
 
-  return (
-    <Analytics
-      beforeSend={(event) => {
-        try {
-          const url = new URL(event.url);
-          // Review links, and the signed links in Mario's emails.
-          const redacted = redactTokenPath(url.pathname);
-          if (!redacted) return event;
-          url.pathname = redacted;
-          return { ...event, url: url.toString() };
-        } catch {
-          // Never let analytics break a page render.
-          return event;
-        }
-      }}
-    />
-  );
+  return <Analytics beforeSend={prepareAnalyticsEvent} />;
 }
