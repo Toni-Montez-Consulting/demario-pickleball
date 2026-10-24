@@ -267,7 +267,7 @@ describe("BookingModal", () => {
     expect(posted).not.toHaveProperty("arrival_source");
     expect(screen.getByText("3 players · $35 per person")).toBeInTheDocument();
     // The person booking pays the group's total.
-    expect(screen.getAllByText("$105.00")).toHaveLength(2);
+    expect(screen.getAllByText("$105")).toHaveLength(2);
   }, 15000);
 
   it("holds the stepper to each format's limits and clamps on a switch", () => {

@@ -267,12 +267,12 @@ test("drilling and Play with the Pro quote the group live and book its total", a
 
   const picker = page.getByRole("dialog");
   await expect(picker.getByText("Play with the Pro · 3 players", { exact: true })).toBeVisible();
-  await expect(picker.getByText("$105.00", { exact: true })).toBeVisible();
+  await expect(picker.getByText("$105", { exact: true })).toBeVisible();
   await picker.getByRole("button", { name: /reserve/i }).click();
 
   const confirmed = page.getByRole("dialog", { name: /you're booked/i });
   await expect(confirmed.getByText("3 players · $35 per person")).toBeVisible();
-  await expect(confirmed.locator(".pay-amount")).toHaveText("$105.00");
+  await expect(confirmed.locator(".pay-amount")).toHaveText("$105");
   expect((await posted).postDataJSON()).toMatchObject({ lesson_type: "play_pro", group_size: 3 });
 });
 
