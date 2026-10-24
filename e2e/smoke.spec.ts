@@ -434,6 +434,8 @@ test("admin route is gated when unauthenticated", async ({ page }) => {
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/login/);
   await expect(page.getByRole("heading", { name: /coach login/i })).toBeVisible();
+  // Screen readers jump to the form through the page's main landmark.
+  await expect(page.getByRole("main")).toContainText(/coach login/i);
 });
 
 test("contact form submits with normal visible fields", async ({ page }) => {

@@ -98,7 +98,7 @@ export default function MfaSetupPage() {
   }
 
   return (
-    <div className="admin-login-wrap">
+    <main className="admin-login-wrap">
       <div className="admin-login-card mfa-setup-card">
         <div className="brand-mark">D</div>
         <h1>Set up 2-factor auth</h1>
@@ -159,6 +159,6 @@ export default function MfaSetupPage() {
 
         {error && !enroll && <div className="modal-error">{error}</div>}
       </div>
-    </div>
+    </main>
   );
 }

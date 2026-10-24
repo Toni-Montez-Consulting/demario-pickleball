@@ -100,7 +100,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="admin-login-wrap">
+    <main className="admin-login-wrap">
       <div className="admin-login-card">
         <div className="brand-mark">D</div>
         <h1>Coach Login</h1>
@@ -162,7 +162,7 @@ function LoginForm() {
           </form>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 
