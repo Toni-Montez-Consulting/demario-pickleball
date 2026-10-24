@@ -5,6 +5,7 @@ import { parseBookingNotes } from "@/lib/booking-notes";
 import { lessonName, storedQuote } from "@/lib/lesson-types";
 import { quoteLine } from "@/lib/session-pricing";
 import { dateInTimeZone, lessonHasStarted } from "@/lib/time";
+import { readLocalSetting, saveLocalSetting } from "@/lib/local-settings";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import WeeklyTemplateEditor from "@/components/WeeklyTemplateEditor";
 
@@ -126,7 +127,7 @@ function contactHref(phone: string | null, scheme: "sms" | "tel"): string | null
 export default function AdminDashboard({ initialBookings, initialInquiries, loadError = null }: Props) {
   const [tab, setTab] = useState<"bookings" | "inquiries" | "availability">(() => {
     if (typeof window === "undefined") return "bookings";
-    const saved = localStorage.getItem("admin-dashboard-tab");
+    const saved = readLocalSetting("admin-dashboard-tab");
     return (["bookings", "inquiries", "availability"] as const).includes(saved as "bookings")
       ? (saved as "bookings" | "inquiries" | "availability")
       : "bookings";
@@ -158,6 +159,11 @@ export default function AdminDashboard({ initialBookings, initialInquiries, load
   const [availFetchError, setAvailFetchError] = useState("");
   const [calendarSync, setCalendarSync] = useState<CalendarSyncStatus | null>(null);
   const [hasLoadedAvail, setHasLoadedAvail] = useState(false);
+
+  function chooseTab(next: typeof tab) {
+    setTab(next);
+    saveLocalSetting("admin-dashboard-tab", next);
+  }
 
   const activeTimeSlots = timeSlots.filter((s) => s.active);
   const hiddenTimeSlots = timeSlots.filter((s) => !s.active);
@@ -487,14 +493,14 @@ export default function AdminDashboard({ initialBookings, initialInquiries, load
       </div>
 
       <div className="admin-tabs">
-        <button type="button" className={`admin-tab${tab === "bookings" ? " active" : ""}`} onClick={() => { setTab("bookings"); localStorage.setItem("admin-dashboard-tab", "bookings"); }}>
+        <button type="button" className={`admin-tab${tab === "bookings" ? " active" : ""}`} onClick={() => chooseTab("bookings")}>
           Bookings
         </button>
-        <button type="button" className={`admin-tab${tab === "inquiries" ? " active" : ""}`} onClick={() => { setTab("inquiries"); localStorage.setItem("admin-dashboard-tab", "inquiries"); }}>
+        <button type="button" className={`admin-tab${tab === "inquiries" ? " active" : ""}`} onClick={() => chooseTab("inquiries")}>
           Inquiries
           {unread > 0 && <span className="unread-dot" />}
         </button>
-        <button type="button" className={`admin-tab${tab === "availability" ? " active" : ""}`} onClick={() => { setTab("availability"); localStorage.setItem("admin-dashboard-tab", "availability"); }}>
+        <button type="button" className={`admin-tab${tab === "availability" ? " active" : ""}`} onClick={() => chooseTab("availability")}>
           Availability
         </button>
       </div>

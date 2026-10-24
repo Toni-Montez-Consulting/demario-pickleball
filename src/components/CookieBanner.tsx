@@ -1,18 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { readLocalSetting, saveLocalSetting } from "@/lib/local-settings";
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem("cookie_consent")) {
+    // Blocked storage reads as "not dismissed yet", so the notice still shows.
+    if (!readLocalSetting("cookie_consent")) {
       setVisible(true);
     }
   }, []);
 
   function dismiss() {
-    localStorage.setItem("cookie_consent", "1");
+    saveLocalSetting("cookie_consent", "1");
     setVisible(false);
   }
 
