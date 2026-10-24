@@ -16,6 +16,7 @@ export const ARRIVAL_SOURCES = {
   instagram: "Instagram bio link",
   tiktok: "TikTok bio link",
   card: "QR card",
+  rebook: "Book-again link (past student)",
 } as const;
 
 export type ArrivalSource = keyof typeof ARRIVAL_SOURCES;
@@ -23,17 +24,37 @@ export type ArrivalSource = keyof typeof ARRIVAL_SOURCES;
 export interface ShortLink {
   path: string;
   source: ArrivalSource;
-  medium: "bio" | "qr";
+  medium: "bio" | "qr" | "email";
+  /** Opens the booking form on arrival, for a student who already knows they want to book. */
+  opensBooking?: true;
 }
 
 export const SHORT_LINKS: readonly ShortLink[] = [
   { path: "/ig", source: "instagram", medium: "bio" },
   { path: "/tiktok", source: "tiktok", medium: "bio" },
   { path: "/card", source: "card", medium: "qr" },
+  // In the review request email and on the review thank-you page.
+  { path: "/book-again", source: "rebook", medium: "email", opensBooking: true },
 ];
 
+export const OPEN_BOOKING_PARAM = "book";
+
 export function shortLinkDestination(link: ShortLink): string {
-  return `/?utm_source=${link.source}&utm_medium=${link.medium}`;
+  const open = link.opensBooking ? `&${OPEN_BOOKING_PARAM}=1` : "";
+  return `/?utm_source=${link.source}&utm_medium=${link.medium}${open}`;
+}
+
+/** True when the landing URL asks the homepage to open the booking form. */
+export function wantsBookingOpen(search: string): boolean {
+  return new URLSearchParams(search).get(OPEN_BOOKING_PARAM) === "1";
+}
+
+/** The same URL without the open-booking flag, so a refresh or Back does not reopen the form. */
+export function withoutBookingFlag(pathname: string, search: string, hash: string): string {
+  const params = new URLSearchParams(search);
+  params.delete(OPEN_BOOKING_PARAM);
+  const query = params.toString();
+  return `${pathname}${query ? `?${query}` : ""}${hash}`;
 }
 
 export function isArrivalSource(value: unknown): value is ArrivalSource {

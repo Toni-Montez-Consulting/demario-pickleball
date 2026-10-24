@@ -77,6 +77,11 @@ Each one opens the normal homepage. Every new-booking email has a **Found you th
 Instagram bio link, TikTok bio link, QR card, or "No tagged link" (word of mouth, a search, or
 the plain address). Swapping the two bio links is a one-time, five-minute job.
 
+Past students get their own link without anyone sharing it: the review request email and the
+review thank-you page both have **Book your next lesson** (`demariomontezpb.com/book-again`),
+which opens the booking form straight away. Those bookings say "Book-again link (past
+student)".
+
 ## Before Broader Promotion
 
 - Follow `docs/VENUE_RULES.md`: public courts can book through the site; Dallas

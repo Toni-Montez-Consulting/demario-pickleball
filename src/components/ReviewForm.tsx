@@ -125,6 +125,9 @@ export default function ReviewForm({ token, lessonLabel, defaultName }: ReviewFo
             Post this to Google too
           </button>
         )}
+        <a className="btn btn-primary" href="/book-again">
+          Book your next lesson
+        </a>
       </div>
     );
   }

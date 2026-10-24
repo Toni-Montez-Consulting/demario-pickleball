@@ -18,7 +18,8 @@ import type { ArrivalSource } from "@/lib/arrival-source";
  *      Those conversions never reach this site's database.
  *   3. Whether the contact and review forms fail for real visitors.
  */
-export type CtaSource = "nav" | "hero" | "testimonials" | "lessons" | "final_cta" | "sticky";
+/** "link": the form opened itself because the visitor came through /book-again. */
+export type CtaSource = "nav" | "hero" | "testimonials" | "lessons" | "final_cta" | "sticky" | "link";
 export type BookingStep =
   | "details"
   | "terms"
