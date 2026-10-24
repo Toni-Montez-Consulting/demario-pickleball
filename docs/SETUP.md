@@ -60,8 +60,14 @@ They are also in `.env.local` for local development (not committed to git).
 | Variable | Value | Purpose |
 |----------|-------|---------|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://vowwokjesgdjridrikqp.supabase.co` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ...` | Supabase public key (safe to expose) |
-| `SUPABASE_SERVICE_ROLE_KEY` | `eyJ...` | Supabase admin key (never expose publicly) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_...` | Supabase browser key (safe to expose). Read first (`src/lib/supabase/keys.ts`) |
+| `SUPABASE_SECRET_KEY` | `sb_secret_...` | Supabase server key, which bypasses RLS (never expose). Read first (`src/lib/supabase/server.ts`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ...` | Legacy browser key, used only when the publishable key is not set. Supabase retires the legacy keys by the end of 2026 |
+| `SUPABASE_SERVICE_ROLE_KEY` | `eyJ...` | Legacy server key, used only when the secret key is not set. Same retirement |
+
+The new keys were in Production only on 2026-10-24, set by the Supabase integration;
+Preview and Development still had only the legacy names. Add the new keys there before
+switching the legacy keys off in Supabase → Settings → API Keys (reversible).
 | `NEXT_PUBLIC_SITE_URL` | `https://demariomontezpb.com` | Used in emails and ICS files |
 | `ADMIN_EMAIL` | comma-separated list | Controls who can log into the admin panel. The **first** address also receives every admin email: new bookings, new inquiries, and the morning lesson-outcome digest. Keep Mario's address first |
 | `RESEND_API_KEY` | `re_...` | Resend API key for sending emails |
