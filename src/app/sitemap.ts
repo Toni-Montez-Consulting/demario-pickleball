@@ -7,8 +7,8 @@ import { SITE_URL } from "@/lib/site";
 // dates: /privacy last changed on 2026-10-19 (the interaction counts), and
 // /terms on 2026-04-29.
 const LEGAL_LAST_MODIFIED = {
-  privacy: "2026-10-19",
-  terms: "2026-10-20",
+  privacy: "2026-10-24",
+  terms: "2026-10-24",
 } as const;
 
 // /pay is deliberately absent: it is noindex (see src/app/pay/page.tsx).
