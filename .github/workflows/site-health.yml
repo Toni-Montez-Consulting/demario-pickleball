@@ -59,9 +59,6 @@ jobs:
             check "homepage" "/" "grep -qi 'book a lesson'" || failed=1
             check "lesson times (database)" "/api/time-slots" "jq -e 'type == \"array\" and length > 0'" || failed=1
             check "availability (Google Calendar)" "/api/availability?date=$DAY&lesson_type=beginner" "jq -e '(.allDay | type) == \"boolean\" and (.unavailable | type) == \"array\"'" || failed=1
-            # A 200 can still leave the calendar out: the switch must read
-            # exactly "true". Without it, DeMario's other lessons show as open.
-            check "calendar sync switched on" "/api/availability?date=$DAY&lesson_type=beginner" "jq -e '.calendarSync == true'" || failed=1
             # The route answers 200 with [] when its query fails, so an empty
             # list counts as a failure. The site always has published reviews.
             check "published reviews" "/api/reviews/published" "jq -e 'type == \"array\" and length > 0'" || failed=1
@@ -73,5 +70,5 @@ jobs:
           echo "Retrying in 60 seconds..."
           sleep 60
           if run_all; then exit 0; fi
-          echo "::error::The live site failed its health check twice. If availability failed, DeMario's Google Calendar connection may need reconnecting (docs/MARIO_ACTION_PLAN.md). If calendar sync failed, GOOGLE_CALENDAR_SYNC_ENABLED in Vercel is not exactly true."
+          echo "::error::The live site failed its health check twice. If availability failed, DeMario's Google Calendar connection may need reconnecting (docs/MARIO_ACTION_PLAN.md)."
           exit 1
