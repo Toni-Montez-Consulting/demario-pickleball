@@ -12,9 +12,12 @@ import {
   reviewRequestHtml,
   inquiryNotificationHtml,
   inquiryAlertsPausedHtml,
+  reviewNotificationHtml,
+  type ReviewNotification,
   lessonOutcomeDigestHtml,
   lessonReminderHtml,
   firstName,
+  type NewBookingAlert,
   type OutcomeDigestLesson,
 } from "./templates";
 
@@ -64,7 +67,7 @@ async function sendAlertToMario(resend: Resend, label: string, email: CreateEmai
   if (result.error) reportSendFailure(label, result.error);
 }
 
-export async function sendBookingCreatedEmails(booking: IcsBooking): Promise<void> {
+export async function sendBookingCreatedEmails(booking: NewBookingAlert): Promise<void> {
   const resend = getResend();
   if (!resend) {
     console.warn("[email] RESEND_API_KEY not set; skipping booking email");
@@ -122,6 +125,32 @@ export async function sendInquiryNotificationEmail(inquiry: {
     html: inquiryNotificationHtml(inquiry),
     replyTo: inquiry.email,
   });
+}
+
+/**
+ * Tells DeMario about a new review: live ones with a one-tap "Take it down",
+ * waiting ones with a one-tap "Publish it". Failures are reported, never thrown.
+ */
+export async function sendReviewNotificationEmail(review: ReviewNotification): Promise<void> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping review notification");
+    return;
+  }
+  const stars = "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
+  const name = oneLine(review.displayName);
+  const subject = review.live
+    ? `New review is live: ${stars} from ${name}`
+    : review.body
+      ? `New review waiting: ${stars} from ${name}`
+      : `New rating: ${stars} from ${name}`;
+  const result = await resend.emails.send({
+    from: emailFrom(),
+    to: adminEmail(),
+    subject,
+    html: reviewNotificationHtml(review),
+  });
+  if (result.error) reportSendFailure("review notification", result.error);
 }
 
 /** Tells Mario, once, that contact-form alerts paused for the day. */

@@ -135,9 +135,10 @@ Owner: Tonio and Mario.
 
 ### First real review, end to end
 
-Submit one review through the emailed link and publish it from Admin -> Reviews.
-The first link went out on 2026-10-20. Waiting on that student to submit, then
-on Mario to publish it.
+Submit one review through the emailed link and check that it appears on the
+homepage without anyone publishing it, and that DeMario's email about it arrives
+with a working Take it down button (`docs/specs/2026-10-22-automatic-reviews.md`).
+The first link went out on 2026-10-20. Waiting on that student to submit.
 
 Owner: Tonio and Mario.
 
@@ -150,7 +151,10 @@ sessions and Play with the Pro, so round 2 is no longer blocked on him. He does
 not want a Google Business Profile for now. He also kept the Group Clinic as it
 is and approved the two new cards' text.
 
-The three homepage testimonials are confirmed real and permissioned.
+All seven homepage testimonials are from real students. DeMario confirmed the three
+featured ones (Rachel K., Marcus T., Jenna P.) as real and permissioned in July 2026.
+Tonio confirmed on 2026-10-22 that the four on the wall (David L., Carlos M., Priya S.,
+Tom B.) are real students; their permission to be quoted was not separately recorded.
 
 The unsourced `5.0 star, 79 reviews` claim was removed on 2026-07-26
 (`dad3a06`). Since #13 (2026-10-19) the trust strip links his TeachMe.To rating
@@ -244,3 +248,24 @@ reserved court fee is confirmed separately by Mario before the lesson.
 - Add a short availability debounce or cache if public traffic increases.
 - Link more review sources as Mario's profiles are ready. TeachMe.To is linked
   (#13); Google reviews wait on a Business Profile.
+
+### Backlog from the 2026-10-23 growth session
+
+Parked by Tonio on 2026-10-23 ("We can backlog those pages"). The goal is more students, then
+higher prices. DeMario wants more groups, adult and older-adult beginners, and competitive
+adults who do not want to go pro.
+
+- **Scheduled group sessions people join on their own** (for example "Saturday 9 AM drilling,
+  3 of 8 spots left"), alongside bring-your-own groups. Both are wanted. Mario decides first:
+  1. The minimum number of players to run a session, and when it is called off.
+  2. The price: a fixed price per player, or one that drops as more join.
+  3. Whether each player pays for their own spot (bring-your-own groups stay booker-pays).
+  4. How he posts a session from his phone in about a minute.
+  5. The levels offered.
+- **Homepage with three clear doors:** new to pickleball, already play and want to get better,
+  and bring or join a group. The copy needs Mario's approval.
+- **Per-player details for group bookings:** each player's name and email, and each one
+  accepting the coaching terms. Waits on the open waiver question in decision 4 of
+  `docs/specs/2026-10-20-drilling-and-play-with-the-pro.md`.
+- **QR card design:** `/card` is live with the tagged links; the printed card's wording needs
+  Mario's approval.

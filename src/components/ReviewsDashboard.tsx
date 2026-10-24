@@ -100,8 +100,9 @@ export default function ReviewsDashboard({ initialReviews }: Props) {
       <div className="admin-header">
         <h1>Reviews</h1>
         <p className="admin-nav-desc">
-          Nothing appears on the website until you publish it. You can hide or delete a
-          review, but you cannot change what a student wrote.
+          Reviews from the link sent after a lesson go live on their own. Reviews from the
+          public review page wait for you to publish them. Hide a review only if it is abusive,
+          fake, or untrue, never for a low rating. You cannot change what a student wrote.
         </p>
       </div>
 

@@ -7,7 +7,48 @@ import {
   inquiryNotificationHtml,
   lessonOutcomeDigestHtml,
   lessonReminderHtml,
+  reviewNotificationHtml,
 } from "./templates";
+
+describe("reviewNotificationHtml", () => {
+  const review = {
+    displayName: "Sam P.",
+    rating: 2,
+    body: "Too much talking.",
+    verified: true,
+    live: true,
+    actionUrl: "https://demariomontezpb.com/review-action/abc.def",
+  };
+
+  it("tells DeMario a verified review is live and offers the takedown, with the rule", () => {
+    const html = reviewNotificationHtml(review);
+    expect(html).toContain("A new review is live on your site");
+    expect(html).toContain("★★☆☆☆");
+    expect(html).toContain("Take it down");
+    expect(html).toContain("https://demariomontezpb.com/review-action/abc.def");
+    expect(html).toContain("abusive, fake, or says something untrue");
+    expect(html).toContain("Low ratings stay up");
+  });
+
+  it("offers Publish for a waiting public review", () => {
+    const html = reviewNotificationHtml({ ...review, verified: false, live: false });
+    expect(html).toContain("A new review is waiting for you");
+    expect(html).toContain("Publish it");
+    expect(html).toContain("from the public review page");
+  });
+
+  it("points to Admin when one-tap links are not set up", () => {
+    const html = reviewNotificationHtml({ ...review, actionUrl: null });
+    expect(html).toContain("Open Admin, then Reviews");
+    expect(html).not.toContain("/review-action/");
+  });
+
+  it("escapes what a student wrote", () => {
+    const html = reviewNotificationHtml({ ...review, displayName: "<b>x</b>", body: "<script>alert(1)</script>" });
+    expect(html).not.toContain("<script>");
+    expect(html).not.toContain("<b>x</b>");
+  });
+});
 
 const booking = {
   id: "12345678-1234-1234-1234-123456789abc",
@@ -59,6 +100,13 @@ describe("email templates", () => {
     expect(admin).toContain("3 players · $35 per person");
     expect(admin).toContain("Booker pays");
     expect(admin).toContain("$105 total");
+  });
+
+  it("tells Mario where the student found him, and says so when nobody knows", () => {
+    expect(adminNotificationHtml({ ...booking, arrival_source: "card" })).toContain("QR card");
+    expect(adminNotificationHtml(booking)).toContain("No tagged link");
+    // The student's own email never carries it.
+    expect(studentRequestedHtml({ ...booking, arrival_source: "card" } as typeof booking)).not.toContain("QR card");
   });
 
   it("keeps a one-on-one lesson's fee and adds no group rows", () => {
