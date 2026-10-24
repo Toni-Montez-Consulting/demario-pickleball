@@ -11,8 +11,10 @@ playing?" happen.
 
 ## 2. Design
 
-- A daily cron, `/api/cron/lesson-reminders`, runs at 14:00 UTC: 9 AM in Dallas during daylight
-  time, 8 AM in winter.
+- A daily cron, `/api/cron/lesson-reminders`, runs at 23:00 UTC: 6 PM in Dallas during daylight
+  time, 5 PM in winter. (Moved from 14:00 UTC on 2026-10-23, before any reminder had gone out,
+  so DeMario's 9 AM "Tomorrow" email comes first and a lesson he cancels from it is never
+  reminded. See `docs/specs/2026-10-23-one-tap-cancel.md`.)
 - It emails each student whose lesson is tomorrow, Dallas date. It skips three cases:
   - a booking that is not pending (cancelled, or already given an outcome);
   - a booking that has already been reminded;

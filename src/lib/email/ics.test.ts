@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generateGoogleCalendarUrl, generateIcs } from "./ics";
+import { generateCoachCalendarUrl, generateGoogleCalendarUrl, generateIcs } from "./ics";
 
 const booking = {
   id: "12345678-1234-1234-1234-123456789abc",
@@ -70,5 +70,29 @@ describe("calendar helpers", () => {
     expect(url.searchParams.get("ctz")).toBe("America/Chicago");
     expect(url.searchParams.get("details")).toContain("Booking ID: 12345678");
     expect(url.searchParams.get("details")).toContain("Court: Mario will confirm the exact court after booking.");
+  });
+});
+
+describe("generateCoachCalendarUrl", () => {
+  it("names the student for Mario and carries the phone and court setup", () => {
+    const url = new URL(
+      generateCoachCalendarUrl({
+        id: "12345678-1234-1234-1234-123456789abc",
+        name: "Jane Student",
+        email: "jane@example.com",
+        phone: "(469) 555-0100",
+        lesson_type: "beginner",
+        lesson_date: "2026-10-24",
+        lesson_time: "9:00 AM",
+        court_setup: "Outdoor public court",
+      })
+    );
+    expect(url.searchParams.get("text")).toBe("Lesson: Jane S. · Foundations");
+    expect(url.searchParams.get("dates")).toBe("20261024T090000/20261024T100000");
+    expect(url.searchParams.get("ctz")).toBe("America/Chicago");
+    expect(url.searchParams.get("details")).toContain("Phone: (469) 555-0100");
+    expect(url.searchParams.get("details")).toContain("Court setup: Outdoor public court");
+    // The student's email is not his to need on a calendar entry.
+    expect(url.toString()).not.toContain("jane%40example.com");
   });
 });

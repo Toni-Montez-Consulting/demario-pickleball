@@ -7,6 +7,7 @@ import {
   inquiryNotificationHtml,
   lessonOutcomeDigestHtml,
   lessonReminderHtml,
+  coachTomorrowHtml,
   reviewNotificationHtml,
 } from "./templates";
 
@@ -109,6 +110,18 @@ describe("email templates", () => {
     expect(studentRequestedHtml({ ...booking, arrival_source: "card" } as typeof booking)).not.toContain("QR card");
   });
 
+  it("gives Mario Add to my calendar, and Cancel only when the link exists", () => {
+    const withLink = adminNotificationHtml({ ...booking, cancel_url: "https://demariomontezpb.com/cancel-lesson/abc.def" });
+    expect(withLink).toContain("Add to my calendar");
+    expect(withLink).toContain("calendar.google.com");
+    expect(withLink).toContain("https://demariomontezpb.com/cancel-lesson/abc.def");
+    expect(withLink).toContain("so Jane gets the cancellation email");
+
+    const without = adminNotificationHtml({ ...booking, cancel_url: null });
+    expect(without).toContain("Add to my calendar");
+    expect(without).not.toContain("Cancel this lesson");
+  });
+
   it("keeps a one-on-one lesson's fee and adds no group rows", () => {
     const html = studentRequestedHtml(booking);
     expect(html).toContain("$70");
@@ -134,6 +147,43 @@ describe("email templates", () => {
     expect(html).not.toContain("</title><a");
     expect(html).not.toContain('<a href="https://evil.example"');
     expect(html).toContain("&lt;/title&gt;");
+  });
+});
+
+describe("coachTomorrowHtml", () => {
+  const lesson = {
+    name: "Jane Student",
+    phone: "(469) 555-0100",
+    lessonName: "Foundations",
+    players: null,
+    time: "9:00 AM",
+    courtSetup: "Outdoor public court",
+    preferredArea: "Lake Highlands",
+    cancelUrl: "https://demariomontezpb.com/cancel-lesson/abc.def",
+  };
+
+  it("gives each lesson the time, student, court notes, text and call links, and Cancel", () => {
+    const html = coachTomorrowHtml([lesson], "Sat, Oct 24");
+    expect(html).toContain("1 lesson tomorrow");
+    expect(html).toContain("Sat, Oct 24, booked on your site.");
+    expect(html).toContain("9:00 AM CT · Jane Student");
+    expect(html).toContain("Outdoor public court · Lake Highlands");
+    expect(html).toContain('href="sms:4695550100"');
+    expect(html).toContain('href="tel:4695550100"');
+    expect(html).toContain("/cancel-lesson/abc.def");
+    expect(html).toContain("reminder email this evening");
+  });
+
+  it("counts several lessons and leaves Cancel out without a link", () => {
+    const html = coachTomorrowHtml([{ ...lesson, cancelUrl: null }, { ...lesson, name: "Sam Player" }], "Sat, Oct 24");
+    expect(html).toContain("2 lessons tomorrow");
+    expect(html.match(/Cancel this lesson/g)).toHaveLength(1);
+  });
+
+  it("escapes what came from the booking form", () => {
+    const html = coachTomorrowHtml([{ ...lesson, name: "<b>x</b>", preferredArea: "<script>1</script>" }], "Sat, Oct 24");
+    expect(html).not.toContain("<b>x</b>");
+    expect(html).not.toContain("<script>1</script>");
   });
 });
 

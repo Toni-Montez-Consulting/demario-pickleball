@@ -18,6 +18,8 @@ import {
   lessonReminderHtml,
   firstName,
   type NewBookingAlert,
+  coachTomorrowHtml,
+  type CoachTomorrowLesson,
   type OutcomeDigestLesson,
 } from "./templates";
 
@@ -275,6 +277,32 @@ export async function sendLessonReminderEmail(booking: IcsBooking): Promise<bool
 }
 
 /** Mario's morning digest of lessons that still need an outcome. */
+/** DeMario's look at tomorrow's site lessons. Returns false when it was not sent. */
+export async function sendCoachTomorrowEmail(lessons: CoachTomorrowLesson[], dateLabel: string): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("[email] RESEND_API_KEY not set; skipping tomorrow's lessons email");
+    return false;
+  }
+  const first = lessons[0];
+  // "Jane S.", as with the outcome digest: subjects show on lock screens.
+  const subject =
+    lessons.length === 1
+      ? `Tomorrow: ${first.lessonName} with ${oneLine(shortName(first.name))} at ${oneLine(first.time)}`
+      : `Tomorrow: ${lessons.length} lessons`;
+  const result = await resend.emails.send({
+    from: emailFrom(),
+    to: adminEmail(),
+    subject,
+    html: coachTomorrowHtml(lessons, dateLabel),
+  });
+  if (result.error) {
+    reportSendFailure("tomorrow's lessons", result.error);
+    return false;
+  }
+  return true;
+}
+
 export async function sendLessonOutcomeDigest(lessons: OutcomeDigestLesson[]): Promise<boolean> {
   const resend = getResend();
   if (!resend) {
