@@ -137,6 +137,23 @@ export function submitFailure(status: number | null): Exclude<SubmitResult, "suc
   return "server";
 }
 
+/**
+ * Pages whose last path segment is a credential sent by email: a student's
+ * review link, and DeMario's lesson-outcome and review takedown/publish links.
+ * Analytics gets the route pattern, never the token. Add any new emailed-link
+ * page here, or its token lands in Vercel's logs for as long as it is valid.
+ */
+export const TOKEN_ROUTES = ["/review", "/lesson-outcome", "/review-action"] as const;
+
+/** The path with its token replaced by "[token]", or null when it carries none. */
+export function redactTokenPath(pathname: string): string | null {
+  for (const base of TOKEN_ROUTES) {
+    const rest = pathname.startsWith(`${base}/`) ? pathname.slice(base.length + 1) : "";
+    if (rest && !rest.includes("/")) return `${base}/[token]`;
+  }
+  return null;
+}
+
 function definedProps(props: object): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(props)) {
