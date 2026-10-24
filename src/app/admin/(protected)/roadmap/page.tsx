@@ -1,8 +1,8 @@
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { requireAdminPage } from "@/lib/supabase/server";
 import RoadmapDashboard from "@/components/RoadmapDashboard";
 
 export default async function RoadmapPage() {
-  const supabase = createServiceRoleClient();
+  const { supabase } = await requireAdminPage();
   const { data } = await supabase
     .from("roadmap_checks")
     .select("key, checked")

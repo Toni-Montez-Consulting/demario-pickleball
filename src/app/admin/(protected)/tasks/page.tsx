@@ -1,8 +1,8 @@
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { requireAdminPage } from "@/lib/supabase/server";
 import TasksDashboard from "@/components/TasksDashboard";
 
 export default async function TasksPage() {
-  const supabase = createServiceRoleClient();
+  const { supabase } = await requireAdminPage();
   const { data } = await supabase
     .from("admin_tasks")
     .select("*")

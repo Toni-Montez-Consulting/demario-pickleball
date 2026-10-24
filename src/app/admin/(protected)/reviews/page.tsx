@@ -1,11 +1,10 @@
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { requireAdminPage } from "@/lib/supabase/server";
 import ReviewsDashboard from "@/components/ReviewsDashboard";
 
 export const metadata = { title: "Reviews · Admin" };
 
 export default async function ReviewsPage() {
-  // The (protected) layout enforces session + AAL2 before this renders.
-  const supabase = createServiceRoleClient();
+  const { supabase } = await requireAdminPage();
   const { data } = await supabase
     .from("reviews")
     .select("*")
