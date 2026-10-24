@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { createServerSupabaseClient, createServiceRoleClient, isAdminEmail } from "@/lib/supabase/server";
+import { requireAdminPage } from "@/lib/supabase/server";
 import AdminShell from "../AdminShell";
 
 function todayInChicago(): string {
@@ -18,22 +17,9 @@ export default async function ProtectedAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user || !isAdminEmail(user.email)) redirect("/admin/login");
-
-  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal?.currentLevel !== "aal2") {
-    if (aal?.nextLevel === "aal1") {
-      redirect("/admin/mfa-setup");
-    }
-    redirect("/admin/login");
-  }
-
-  const service = createServiceRoleClient();
+  // Each page below runs the same check itself; this one guards the shell's
+  // own read (the overdue-task count).
+  const { supabase: service } = await requireAdminPage();
   const { count: overdueCount } = await service
     .from("admin_tasks")
     .select("id", { count: "exact", head: true })
