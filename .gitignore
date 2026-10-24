@@ -14,3 +14,6 @@ next-env.d.ts
 coverage/
 playwright-report/
 test-results/
+
+# Private audit reports and other material that must never reach this public repo.
+/private/
