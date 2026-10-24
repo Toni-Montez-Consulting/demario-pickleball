@@ -13,6 +13,8 @@ See `docs/LAUNCH_OUTSTANDING.md` for the remaining business and operational item
 - `npm run build`
 - `npm run test:e2e`
 - Confirm the latest GitHub Actions CI run is green.
+- Confirm the latest **Site health** run is green (GitHub → Actions → Site health). It checks
+  the live site every hour; `docs/RUNBOOK.md` says what each failed check means.
 
 ## Location Clarity V1
 
@@ -171,3 +173,38 @@ are open.
 6. Re-open the same link and the other two links for that lesson. All read "Recorded" and
    change nothing.
 7. Delete or cancel the test booking.
+
+
+## October Features: One Live Run (open since 2026-10-24)
+
+Group bookings, tagged links, reminders, the Tomorrow email, and one-tap Cancel had not run
+for a real student by 2026-10-24. Run this once with DeMario's phone and a test inbox. Book
+two days out, so the next day's emails cover both lessons.
+
+1. On the phone, open `demariomontezpb.com/ig` and book a 60-minute private lesson. The
+   student email arrives, and DeMario's new-booking email shows "Found you through:
+   Instagram bio link" and an **Add to my calendar** link that opens the right time.
+2. Book a 3-player Drilling Session the same way. Both emails show the players and the
+   total quoted.
+3. The next morning at 9 AM Dallas time (8 AM in winter), DeMario's Tomorrow email lists both
+   lessons, each with a **Cancel** link.
+4. That evening at 6 PM (5 PM in winter), the test inbox gets a reminder for each lesson.
+5. Open one Cancel link. The page changes nothing until its button is tapped; after the tap
+   the booking reads cancelled in Admin and the student gets the cancellation email.
+   Opening the link again reads "This lesson is cancelled" and changes nothing.
+6. Cancel the other lesson from Admin.
+
+Review requests and the first site review wait for the first real lesson
+(`docs/LAUNCH_OUTSTANDING.md`).
+
+
+## Once a Year (each April, before the domain renews)
+
+- DeMario confirms the numbers on the About section (lessons a week, tournament podiums,
+  certifications) and the DUPR rating and rankings in `src/lib/dupr.json`.
+- Any TeachMe.To rating the site shows still matches his listing.
+- The PayPal, Zelle, and Cash App handles on `/pay` still belong to DeMario.
+- A practice restore runs into a new project (`docs/RUNBOOK.md`, "Data was lost or
+  damaged").
+- `/terms` and `/privacy` still describe what the site does. If the terms text changes, its
+  version changes with it.
