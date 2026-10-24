@@ -347,9 +347,11 @@ only from code and CI's Playwright run.
   1. `/ig` keeps the tag through lessons, Book, details, terms, the picker, and Reserve.
   2. The confirmation screen with payment options, then the confirmation email with its ICS
      and calendar link.
-  3. DeMario's alert, with "Found you through", "Add to my calendar", and Cancel if present.
+  3. DeMario's alert, with "Found you through" and "Add to my calendar". It carries no cancel
+     link, because its Reply-To is the student.
   4. Court confirmation by text, then payment with the memo.
-  5. DeMario's day-before email if present, then the student's reminder, then the lesson.
+  5. DeMario's "Tomorrow" email (with one-tap Cancel), then the student's evening reminder,
+     then the lesson.
   6. The outcome email, then "Lesson happened", then the review request, the review, and
      auto-publish.
   7. DeMario's review email with the takedown link, then the homepage update.
@@ -365,7 +367,8 @@ only from code and CI's Playwright run.
 - **B6.** A public-page review: pending, then DeMario's Publish link.
 - **B7.** The student wants to cancel or move. What do the emails, the terms, and the reply-to
   route let them do, and what is promised?
-- **B8.** DeMario cancels: by text only, in Admin, and from his email if one-tap Cancel exists.
+- **B8.** DeMario cancels: by text only, in Admin, and with the "Tomorrow" email's one-tap Cancel.
+  Include a lesson he also added to his Google Calendar.
   What does the student receive, and what happens to the reminder and the slot?
 - **B9.** A no-show; a refund or free reschedule after the coach cancels. Is each supported,
   or manual and undocumented?
@@ -423,7 +426,7 @@ only from code and CI's Playwright run.
 - **C4. Pricing.** The server recomputes every quote and never takes a price from the browser.
   Check size limits per format, the stored quote columns, and the display strings.
 - **C5. State machine.** States are `pending`, `confirmed`, `no_show`, and `cancelled`.
-  - For every way a state changes (Admin, outcome links, cancel links if present), list who
+  - For every way a state changes (Admin, outcome links, cancel links), list who
     can make it and when.
   - Check every guard:
     - confirmed only after the lesson starts;
@@ -482,8 +485,8 @@ only from code and CI's Playwright run.
   - Review links (`/review/<token>`) are random, single-use, and do not expire. They are
     stored as hashes salted with `RATE_LIMIT_SALT`, which falls back to the service-role key.
   - Lesson-outcome links and review takedown/publish links are HMAC-signed with
-    `LESSON_OUTCOME_SECRET`, each under its own domain prefix. So are cancel links, if
-    present.
+    `LESSON_OUTCOME_SECRET`, each under its own domain prefix. So are cancel links
+    (`/cancel-lesson/<token>`).
 
   For each type, check:
   - expiry and replay behavior;
@@ -928,13 +931,13 @@ request.
 
 ---
 
-## Appendix A: reference inventory (as of 2026-10-23, `master`)
+## Appendix A: reference inventory (as of 2026-10-24, `master` after PRs #38 to #43)
 
 Any difference from this list at the audited SHA is itself a finding to explain.
 
 - **Pages:**
   - Public: `/`, `/pay`, `/privacy`, `/terms`, `/review`, `/review/[token]`
-  - Token pages: `/lesson-outcome/[token]`, `/review-action/[token]`
+  - Token pages: `/lesson-outcome/[token]`, `/review-action/[token]`, `/cancel-lesson/[token]`
   - Admin: `/admin/login`, `/admin/mfa-setup`, and under `/admin/(protected)`: the dashboard,
     `reviews`, `roadmap`, `site-roadmap`, `tasks`
   - Generated: `robots.ts`, `sitemap.ts`, `not-found.tsx`, `global-error.tsx`
@@ -942,7 +945,8 @@ Any difference from this list at the audited SHA is itself a finding to explain.
   `/tiktok`, `/card`, `/book-again`.
 - **Routes:**
   - Public API: `availability` GET, `bookings` POST, `inquiries` POST, `reviews` POST,
-    `reviews/published` GET, `time-slots` GET, `lesson-outcome` POST, `review-action` POST.
+    `reviews/published` GET, `time-slots` GET, `lesson-outcome` POST, `review-action` POST,
+    `cancel-lesson` POST.
   - Auth: `/auth/callback` GET.
   - Admin API:
     - `availability/month` GET, `bookings` GET, `bookings/[id]` PATCH, `blocked-slots`
@@ -953,14 +957,14 @@ Any difference from this list at the audited SHA is itself a finding to explain.
       PATCH;
     - `tasks` GET/POST, `tasks/[id]` PATCH/DELETE, `calendar-sync` GET, `feedback` POST,
       `monitoring-test` POST.
-  - Cron: `cron/lesson-outcomes`, `cron/lesson-reminders`, and `cron/review-requests`. Read the
-    schedules from `vercel.json`.
+  - Cron: `cron/lesson-outcomes`, `cron/coach-tomorrow`, `cron/lesson-reminders`, and
+    `cron/review-requests`. Read the schedules from `vercel.json`.
 - **Email senders** (`src/lib/email/client.ts`):
   - To students: `sendBookingCreatedEmails` (which also alerts the admin address),
     `sendBookingCancelledEmail`, `sendReviewRequestEmail`, `sendLessonReminderEmail`.
   - To the first `ADMIN_EMAIL` address: `sendInquiryNotificationEmail`,
     `sendInquiryAlertsPausedEmail`, `sendReviewNotificationEmail`, `sendLessonOutcomeDigest`,
-    `sendFeedbackEmail`.
+    `sendCoachTomorrowEmail`, `sendFeedbackEmail`.
 - **Tables** (all with RLS on): `admin_tasks`, `blocked_slots`, `bookings`, `inquiries`,
   `rate_limit_events`, `recurring_blocks`, `reviews`, `roadmap_checks`, `students`,
   `time_slots`. Policies exist only on `blocked_slots`, `recurring_blocks`, and `time_slots`
@@ -987,7 +991,9 @@ Any difference from this list at the audited SHA is itself a finding to explain.
   - Linked partners: TeachMe.To, and the venues in `src/lib/venue-rules.ts`.
   - Payments: Cash App, Zelle, PayPal.
   - Social: Instagram, TikTok, Facebook.
-- **Workflows:** `.github/workflows/ci.yml` (typecheck, lint, unit, build, e2e).
+- **Workflows:** `.github/workflows/ci.yml` (typecheck, lint, unit, build, e2e) and
+  `.github/workflows/site-health.yml` (an hourly read-only check of the live site).
+- **Marketing files:** `docs/marketing/` (the QR code for `/card`).
 
 ## Appendix B: regression checks (fixed before; each must still hold)
 
@@ -1031,6 +1037,9 @@ Any difference from this list at the audited SHA is itself a finding to explain.
 17. Group quotes are priced on the server from the table, and the booker pays the total.
 18. Every page and layout under `app/admin/(protected)` checks the admin session before it
     reads data, and `src/app/admin/protected-pages.test.ts` enforces it.
+19. The new-booking email carries no cancel link (its Reply-To is the student). One-tap Cancel
+    appears only in the "Tomorrow" email, and it refuses a lesson that has started or whose
+    time cannot be read.
 
 ## Appendix C: environment notes
 
