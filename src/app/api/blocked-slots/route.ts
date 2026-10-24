@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isPastBookingDate } from "@/lib/availability";
 import { requireAdmin } from "@/lib/supabase/server";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -30,9 +31,7 @@ export async function POST(req: NextRequest) {
   if (!date || !DATE_RE.test(date)) {
     return NextResponse.json({ error: "Invalid date" }, { status: 400 });
   }
-  const yesterday = new Date();
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  if (date <= yesterday.toISOString().split("T")[0]) {
+  if (isPastBookingDate(date)) {
     return NextResponse.json({ error: "Cannot block a date in the past" }, { status: 400 });
   }
 

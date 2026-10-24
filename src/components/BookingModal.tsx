@@ -480,7 +480,7 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
   // The person booking pays the whole group's total. A fixed fee shows as it
   // always has (the clinic's is per player).
   const feeDollars = quote ? quote.total : fixedFee(lessonType);
-  const lessonPrice = feeDollars === null ? "" : `$${feeDollars.toFixed(2)}`;
+  const lessonPrice = feeDollars === null ? "" : usd(feeDollars);
   const availableCount = times.filter((t) => !bookedTimes.has(t)).length;
   const phoneValue = form.phone.trim();
   const phoneValid = PHONE_RE.test(phoneValue) && phoneValue.replace(/\D/g, "").length >= 7;
