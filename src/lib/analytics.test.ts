@@ -119,6 +119,7 @@ describe("redactTokenPath", () => {
     expect(redactTokenPath("/review/abc123")).toBe("/review/[token]");
     expect(redactTokenPath("/lesson-outcome/eyJh.sig")).toBe("/lesson-outcome/[token]");
     expect(redactTokenPath("/review-action/eyJh.sig")).toBe("/review-action/[token]");
+    expect(redactTokenPath("/cancel-lesson/eyJh.sig")).toBe("/cancel-lesson/[token]");
   });
 
   it("leaves ordinary pages alone", () => {

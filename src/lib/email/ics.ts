@@ -3,6 +3,7 @@ import { LESSON_DURATION_MINUTES, LESSON_LOCATION } from "@/lib/business";
 import { lessonName as nameOfLesson, storedQuote, type StoredQuote } from "@/lib/lesson-types";
 import { quoteLine } from "@/lib/session-pricing";
 import { parseDisplayTime } from "@/lib/time";
+import { defaultDisplayName } from "@/lib/reviews";
 
 export type IcsMethod = "REQUEST" | "CANCEL";
 
@@ -100,6 +101,35 @@ export function generateGoogleCalendarUrl({
       `Pay: ${SITE_URL}/pay`,
     ].join("\n"),
     location: LESSON_LOCATION,
+    sf: "true",
+    output: "xml",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+/**
+ * "Add to my calendar" for DeMario's own booking email. The student's link
+ * names him; his names the student and carries what he needs on the day.
+ */
+export function generateCoachCalendarUrl(booking: IcsBooking & { court_setup?: string | null }): string {
+  const [y, mo, d] = booking.lesson_date.split("-").map((n) => parseInt(n, 10));
+  const parsed = parseDisplayTime(booking.lesson_time);
+  const start = parsed ?? { hour: 9, minute: 0 };
+  const durationMin = LESSON_DURATION_MINUTES[booking.lesson_type] ?? 60;
+  const endTotal = start.hour * 60 + start.minute + durationMin;
+  const quote = storedQuote(booking);
+  const student = defaultDisplayName(booking.name) || "Student";
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `Lesson: ${student} · ${nameOfLesson(booking.lesson_type)}`,
+    dates: `${formatLocal(y, mo, d, start.hour, start.minute)}/${formatLocal(y, mo, d, Math.floor(endTotal / 60), endTotal % 60)}`,
+    ctz: "America/Chicago",
+    details: [
+      ...(booking.phone ? [`Phone: ${booking.phone}`] : []),
+      ...(quote ? [`Group: ${quoteLine(quote)}`] : []),
+      ...(booking.court_setup ? [`Court setup: ${booking.court_setup}`] : []),
+      `Booking ID: ${booking.id.slice(0, 8).toUpperCase()}`,
+    ].join("\n"),
     sf: "true",
     output: "xml",
   });

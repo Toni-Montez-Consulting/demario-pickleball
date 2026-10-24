@@ -31,9 +31,17 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
   its own booking on the site, or have the student rebook. Each lesson keeps its own outcome.
   Only **Lesson happened** asks the student for a review; **Didn't happen** and **No-show**
   never do.
-- **Day-before reminder:** each student who booked on the site gets an email the morning
-  before the lesson, with your number to text if anything changed. It skips a lesson marked
-  cancelled, so cancel in Admin when you cancel by text, or they still get "See you tomorrow".
+- **"Tomorrow" email, 9 AM (8 AM in winter):** the day before any lesson booked on the site, you
+  get the lesson, the student's number (Text and Call buttons), and their court notes.
+- **Cancel this lesson:** each lesson in the "Tomorrow" email has a **Cancel this lesson** link.
+  Use it whenever a lesson is called off by text. It opens a page where you confirm; the student
+  gets the cancellation email and the time opens up on the site. If you put the lesson on your
+  Google Calendar, delete it there too, or the site keeps that time blocked. It does nothing once
+  the lesson has started (use **Didn't happen** in the next morning's email instead). The
+  new-booking email has no cancel link on purpose: replying to it goes to the student.
+- **Students' reminder, 6 PM** (5 PM in winter): each student gets "See you tomorrow" with your
+  number to text if anything changed. A lesson you cancelled before then gets no reminder.
+- **Add to my calendar:** every new-booking email has it, so site lessons land on your calendar.
 - **Review emails** arrive for every new review. One from a student's emailed link is already
   live on the site, at any star rating; tap **Take it down** only if it is abusive, fake, or says
   something untrue, never for a low rating. One from the public review page waits; tap

@@ -4,7 +4,7 @@ import { parseBookingNotes } from "@/lib/booking-notes";
 import { fixedFee, lessonName, storedQuote } from "@/lib/lesson-types";
 import { formatLessonDate } from "@/lib/time";
 import { playersLabel, usd } from "@/lib/session-pricing";
-import { generateGoogleCalendarUrl, type IcsBooking } from "./ics";
+import { generateCoachCalendarUrl, generateGoogleCalendarUrl, type IcsBooking } from "./ics";
 import { arrivalSourceLabel, type ArrivalSource } from "@/lib/arrival-source";
 
 /**
@@ -87,6 +87,20 @@ export interface NewBookingAlert extends IcsBooking {
   arrival_source?: ArrivalSource | null;
 }
 
+/**
+ * "Called off by text?" with the one-tap cancel link. Only for emails whose
+ * replies cannot reach a student: the new-booking alert's Reply-To is the
+ * student, so a reply would quote the link to them, and it never carries one.
+ */
+function cancelLine(cancelUrl: string | null | undefined, student: string): string {
+  if (!cancelUrl) return "";
+  return `<p style="font-size:13px;color:#666;line-height:1.5;margin:12px 0 0;">
+      Called off by text? <a href="${escapeHtml(cancelUrl)}" style="color:#b42318;font-weight:600;">Cancel this lesson</a>
+      so ${escapeHtml(student)} gets the cancellation email and the time opens up on your site.
+      If you added it to your Google Calendar, delete it there too, or the site keeps that time blocked.
+    </p>`;
+}
+
 export function adminNotificationHtml(booking: NewBookingAlert): string {
   const lesson = lessonName(booking.lesson_type);
   const group = groupRows(booking);
@@ -110,6 +124,9 @@ export function adminNotificationHtml(booking: NewBookingAlert): string {
     </table>
     <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">
       Text the student to confirm the exact court, any court fee, and payment before the lesson.
+    </p>
+    <p style="margin:16px 0 0;">
+      <a href="${escapeHtml(generateCoachCalendarUrl({ ...booking, court_setup: court.courtSetup }))}" style="display:inline-block;padding:10px 16px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">Add to my calendar</a>
     </p>
     <p style="margin:20px 0 0;">
       <a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open admin dashboard</a>
@@ -272,6 +289,68 @@ export function lessonOutcomeDigestHtml(lessons: OutcomeDigestLesson[]): string 
     <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">
       Nothing is sent to the student for No-show or Didn't happen. Each button opens a page where
       you confirm; links expire in 14 days. Lessons drop off this email after three mornings.
+    </p>
+    <p style="margin:16px 0 0;">
+      <a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open admin dashboard</a>
+    </p>
+    `,
+    heading
+  );
+}
+
+export interface CoachTomorrowLesson {
+  name: string;
+  phone: string | null;
+  lessonName: string;
+  /** "3 players", for a group format. */
+  players?: string | null;
+  time: string;
+  courtSetup: string | null;
+  preferredArea: string | null;
+  cancelUrl: string | null;
+}
+
+/**
+ * DeMario's look at tomorrow's site lessons, sent the morning before. It goes
+ * out hours ahead of the students' reminders, so a lesson he called off by
+ * text can be cancelled before its student is told "See you tomorrow".
+ */
+export function coachTomorrowHtml(lessons: CoachTomorrowLesson[], dateLabel: string): string {
+  const digits = (phone: string) => phone.replace(/[^\d+]/g, "");
+  const rows = lessons
+    .map(
+      (lesson) => `
+    <div style="border-top:1px solid #eee;padding:16px 0;">
+      <p style="margin:0 0 4px;font-size:15px;"><strong>${escapeHtml(lesson.time)} CT · ${escapeHtml(lesson.name)}</strong></p>
+      <p style="margin:0 0 4px;font-size:14px;color:#444;">${escapeHtml(lesson.lessonName)}${
+        lesson.players ? ` · ${escapeHtml(lesson.players)}` : ""
+      }</p>
+      ${
+        lesson.courtSetup || lesson.preferredArea
+          ? `<p style="margin:0 0 4px;font-size:14px;color:#666;">${[lesson.courtSetup, lesson.preferredArea]
+              .filter(Boolean)
+              .map((part) => escapeHtml(String(part)))
+              .join(" · ")}</p>`
+          : ""
+      }
+      ${
+        lesson.phone
+          ? `<p style="margin:0;font-size:14px;"><a href="sms:${escapeHtml(digits(lesson.phone))}" style="color:#0070ba;font-weight:600;">Text</a> · <a href="tel:${escapeHtml(digits(lesson.phone))}" style="color:#0070ba;font-weight:600;">Call</a> ${escapeHtml(lesson.phone)}</p>`
+          : ""
+      }
+      ${cancelLine(lesson.cancelUrl, firstName(lesson.name, "the student"))}
+    </div>`
+    )
+    .join("");
+  const heading = lessons.length === 1 ? "1 lesson tomorrow" : `${lessons.length} lessons tomorrow`;
+  return wrap(
+    `
+    <h1 style="font-size:20px;margin:0 0 8px;">${heading}</h1>
+    <p style="font-size:14px;line-height:1.5;margin:0 0 8px;color:#444;">${escapeHtml(dateLabel)}, booked on your site.</p>
+    ${rows}
+    <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">
+      Each student gets a reminder email this evening. A lesson you cancel before then gets no
+      reminder. Lessons booked through TeachMe.To or a venue app are not in this email.
     </p>
     <p style="margin:16px 0 0;">
       <a href="${SITE_URL}/admin" style="color:#0070ba;text-decoration:underline;font-weight:600;">Open admin dashboard</a>
