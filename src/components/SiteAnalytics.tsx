@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Analytics } from "@vercel/analytics/next";
-import { parseEventAttributes, trackEvent } from "@/lib/analytics";
+import { parseEventAttributes, redactTokenPath, trackEvent } from "@/lib/analytics";
 import { rememberArrivalSource } from "@/lib/arrival-source";
 
 /**
@@ -58,16 +58,11 @@ export default function SiteAnalytics() {
       beforeSend={(event) => {
         try {
           const url = new URL(event.url);
-          if (/^\/review\/[^/]+$/.test(url.pathname)) {
-            url.pathname = "/review/[token]";
-            return { ...event, url: url.toString() };
-          }
-          // Same for the signed links in Mario's lesson outcome email.
-          if (/^\/lesson-outcome\/[^/]+$/.test(url.pathname)) {
-            url.pathname = "/lesson-outcome/[token]";
-            return { ...event, url: url.toString() };
-          }
-          return event;
+          // Review links, and the signed links in Mario's emails.
+          const redacted = redactTokenPath(url.pathname);
+          if (!redacted) return event;
+          url.pathname = redacted;
+          return { ...event, url: url.toString() };
         } catch {
           // Never let analytics break a page render.
           return event;

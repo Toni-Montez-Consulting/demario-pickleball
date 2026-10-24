@@ -5,6 +5,7 @@ import {
   courtSetupCode,
   eventAttributes,
   parseEventAttributes,
+  redactTokenPath,
   submitFailure,
   venueCode,
 } from "./analytics";
@@ -110,5 +111,21 @@ describe("code helpers", () => {
     for (const rule of [...PLATFORM_REQUIRED_VENUES, ...HYBRID_BY_REQUEST_VENUES]) {
       expect(venueCode(rule.shortName), rule.name).not.toBeNull();
     }
+  });
+});
+
+describe("redactTokenPath", () => {
+  it("replaces the token in every emailed-link page", () => {
+    expect(redactTokenPath("/review/abc123")).toBe("/review/[token]");
+    expect(redactTokenPath("/lesson-outcome/eyJh.sig")).toBe("/lesson-outcome/[token]");
+    expect(redactTokenPath("/review-action/eyJh.sig")).toBe("/review-action/[token]");
+  });
+
+  it("leaves ordinary pages alone", () => {
+    expect(redactTokenPath("/")).toBeNull();
+    expect(redactTokenPath("/review")).toBeNull();
+    expect(redactTokenPath("/review/")).toBeNull();
+    expect(redactTokenPath("/reviews/abc")).toBeNull();
+    expect(redactTokenPath("/admin/reviews")).toBeNull();
   });
 });

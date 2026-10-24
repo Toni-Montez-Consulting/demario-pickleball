@@ -77,7 +77,9 @@ within two properties. Web Analytics Plus ($10/month) raises the limit to 8 prop
   The library's default target is the deployment's `*.vercel.app` address, which Vercel
   Authentication protects on this project; the post was redirected to a login page and the
   event silently lost. Set `VERCEL_WEB_ANALYTICS_ENDPOINT` to override.
-- `/review/<token>` URLs are reported as `/review/[token]`.
+- Pages opened from an emailed link (`/review/<token>`, `/lesson-outcome/<token>`,
+  `/review-action/<token>`) are reported with `[token]` in place of the token.
+  `TOKEN_ROUTES` in `src/lib/analytics.ts` lists them; a new emailed-link page must be added there.
 - The privacy policy and cookie notice disclose the interaction counts.
 
 ## Events and the questions they answer
