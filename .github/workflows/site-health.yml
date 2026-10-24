@@ -1,0 +1,72 @@
+name: Site health
+
+# Every hour, checks that the live site can still take a booking: the homepage
+# loads, lesson times load from the database, and availability answers, which
+# needs DeMario's Google Calendar connection. An expired calendar token makes
+# availability fail, and students then cannot book at all; nothing else would
+# tell anyone. A failed run emails the person who last edited this schedule
+# (GitHub's notification for failed scheduled workflows).
+#
+# Uses no secrets and changes nothing. GitHub pauses scheduled workflows in a
+# public repository after 60 days without commits; re-enable it from the
+# Actions tab if that happens.
+
+on:
+  schedule:
+    # Minute 17, away from the top-of-hour rush on GitHub's scheduler.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+  # Runs once on any change to this file, so an edit is tested against the live
+  # site before it merges.
+  pull_request:
+    paths:
+      - .github/workflows/site-health.yml
+
+permissions: {}
+
+concurrency:
+  group: site-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      SITE: https://demariomontezpb.com
+    steps:
+      - name: Check the live site
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          # A date two days out in Dallas: always inside the booking window.
+          DAY=$(TZ=America/Chicago date -d '+2 day' +%F)
+
+          check() {
+            local label="$1" path="$2" test="$3"
+            local body status
+            body=$(curl -sS --max-time 20 -H "Accept: application/json, text/html" -w '\n%{http_code}' "$SITE$path") || { echo "FAIL $label: no response"; return 1; }
+            status=$(tail -n1 <<<"$body")
+            body=$(sed '$d' <<<"$body")
+            if [ "$status" != "200" ]; then echo "FAIL $label: HTTP $status"; return 1; fi
+            if ! eval "$test" <<<"$body" >/dev/null 2>&1; then echo "FAIL $label: unexpected content"; return 1; fi
+            echo "ok   $label"
+          }
+
+          run_all() {
+            local failed=0
+            check "homepage" "/" "grep -qi 'book a lesson'" || failed=1
+            check "lesson times (database)" "/api/time-slots" "jq -e 'type == \"array\" and length > 0'" || failed=1
+            check "availability (Google Calendar)" "/api/availability?date=$DAY&lesson_type=beginner" "jq -e '(.allDay | type) == \"boolean\" and (.unavailable | type) == \"array\"'" || failed=1
+            check "published reviews" "/api/reviews/published" "jq -e 'type == \"array\"'" || failed=1
+            return $failed
+          }
+
+          if run_all; then exit 0; fi
+          # One retry a minute later, so a passing blip does not send an email.
+          echo "Retrying in 60 seconds..."
+          sleep 60
+          if run_all; then exit 0; fi
+          echo "::error::The live site failed its health check twice. If availability failed, DeMario's Google Calendar connection may need reconnecting (docs/MARIO_ACTION_PLAN.md)."
+          exit 1
