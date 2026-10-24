@@ -59,7 +59,9 @@ jobs:
             check "homepage" "/" "grep -qi 'book a lesson'" || failed=1
             check "lesson times (database)" "/api/time-slots" "jq -e 'type == \"array\" and length > 0'" || failed=1
             check "availability (Google Calendar)" "/api/availability?date=$DAY&lesson_type=beginner" "jq -e '(.allDay | type) == \"boolean\" and (.unavailable | type) == \"array\"'" || failed=1
-            check "published reviews" "/api/reviews/published" "jq -e 'type == \"array\"'" || failed=1
+            # The route answers 200 with [] when its query fails, so an empty
+            # list counts as a failure. The site always has published reviews.
+            check "published reviews" "/api/reviews/published" "jq -e 'type == \"array\" and length > 0'" || failed=1
             return $failed
           }
 
