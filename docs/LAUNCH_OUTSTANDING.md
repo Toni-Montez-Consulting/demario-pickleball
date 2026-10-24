@@ -150,7 +150,10 @@ sessions and Play with the Pro, so round 2 is no longer blocked on him. He does
 not want a Google Business Profile for now. He also kept the Group Clinic as it
 is and approved the two new cards' text.
 
-The three homepage testimonials are confirmed real and permissioned.
+All seven homepage testimonials are from real students. DeMario confirmed the three
+featured ones (Rachel K., Marcus T., Jenna P.) as real and permissioned in July 2026.
+Tonio confirmed on 2026-10-22 that the four on the wall (David L., Carlos M., Priya S.,
+Tom B.) are real students; their permission to be quoted was not separately recorded.
 
 The unsourced `5.0 star, 79 reviews` claim was removed on 2026-07-26
 (`dad3a06`). Since #13 (2026-10-19) the trust strip links his TeachMe.To rating
