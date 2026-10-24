@@ -65,6 +65,18 @@ For the plain-language owner checklist, use `docs/MARIO_ACTION_PLAN.md`.
   or reschedule free, under 24 hours may be charged 50%, no-shows may be charged
   full price, and coach-cancelled sessions get a refund or free reschedule.
 
+## Sharing The Site
+
+Use a different link in each place, so the site can tell which one brings students:
+
+- Instagram bio: `demariomontezpb.com/ig`
+- TikTok bio: `demariomontezpb.com/tiktok`
+- QR card at courts and the school: `demariomontezpb.com/card`
+
+Each one opens the normal homepage. Every new-booking email has a **Found you through** line:
+Instagram bio link, TikTok bio link, QR card, or "No tagged link" (word of mouth, a search, or
+the plain address). Swapping the two bio links is a one-time, five-minute job.
+
 ## Before Broader Promotion
 
 - Follow `docs/VENUE_RULES.md`: public courts can book through the site; Dallas

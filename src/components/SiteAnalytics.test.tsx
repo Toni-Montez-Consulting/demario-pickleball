@@ -68,3 +68,24 @@ describe("SiteAnalytics click reporting", () => {
     unmount();
   });
 });
+
+describe("SiteAnalytics tagged arrival", () => {
+  it("counts a tagged landing and remembers it for the rest of the visit", () => {
+    mocks.vercelTrack.mockClear();
+    window.history.replaceState({}, "", "/?utm_source=tiktok&utm_medium=bio");
+    const { unmount } = render(<SiteAnalytics />);
+    expect(window.sessionStorage.getItem("dm_arrival_source")).toBe("tiktok");
+    expect(mocks.vercelTrack).toHaveBeenCalledWith("tagged_arrival", { source: "tiktok" });
+    unmount();
+    window.history.replaceState({}, "", "/");
+    window.sessionStorage.clear();
+  });
+
+  it("counts nothing for an untagged visit", () => {
+    mocks.vercelTrack.mockClear();
+    window.history.replaceState({}, "", "/");
+    const { unmount } = render(<SiteAnalytics />);
+    expect(mocks.vercelTrack).not.toHaveBeenCalled();
+    unmount();
+  });
+});

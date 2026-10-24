@@ -13,6 +13,7 @@ describe("BookingModal", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    window.sessionStorage.clear();
   });
 
   function fillDetails() {
@@ -74,6 +75,8 @@ describe("BookingModal", () => {
           lesson_time: "9:00 AM",
           notes: "Preferred court setup: Outdoor public court\nPreferred area or court: Lake Highlands",
           waiver_accepted: true,
+          // This visit came through the Instagram bio link.
+          arrival_source: "instagram",
           company: "",
         });
         // A one-on-one lesson carries no group size.
@@ -90,6 +93,7 @@ describe("BookingModal", () => {
       throw new Error(`Unexpected fetch ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
+    window.sessionStorage.setItem("dm_arrival_source", "instagram");
 
     render(<BookingModal isOpen onClose={() => undefined} />);
 
@@ -259,6 +263,8 @@ describe("BookingModal", () => {
 
     await screen.findByText(/you're booked/i);
     expect(posted).toMatchObject({ lesson_type: "drill_90", group_size: 3 });
+    // An untagged visit sends no source at all.
+    expect(posted).not.toHaveProperty("arrival_source");
     expect(screen.getByText("3 players · $35 per person")).toBeInTheDocument();
     // The person booking pays the group's total.
     expect(screen.getAllByText("$105.00")).toHaveLength(2);

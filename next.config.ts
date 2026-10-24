@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs/config";
 import { buildSecurityHeaders } from "./src/lib/security-headers";
+import { SHORT_LINKS, shortLinkDestination } from "./src/lib/arrival-source";
 
 const nextConfig: NextConfig = {
   // Next 16.4's `next dev` appends a generated block to AGENTS.md whenever it
@@ -10,6 +11,15 @@ const nextConfig: NextConfig = {
   agentRules: false,
   images: {
     formats: ["image/avif", "image/webp"],
+  },
+  // Tagged links for DeMario's bios and QR card (src/lib/arrival-source.ts).
+  // Temporary (307), so a destination can change without browsers caching it.
+  async redirects() {
+    return SHORT_LINKS.map((link) => ({
+      source: link.path,
+      destination: shortLinkDestination(link),
+      permanent: false,
+    }));
   },
   // Built when the server or build starts, so an env change needs a redeploy.
   async headers() {

@@ -14,6 +14,44 @@ served. So a 200 from that script does not show Analytics is on: the Speed Insig
 answers 200 too, and the site does not use Speed Insights. Vercel adds the analytics routes
 with the first deployment after enabling, and nothing below was recorded before it was on.
 
+## Tagged links (2026-10-23)
+
+Instagram and TikTok open links in their own in-app browsers, which usually send no
+referrer. From 2026-10-19 to 10-23, 12 of 14 visitors arrived with no source. So each
+place DeMario shares the site gets its own short link, defined in
+`src/lib/arrival-source.ts` and redirected (307) by `next.config.ts`:
+
+| Link | Lands on |
+|---|---|
+| `/ig` | `/?utm_source=instagram&utm_medium=bio` |
+| `/tiktok` | `/?utm_source=tiktok&utm_medium=bio` |
+| `/card` | `/?utm_source=card&utm_medium=qr` |
+
+- **Visits by source:** the `tagged_arrival` event, by its `source` property. Grouping
+  pageviews by UTM would be simpler, but the API answers "UTM dimensions require an
+  Enterprise plan or the Web Analytics Plus add-on" (402, 2026-10-23), so the site counts
+  tagged landings itself.
+- **Bookings by source:** the tab keeps the code in `sessionStorage`
+  (`dm_arrival_source`) and the booking sends it. DeMario's booking email shows it on a
+  **Found you through** line, and a new student's record keeps it as
+  `students.metadata.arrived_via`. Count with
+  `select metadata->>'arrived_via', count(*) from students group by 1;`.
+  `booking_created` stays at two properties, so it does not carry the source.
+- Only the three codes are ever stored or sent. An unknown value is dropped, and the
+  booking still goes through.
+
+## Reading the numbers from the command line
+
+The MCP analytics tools answer "Web Analytics not found", but the Vercel CLI reads
+the same API (checked 2026-10-23):
+
+```
+vercel api "/v1/query/web-analytics/events/aggregate?projectId=<project id>&teamId=<team id>&by=eventName&by=eventData/source&since=<ISO>&until=<ISO>" --method GET
+```
+
+Use `visits/aggregate` with `by=day` or `by=referrerHostname` for pageviews. The CLI prints
+update-check noise to stderr; the answer is the JSON line on stdout.
+
 ## Plan limits
 
 The team is on Vercel Pro: custom events are included at $0.03 per 1,000 events, with at
@@ -50,6 +88,7 @@ within two properties. Web Analytics Plus ($10/month) raises the limit to 8 prop
 | `inquiry_submit` | `result` | Does the contact form work for real visitors? |
 | `review_submit` | `result`, `path` (public, token) | Does the review form work, and where do people stop? |
 | `outbound_click` | `dest` (instagram, tiktok, facebook, google_review, teachme_reviews) | Do visitors check the social and review profiles? |
+| `tagged_arrival` | `source` (instagram, tiktok, card) | Which shared link brings visitors? Sent once per page load that arrives tagged. |
 
 The funnel to watch is `book_cta_click` -> `booking_step_viewed` (details -> picker or
 indoor_routing -> confirmed) -> `booking_created`. Link clicks count left and middle clicks;

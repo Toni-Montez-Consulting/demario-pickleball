@@ -18,6 +18,7 @@ import {
   type DrillLength,
 } from "@/lib/session-pricing";
 import { COURT_SETUP_OPTIONS, formatBookingNotes, type CourtSetup } from "@/lib/booking-notes";
+import { recalledArrivalSource } from "@/lib/arrival-source";
 import {
   COURT_SETUP_HINTS,
   INDOOR_ROUTING_OPTIONS,
@@ -399,6 +400,8 @@ export default function BookingModal({ isOpen, onClose, initialLessonType = "beg
               })
             : undefined,
           waiver_accepted: waiverAgreed,
+          // Where they found DeMario, if they came through a tagged link.
+          arrival_source: recalledArrivalSource() ?? undefined,
           company,
         }),
       });

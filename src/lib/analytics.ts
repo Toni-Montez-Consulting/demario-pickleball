@@ -2,6 +2,7 @@ import { track as vercelTrack } from "@vercel/analytics";
 import { isCourtSetup, type CourtSetup } from "@/lib/booking-notes";
 import type { LessonKey } from "@/lib/data";
 import type { LessonType } from "@/lib/lesson-types";
+import type { ArrivalSource } from "@/lib/arrival-source";
 
 /**
  * Every custom analytics event the site sends, and the only values each
@@ -66,6 +67,11 @@ export interface AnalyticsEvents {
   inquiry_submit: { result: SubmitResult };
   review_submit: { result: ReviewResult; path: "public" | "token" };
   outbound_click: { dest: OutboundDest };
+  /**
+   * A visit that landed through a tagged link (/ig, /tiktok, /card). Counted as
+   * an event because grouping pageviews by UTM needs Web Analytics Plus.
+   */
+  tagged_arrival: { source: ArrivalSource };
 }
 
 export type AnalyticsEventName = keyof AnalyticsEvents;
@@ -84,6 +90,7 @@ const EVENTS: Record<AnalyticsEventName, true> = {
   inquiry_submit: true,
   review_submit: true,
   outbound_click: true,
+  tagged_arrival: true,
 };
 const EVENT_NAMES: ReadonlySet<string> = new Set(Object.keys(EVENTS));
 
