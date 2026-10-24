@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { redirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
 export function isAdminEmail(email: string | undefined): boolean {
@@ -70,6 +71,32 @@ export async function requireAdmin() {
     auth,
     supabase: createServiceRoleClient(),
   };
+}
+
+/**
+ * The admin check for server-rendered admin pages: a signed-in admin with MFA
+ * (aal2), or a redirect to login or MFA setup. Returns the service-role client
+ * for the page's own reads.
+ *
+ * Every page under app/admin/(protected) calls this itself, before it reads
+ * anything. The layout's check is not enough on its own: Next.js renders a
+ * route's segments independently of the layout around them, so data access is
+ * checked where it happens.
+ * https://nextjs.org/docs/app/guides/authentication#layouts-and-auth-checks
+ */
+export async function requireAdminPage() {
+  const auth = await createServerAuthClient();
+  const {
+    data: { user },
+  } = await auth.auth.getUser();
+  if (!user || !isAdminEmail(user.email)) redirect("/admin/login");
+
+  const { data: aal, error: aalError } = await auth.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aalError || aal?.currentLevel !== "aal2") {
+    redirect(!aalError && aal?.nextLevel === "aal1" ? "/admin/mfa-setup" : "/admin/login");
+  }
+
+  return { user, supabase: createServiceRoleClient() };
 }
 
 export async function createServerSupabaseClient() {

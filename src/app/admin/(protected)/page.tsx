@@ -1,8 +1,8 @@
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { requireAdminPage } from "@/lib/supabase/server";
 import AdminDashboard from "../AdminDashboard";
 
 export default async function AdminPage() {
-  const supabase = createServiceRoleClient();
+  const { supabase } = await requireAdminPage();
 
   const [{ data: bookings, error: bookingsError }, { data: inquiries, error: inquiriesError }] = await Promise.all([
     supabase
