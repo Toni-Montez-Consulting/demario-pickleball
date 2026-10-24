@@ -1,19 +1,57 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createServiceRoleClient, requireAdmin } from "@/lib/supabase/server";
 import { checkRateLimit, hashRequestIp } from "@/lib/rate-limit";
 import { validateReviewInput, hashReviewToken } from "@/lib/reviews";
 import { findOrCreateStudent } from "@/lib/students";
+import { sendReviewNotificationEmail } from "@/lib/email/client";
+import { moderationSecret, signReviewActionToken, type ReviewAction } from "@/lib/review-moderation";
+import { SITE_URL } from "@/lib/site";
 
 /**
  * Public review submission. Two paths:
  *
  *   tokenized — the link emailed 24h after a lesson. Fills in the pending row
- *               the cron created, and is marked verified.
+ *               the cron created, and is marked verified. With words, it goes
+ *               live at once, at any rating; DeMario's email can take it down.
  *   public    — the /review link Mario shares with past clients. Creates a new
  *               unverified row, matched to a student when contact details allow.
- *
- * Both land in the pending queue. Nothing reaches the site without Mario.
+ *               It waits, and DeMario's email can publish it.
+ * Design: docs/specs/2026-10-22-automatic-reviews.md
  */
+
+/**
+ * Emails DeMario about a submitted review, after the response. A live review
+ * gets a takedown link, a waiting one a publish link, and a rating with no
+ * words (which cannot show on the site) neither.
+ */
+function notifyDeMario(review: {
+  id: string;
+  displayName: string;
+  rating: number;
+  body: string | null;
+  verified: boolean;
+  live: boolean;
+}) {
+  const secret = moderationSecret();
+  const action: ReviewAction | null = review.live ? "hide" : review.body ? "publish" : null;
+  if (action && !secret) {
+    console.error("[reviews POST] LESSON_OUTCOME_SECRET is not set; review email has no one-tap link");
+  }
+  const actionUrl =
+    action && secret
+      ? `${SITE_URL}/review-action/${signReviewActionToken({ reviewId: review.id, action, secret })}`
+      : null;
+  after(() =>
+    sendReviewNotificationEmail({
+      displayName: review.displayName,
+      rating: review.rating,
+      body: review.body,
+      verified: review.verified,
+      live: review.live,
+      actionUrl,
+    }).catch((err) => console.error("[reviews POST] review email failed", err))
+  );
+}
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
@@ -70,6 +108,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "This review was already submitted" }, { status: 409 });
     }
 
+    // Tied to a real lesson and consented, so a review with words goes live now,
+    // at any rating (Tonio, 2026-10-22). Filtering by stars is not allowed: the
+    // federal review rule bars implying all reviews show while low ones are
+    // held back. DeMario can take down an abusive, fake, or untrue one.
+    const submittedAt = new Date().toISOString();
+    const live = text !== null;
     const { error: updateError } = await supabase
       .from("reviews")
       .update({
@@ -77,8 +121,9 @@ export async function POST(req: NextRequest) {
         body: text,
         display_name: displayName,
         consent_publish: true,
-        token_used_at: new Date().toISOString(),
+        token_used_at: submittedAt,
         submitted_ip_hash: hashRequestIp(req),
+        ...(live ? { status: "published", published_at: submittedAt } : {}),
       })
       .eq("id", pending.id);
 
@@ -86,7 +131,8 @@ export async function POST(req: NextRequest) {
       console.error("[reviews POST] token submit failed", updateError);
       return NextResponse.json({ error: "Could not save your review" }, { status: 500 });
     }
-    return NextResponse.json({ ok: true, verified: true }, { status: 201 });
+    notifyDeMario({ id: pending.id, displayName, rating, body: text, verified: true, live });
+    return NextResponse.json({ ok: true, verified: true, published: live }, { status: 201 });
   }
 
   // Public path. Unverified, matched to a student when we can.
@@ -106,23 +152,29 @@ export async function POST(req: NextRequest) {
     studentId = match?.student.id ?? null;
   }
 
-  const { error: insertError } = await supabase.from("reviews").insert({
-    student_id: studentId,
-    rating,
-    body: text,
-    display_name: displayName,
-    consent_publish: true,
-    verified_booking: false,
-    source: "site",
-    status: "pending",
-    submitted_ip_hash: hashRequestIp(req),
-  });
+  // Anyone can open the public page, so its reviews wait for DeMario's one tap.
+  const { data: created, error: insertError } = await supabase
+    .from("reviews")
+    .insert({
+      student_id: studentId,
+      rating,
+      body: text,
+      display_name: displayName,
+      consent_publish: true,
+      verified_booking: false,
+      source: "site",
+      status: "pending",
+      submitted_ip_hash: hashRequestIp(req),
+    })
+    .select("id")
+    .single();
 
-  if (insertError) {
+  if (insertError || !created) {
     console.error("[reviews POST] insert failed", insertError);
     return NextResponse.json({ error: "Could not save your review" }, { status: 500 });
   }
-  return NextResponse.json({ ok: true, verified: false }, { status: 201 });
+  notifyDeMario({ id: created.id, displayName, rating, body: text, verified: false, live: false });
+  return NextResponse.json({ ok: true, verified: false, published: false }, { status: 201 });
 }
 
 /** Admin moderation list. */
