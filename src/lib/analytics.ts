@@ -3,6 +3,7 @@ import { isCourtSetup, type CourtSetup } from "@/lib/booking-notes";
 import type { LessonKey } from "@/lib/data";
 import type { LessonType } from "@/lib/lesson-types";
 import type { ArrivalSource } from "@/lib/arrival-source";
+import { readLocalSetting, saveLocalSetting } from "@/lib/local-settings";
 
 /**
  * Every custom analytics event the site sends, and the only values each
@@ -153,6 +154,42 @@ export function redactTokenPath(pathname: string): string | null {
     if (rest && !rest.includes("/")) return `${base}/[token]`;
   }
   return null;
+}
+
+/**
+ * Pages only the owners open: the admin area and the one-tap links emailed to
+ * DeMario. A student's review link (/review) is not one of them.
+ */
+const OWNER_ROUTES = ["/admin", "/lesson-outcome", "/review-action", "/cancel-lesson"] as const;
+
+/** Marks a device as the owners' own, so its visits are not counted as students'. */
+export const OWNER_DEVICE_KEY = "dm_owner_device";
+
+export function isOwnerPath(pathname: string): boolean {
+  return OWNER_ROUTES.some((base) => pathname === base || pathname.startsWith(`${base}/`));
+}
+
+/**
+ * Vercel Analytics' beforeSend. The owners' visits are not student traffic:
+ * opening an owner page marks the device, and nothing from that device is sent
+ * after that. Anything else goes out with a review token stripped from its
+ * path. Never throws: analytics must not break a page.
+ */
+export function prepareAnalyticsEvent<E extends { url: string }>(event: E): E | null {
+  try {
+    const url = new URL(event.url);
+    if (isOwnerPath(url.pathname)) {
+      saveLocalSetting(OWNER_DEVICE_KEY, "1");
+      return null;
+    }
+    if (readLocalSetting(OWNER_DEVICE_KEY) === "1") return null;
+    const redacted = redactTokenPath(url.pathname);
+    if (!redacted) return event;
+    url.pathname = redacted;
+    return { ...event, url: url.toString() };
+  } catch {
+    return event;
+  }
 }
 
 function definedProps(props: object): Record<string, string> {
