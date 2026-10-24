@@ -33,9 +33,9 @@ function wrap(inner: string, heading: string): string {
       ${inner}
     </td></tr>
   </table>
-  <p style="max-width:520px;margin:16px auto 0;color:#888;font-size:12px;text-align:center;">
+  <p style="max-width:520px;margin:16px auto 0;color:#666;font-size:12px;text-align:center;">
     DeMario Montez Pickleball Coaching · Dallas, TX<br>
-    <a href="${SITE_URL}" style="color:#888;">${SITE_URL.replace(/^https?:\/\//, "")}</a>
+    <a href="${SITE_URL}" style="color:#666;">${SITE_URL.replace(/^https?:\/\//, "")}</a>
   </p>
 </body>
 </html>`;
@@ -55,14 +55,14 @@ export function studentRequestedHtml(booking: IcsBooking): string {
       Your lesson time is reserved. Mario will confirm the exact court shortly.
     </p>
     <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
-      <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(lesson)}</strong></td></tr>
-      ${group ? `<tr><td style="padding:6px 0;color:#777;">Players</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(group.players)}</strong></td></tr>` : ""}
-      <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(formatLessonDate(booking.lesson_date))}</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Court</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(LESSON_LOCATION)}</strong></td></tr>
-      ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Preference</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(court.courtSetup)}</strong></td></tr>` : ""}
-      <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;"><strong>${shortId}</strong></td></tr>
-      ${price ? `<tr><td style="padding:6px 0;color:#777;">Lesson fee</td><td style="padding:6px 0;text-align:right;"><strong>${price}</strong></td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#666;">Lesson</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(lesson)}</strong></td></tr>
+      ${group ? `<tr><td style="padding:6px 0;color:#666;">Players</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(group.players)}</strong></td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#666;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(formatLessonDate(booking.lesson_date))}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Court</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(LESSON_LOCATION)}</strong></td></tr>
+      ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#666;">Preference</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(court.courtSetup)}</strong></td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#666;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;"><strong>${shortId}</strong></td></tr>
+      ${price ? `<tr><td style="padding:6px 0;color:#666;">Lesson fee</td><td style="padding:6px 0;text-align:right;"><strong>${price}</strong></td></tr>` : ""}
     </table>
     <p style="font-size:14px;margin:0 0 12px;">
       <strong>Pay before your lesson:</strong>
@@ -110,17 +110,17 @@ export function adminNotificationHtml(booking: NewBookingAlert): string {
     `
     <h1 style="font-size:20px;margin:0 0 12px;">New booking — ${escapeHtml(lesson)}</h1>
     <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;">
-      <tr><td style="padding:6px 0;color:#777;">Student</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.name)}</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Email</td><td style="padding:6px 0;text-align:right;"><a href="mailto:${escapeHtml(booking.email)}">${escapeHtml(booking.email)}</a></td></tr>
-      ${booking.phone ? `<tr><td style="padding:6px 0;color:#777;">Phone</td><td style="padding:6px 0;text-align:right;"><a href="tel:${escapeHtml(booking.phone)}">${escapeHtml(booking.phone)}</a></td></tr>` : ""}
-      <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;">${escapeHtml(lesson)}</td></tr>
-      ${group ? `<tr><td style="padding:6px 0;color:#777;">Players</td><td style="padding:6px 0;text-align:right;">${escapeHtml(group.players)}</td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Booker pays</td><td style="padding:6px 0;text-align:right;">${escapeHtml(group.total)}</td></tr>` : ""}
-      <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;">${escapeHtml(formatLessonDate(booking.lesson_date))} · ${escapeHtml(booking.lesson_time)} CT</td></tr>
-      ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#777;">Court setup</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.courtSetup)}</td></tr>` : ""}
-      ${court.preferredArea ? `<tr><td style="padding:6px 0;color:#777;">Area/court note</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.preferredArea)}</td></tr>` : ""}
-      <tr><td style="padding:6px 0;color:#777;">Found you through</td><td style="padding:6px 0;text-align:right;">${escapeHtml(arrivalSourceLabel(booking.arrival_source))}</td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;">${shortId}</td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Student</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.name)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Email</td><td style="padding:6px 0;text-align:right;"><a href="mailto:${escapeHtml(booking.email)}">${escapeHtml(booking.email)}</a></td></tr>
+      ${booking.phone ? `<tr><td style="padding:6px 0;color:#666;">Phone</td><td style="padding:6px 0;text-align:right;"><a href="tel:${escapeHtml(booking.phone)}">${escapeHtml(booking.phone)}</a></td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#666;">Lesson</td><td style="padding:6px 0;text-align:right;">${escapeHtml(lesson)}</td></tr>
+      ${group ? `<tr><td style="padding:6px 0;color:#666;">Players</td><td style="padding:6px 0;text-align:right;">${escapeHtml(group.players)}</td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Booker pays</td><td style="padding:6px 0;text-align:right;">${escapeHtml(group.total)}</td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#666;">Date</td><td style="padding:6px 0;text-align:right;">${escapeHtml(formatLessonDate(booking.lesson_date))} · ${escapeHtml(booking.lesson_time)} CT</td></tr>
+      ${court.courtSetup ? `<tr><td style="padding:6px 0;color:#666;">Court setup</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.courtSetup)}</td></tr>` : ""}
+      ${court.preferredArea ? `<tr><td style="padding:6px 0;color:#666;">Area/court note</td><td style="padding:6px 0;text-align:right;">${escapeHtml(court.preferredArea)}</td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#666;">Found you through</td><td style="padding:6px 0;text-align:right;">${escapeHtml(arrivalSourceLabel(booking.arrival_source))}</td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;">${shortId}</td></tr>
     </table>
     <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">
       Text the student to confirm the exact court, any court fee, and payment before the lesson.
@@ -150,8 +150,8 @@ export function inquiryNotificationHtml({
     `
     <h1 style="font-size:20px;margin:0 0 12px;">New message from the site</h1>
     <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px;">
-      <tr><td style="padding:6px 0;color:#777;">From</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(name)}</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Email</td><td style="padding:6px 0;text-align:right;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
+      <tr><td style="padding:6px 0;color:#666;">From</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(name)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Email</td><td style="padding:6px 0;text-align:right;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
     </table>
     <div style="background:#f5f5f5;border-radius:8px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(message)}</div>
     <p style="font-size:13px;color:#666;line-height:1.5;margin:16px 0 0;">
@@ -423,14 +423,14 @@ export function feedbackNotificationHtml({
   return wrap(
     `
     <h1 style="font-size:20px;margin:0 0 8px;">Admin feedback: ${escapeHtml(type)}</h1>
-    <p style="font-size:13px;color:#888;margin:0 0 20px;">Submitted by ${escapeHtml(submitter)} via the admin portal</p>
+    <p style="font-size:13px;color:#666;margin:0 0 20px;">Submitted by ${escapeHtml(submitter)} via the admin portal</p>
     <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
-      <tr><td style="padding:6px 0;color:#777;vertical-align:top;">Type</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(type)}</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#777;vertical-align:top;">Title</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(title)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666;vertical-align:top;">Type</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(type)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666;vertical-align:top;">Title</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(title)}</strong></td></tr>
     </table>
-    <p style="font-size:13px;color:#777;margin:0 0 6px;">Description</p>
+    <p style="font-size:13px;color:#666;margin:0 0 6px;">Description</p>
     <div style="background:#f5f5f5;border-radius:8px;padding:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(description)}</div>
-    <p style="font-size:13px;color:#888;margin:20px 0 0;">This was automatically added to the Tasks list in the admin portal.</p>
+    <p style="font-size:13px;color:#666;margin:20px 0 0;">This was automatically added to the Tasks list in the admin portal.</p>
     `,
     `Admin Feedback: ${type}`
   );
@@ -449,11 +449,11 @@ export function lessonReminderHtml(booking: IcsBooking): string {
     `
     <h1 style="font-size:22px;margin:0 0 12px;">See you tomorrow, ${escapeHtml(greetingName(booking.name))}.</h1>
     <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
-      <tr><td style="padding:6px 0;color:#777;">Lesson</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(lesson)}</strong></td></tr>
-      ${group ? `<tr><td style="padding:6px 0;color:#777;">Players</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(group.players)}</strong></td></tr>` : ""}
-      <tr><td style="padding:6px 0;color:#777;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(formatLessonDate(booking.lesson_date))}</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#777;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;"><strong>${shortId}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Lesson</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(lesson)}</strong></td></tr>
+      ${group ? `<tr><td style="padding:6px 0;color:#666;">Players</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(group.players)}</strong></td></tr>` : ""}
+      <tr><td style="padding:6px 0;color:#666;">Date</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(formatLessonDate(booking.lesson_date))}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Time</td><td style="padding:6px 0;text-align:right;"><strong>${escapeHtml(booking.lesson_time)} CT</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666;">Booking ID</td><td style="padding:6px 0;text-align:right;font-family:monospace;"><strong>${shortId}</strong></td></tr>
     </table>
     <p style="font-size:15px;line-height:1.5;margin:0 0 20px;color:#444;">
       DeMario confirms the exact court by text. If you have not heard from him, or something
