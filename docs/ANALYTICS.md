@@ -77,10 +77,26 @@ within two properties. Web Analytics Plus ($10/month) raises the limit to 8 prop
   The library's default target is the deployment's `*.vercel.app` address, which Vercel
   Authentication protects on this project; the post was redirected to a login page and the
   event silently lost. Set `VERCEL_WEB_ANALYTICS_ENDPOINT` to override.
-- Pages opened from an emailed link (`/review/<token>`, `/lesson-outcome/<token>`,
-  `/review-action/<token>`, `/cancel-lesson/<token>`) are reported with `[token]` in place of the token.
-  `TOKEN_ROUTES` in `src/lib/analytics.ts` lists them; a new emailed-link page must be added there.
+- A student's review link (`/review/<token>`) is reported as `/review/[token]`. The one-tap
+  pages in DeMario's emails are not reported at all (next section). `TOKEN_ROUTES` in
+  `src/lib/analytics.ts` lists every emailed-link page; a new one must be added there, and to
+  `OWNER_ROUTES` if only the owners open it.
 - The privacy policy and cookie notice disclose the interaction counts.
+
+## The owners' own visits (2026-10-24)
+
+With a few visitors a day, the owners' visits were a large share of the numbers, and `/admin`
+and the one-tap pages showed up as page views. The live script has no opt-out flag of its own
+(`localStorage` `va-disable` does nothing), so `prepareAnalyticsEvent` in
+`src/lib/analytics.ts` handles it:
+
+- `/admin` and the one-tap pages in DeMario's emails (`/lesson-outcome`, `/review-action`,
+  `/cancel-lesson`) are never sent.
+- Opening one of them marks the device (`localStorage` `dm_owner_device`), and nothing from
+  that device is sent after that, including the homepage and button taps.
+- To count a device again, clear the site's data in that browser.
+- `booking_created` is sent by the server, so a test booking made from an owner's device
+  still counts there.
 
 ## Events and the questions they answer
 

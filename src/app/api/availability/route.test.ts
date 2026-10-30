@@ -88,7 +88,34 @@ describe("GET /api/availability", () => {
       allDay: false,
       unavailable: ["9:00 AM", "2:00 PM"],
       booked: ["9:00 AM", "2:00 PM"],
+      calendarSync: false,
     });
+  });
+
+  // A near miss like "True" silently turned the calendar check off, and the
+  // health check passed anyway. The answer now says whether it ran.
+  it("says whether DeMario's Google Calendar was part of the answer", async () => {
+    mocks.serviceClient = createMockClient({ bookings: [], blocked_slots: [], recurring_blocks: [] });
+    vi.stubEnv("GOOGLE_CALENDAR_SYNC_ENABLED", "True");
+    try {
+      const { GET } = await import("./route");
+      expect(await (await GET(requestFor("2026-05-04"))).json()).toMatchObject({ calendarSync: false });
+    } finally {
+      vi.unstubAllEnvs();
+    }
+
+    vi.resetModules();
+    vi.doMock("@/lib/google-calendar", async (importOriginal) => ({
+      ...(await importOriginal<typeof import("@/lib/google-calendar")>()),
+      isGoogleCalendarSyncEnabled: () => true,
+      getGoogleCalendarBusyForDateCached: async () => ({ busy: [], error: null }),
+    }));
+    try {
+      const { GET } = await import("./route");
+      expect(await (await GET(requestFor("2026-05-04"))).json()).toMatchObject({ calendarSync: true });
+    } finally {
+      vi.doUnmock("@/lib/google-calendar");
+    }
   });
 
   // Each answer can cost a Google Calendar query, and no student can book
