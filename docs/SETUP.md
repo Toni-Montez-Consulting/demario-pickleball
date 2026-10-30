@@ -82,6 +82,12 @@ switching the legacy keys off in Supabase → Settings → API Keys (reversible)
 | `GOOGLE_OAUTH_CLIENT_ID` | OAuth client ID | Google OAuth app client ID |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth client secret | Google OAuth app secret |
 | `GOOGLE_OAUTH_REFRESH_TOKEN` | OAuth refresh token | Token generated after DeMario authorizes calendar free/busy access |
+| `CRON_SECRET` | long random string | Vercel sends it to the four daily jobs as `Authorization: Bearer <value>`. A job answers 500 when it is missing and 401 to any other caller |
+| `LESSON_OUTCOME_SECRET` | long random string | Signs the one-tap links in DeMario's emails: lesson outcome (valid 14 days), review publish or take-down (60 days), Cancel (45 days). Changing it voids the links already sent and nothing else |
+| `RATE_LIMIT_SALT` | long random string | Hashes visitor IPs for rate limiting, and the review links emailed to students. Changing it voids every review link already sent. When it is missing, both hashes fall back to `SUPABASE_SERVICE_ROLE_KEY`, and changing that key would then void them too, so keep it set |
+| `NEXT_PUBLIC_LESSON_LOCATION` | text | Optional. The location line in the booking dialog, emails, and calendar invite. Default: "Court confirmed by Mario after booking" |
+| `NEXT_PUBLIC_GOOGLE_REVIEW_URL` | URL | Optional. After a student writes a site review, offers to post it on Google too. Leave unset until DeMario has a Google Business Profile |
+| `VERCEL_WEB_ANALYTICS_ENDPOINT` | URL | Optional. Where the server-sent `booking_created` event goes; production defaults to the site's own `/_vercel/insights/event` (`docs/ANALYTICS.md`) |
 
 Launch email and monitoring env vars can be checked with:
 
