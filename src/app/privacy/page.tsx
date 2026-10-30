@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         <Link href="/" className="legal-back">← Back to site</Link>
         <h1>Privacy Policy</h1>
         {/* Editing this page? Bump its date in LEGAL_LAST_MODIFIED (src/app/sitemap.ts). */}
-        <p className="legal-date">Effective April 27, 2026 · Updated October 19, 2026</p>
+        <p className="legal-date">Effective April 27, 2026 · Updated October 30, 2026</p>
 
         <h2>What we collect</h2>
         <p>
@@ -24,12 +24,30 @@ export default function PrivacyPage() {
           phone number, preferred court setup, and optional preferred area or court notes. We do
           not collect payment information directly — payments are handled by third-party processors.
         </p>
+        <p>
+          When you write a review, we collect your star rating, any words you add, the name you
+          want shown, and, on the public review form, an email or phone number so DeMario knows
+          who you are. With your permission, given by the checkbox on the form, the rating, words,
+          and name are published on this site; your email or phone number never is. A review with
+          words sent from the private link in our email appears right away, and DeMario can take it
+          down. A review sent from the public form appears only after he approves it.
+        </p>
+        <p>
+          To slow down spam, when you book, send an inquiry, or write a review, the site also
+          stores a scrambled one-way code made from your IP address (a salted hash), not the
+          address itself. It cannot be turned back into your address, and it is used only to slow
+          down or spot repeated and abusive submissions.
+        </p>
 
         <h2>How we use your information</h2>
         <ul>
           <li>To confirm and manage your lesson booking</li>
           <li>To respond to your inquiries</li>
           <li>To remind you by email the day before a lesson you booked on this site</li>
+          <li>
+            To ask you once by email for a review after DeMario confirms that a lesson you booked
+            on this site took place, with a link to book your next one
+          </li>
         </ul>
         <p>We do not sell, rent, or share your personal information with third parties for marketing purposes.</p>
 

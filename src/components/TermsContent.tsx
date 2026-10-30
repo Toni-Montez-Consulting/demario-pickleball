@@ -1,8 +1,13 @@
 import { eventAttributes } from "@/lib/analytics";
 import { lowestPerPerson, soloPrice, usd } from "@/lib/session-pricing";
 
-// Editing these terms? Bump their date in LEGAL_LAST_MODIFIED (src/app/sitemap.ts).
-export const TERMS_EFFECTIVE_DATE = "Effective April 23, 2026";
+// Editing these terms (prices in session-pricing included)? Each booking stores
+// WAIVER_VERSION as the text the student accepted, so a change needs, together:
+// a new WAIVER_VERSION (src/lib/business.ts) and TERMS_EFFECTIVE_DATE, the new
+// text saved as docs/terms/<version>.txt (old files stay), a row in
+// docs/terms/README.md, and LEGAL_LAST_MODIFIED.terms (src/app/sitemap.ts).
+// TermsContent.test.tsx fails until the text and the file match.
+export const TERMS_EFFECTIVE_DATE = "Effective October 30, 2026";
 
 export default function TermsContent() {
   return (

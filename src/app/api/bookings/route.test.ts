@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextRequest } from "next/server";
+import { WAIVER_VERSION } from "@/lib/business";
 
 type Row = Record<string, string | number | boolean | null>;
 type Tables = Record<string, Row[]>;
@@ -230,7 +231,7 @@ describe("POST /api/bookings", () => {
       email: "jane@example.com",
       phone: "(469) 371-9220",
       notes: "Preferred court setup: Outdoor public court\nPreferred area or court: Lake Highlands",
-      waiver_version: "2026-04-24",
+      waiver_version: WAIVER_VERSION,
     });
     expect(typeof inserted[0].waiver_signed_at).toBe("string");
 
