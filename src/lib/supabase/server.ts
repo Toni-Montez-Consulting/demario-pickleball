@@ -3,6 +3,21 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { redirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { supabaseBrowserKey } from "./keys";
+
+/**
+ * The server-only key, which bypasses RLS: the new secret key first, then the
+ * legacy service_role key (see ./keys.ts for why both).
+ */
+export function supabaseServerKey(): string {
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) {
+    throw new Error(
+      "Supabase server key missing: set SUPABASE_SECRET_KEY (or the legacy SUPABASE_SERVICE_ROLE_KEY)"
+    );
+  }
+  return key;
+}
 
 export function isAdminEmail(email: string | undefined): boolean {
   const adminEmail = process.env.ADMIN_EMAIL;
@@ -15,7 +30,7 @@ export async function createServerAuthClient() {
   const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseBrowserKey(),
     {
       cookies: {
         getAll() {
@@ -34,7 +49,7 @@ export async function createServerAuthClient() {
 export function createServiceRoleClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseServerKey(),
     {
       auth: {
         autoRefreshToken: false,

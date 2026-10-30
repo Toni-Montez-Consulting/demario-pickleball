@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/supabase/server";
+import { supabaseBrowserKey } from "@/lib/supabase/keys";
 import { createClient } from "@supabase/supabase-js";
 
 const TIME_RE = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
 
+// Public lesson times are read with the browser key, so RLS and the anon
+// role's grants decide what this route can see.
 function anonClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, supabaseBrowserKey());
 }
 
 function sortKeyFor(display: string): number | null {

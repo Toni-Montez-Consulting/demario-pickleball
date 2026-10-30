@@ -163,3 +163,26 @@ describe("requireAdminPage", () => {
     expect(result.supabase).toBe(mocks.serviceClient);
   });
 });
+
+// Supabase is retiring the legacy keys by the end of 2026; the new ones win.
+describe("supabaseServerKey", () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("prefers the new secret key, and falls back to the legacy service_role key", async () => {
+    const { supabaseServerKey } = await import("./server");
+    vi.stubEnv("SUPABASE_SECRET_KEY", "fake-new-server-key");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "fake-legacy-server-key");
+    expect(supabaseServerKey()).toBe("fake-new-server-key");
+    vi.stubEnv("SUPABASE_SECRET_KEY", "");
+    expect(supabaseServerKey()).toBe("fake-legacy-server-key");
+  });
+
+  it("names both settings when neither is set", async () => {
+    const { supabaseServerKey } = await import("./server");
+    vi.stubEnv("SUPABASE_SECRET_KEY", "");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
+    expect(() => supabaseServerKey()).toThrow(/SUPABASE_SECRET_KEY.*SUPABASE_SERVICE_ROLE_KEY/);
+  });
+});
