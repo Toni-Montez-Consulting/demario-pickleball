@@ -749,7 +749,7 @@ export default function AdminDashboard({ initialBookings, initialInquiries, load
                 className="modal-input avail-date-input"
                 type="date"
                 value={blockDate}
-                min={new Date().toISOString().split("T")[0]}
+                min={today}
                 onChange={(e) => setBlockDate(e.target.value)}
                 aria-label="Date to block"
               />

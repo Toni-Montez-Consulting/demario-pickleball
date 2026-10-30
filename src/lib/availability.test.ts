@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { assertBookableSlot, getAvailabilityForDate, isValidDateString, isWithinPublicBookingWindow } from "./availability";
+import {
+  assertBookableSlot,
+  getAvailabilityForDate,
+  isPastBookingDate,
+  isValidDateString,
+  isWithinPublicBookingWindow,
+} from "./availability";
 
 type Row = Record<string, string | number | boolean | null>;
 type Tables = Record<string, Row[]>;
@@ -86,6 +92,20 @@ describe("availability", () => {
   it("rejects calendar rollover dates", () => {
     expect(isValidDateString("2026-02-28")).toBe(true);
     expect(isValidDateString("2026-02-31")).toBe(false);
+  });
+
+  it("counts a date as past only once it is over in Dallas", () => {
+    // 8 PM in Dallas on Oct 24 is already Oct 25 in UTC.
+    const summerEvening = new Date("2026-10-25T01:00:00Z");
+    expect(isPastBookingDate("2026-10-24", summerEvening)).toBe(false);
+    expect(isPastBookingDate("2026-10-23", summerEvening)).toBe(true);
+    // 6:30 PM in Dallas on Dec 14 is already Dec 15 in UTC.
+    const winterEvening = new Date("2026-12-15T00:30:00Z");
+    expect(isPastBookingDate("2026-12-14", winterEvening)).toBe(false);
+    // Just after midnight in Dallas, yesterday is over.
+    const afterMidnight = new Date("2026-10-25T05:30:00Z");
+    expect(isPastBookingDate("2026-10-24", afterMidnight)).toBe(true);
+    expect(isPastBookingDate("2026-10-25", afterMidnight)).toBe(false);
   });
 
   it("keeps public bookings inside the next 30 days", () => {

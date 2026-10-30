@@ -30,9 +30,9 @@ export function isValidDateString(date: string): boolean {
 }
 
 export function isPastBookingDate(date: string, now = new Date()): boolean {
-  const yesterday = new Date(now);
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  return date <= yesterday.toISOString().split("T")[0];
+  // Past means before today in Dallas. UTC reaches tomorrow at 7 PM there
+  // (6 PM in winter), which used to make the rest of today count as past.
+  return date < dateInTimeZone(now, TIME_ZONE);
 }
 
 export function isWithinPublicBookingWindow(date: string, now = new Date()): boolean {
