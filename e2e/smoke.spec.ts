@@ -133,6 +133,34 @@ test("a tagged bio link lands on the homepage and the booking says where it came
   expect(posted).toMatchObject({ arrival_source: "instagram" });
 });
 
+test("a browser that blocks site data can still see the page and book", async ({ page }) => {
+  // Safari "Block All Cookies" and Chrome "Don't allow sites to save data":
+  // both storage accessors throw instead of returning null.
+  await page.addInitScript(() => {
+    for (const name of ["localStorage", "sessionStorage"]) {
+      Object.defineProperty(window, name, {
+        configurable: true,
+        get() {
+          throw new DOMException("The operation is insecure.", "SecurityError");
+        },
+      });
+    }
+  });
+  await mockBookingFlow(page);
+
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: /train smarter/i })).toBeVisible();
+  const notice = page.getByRole("region", { name: /cookie notice/i });
+  await expect(notice).toBeVisible();
+  await notice.getByRole("button", { name: /got it/i }).click();
+  await expect(notice).toHaveCount(0);
+
+  const picker = await openBookingPicker(page);
+  await picker.getByRole("button", { name: /reserve/i }).click();
+  await expect(page.getByRole("dialog", { name: /you're booked/i })).toBeVisible();
+  await expect(page.getByText(/application error/i)).toHaveCount(0);
+});
+
 test("the book-again link opens the booking form once and keeps its tag", async ({ page }) => {
   await mockBookingFlow(page);
 
