@@ -7,7 +7,7 @@ import { lowestPerPerson, soloPrice, usd } from "@/lib/session-pricing";
 // text saved as docs/terms/<version>.txt (old files stay), a row in
 // docs/terms/README.md, and LEGAL_LAST_MODIFIED.terms (src/app/sitemap.ts).
 // TermsContent.test.tsx fails until the text and the file match.
-export const TERMS_EFFECTIVE_DATE = "Effective October 24, 2026";
+export const TERMS_EFFECTIVE_DATE = "Effective October 30, 2026";
 
 export default function TermsContent() {
   return (

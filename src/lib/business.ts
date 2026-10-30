@@ -20,7 +20,7 @@ export const COURT_CONFIRMATION_MESSAGE =
 
 // Stored on every booking as the terms the student accepted, so it names exactly
 // one text: docs/terms/<version>.txt. A test fails if the terms change without it.
-export const WAIVER_VERSION = "2026-10-24";
+export const WAIVER_VERSION = "2026-10-30";
 
 // The database's booking_duration() mirrors these for the overlap constraint
 // (docs/supabase-round-2-sessions-migration.sql); lesson-types.test.ts checks
