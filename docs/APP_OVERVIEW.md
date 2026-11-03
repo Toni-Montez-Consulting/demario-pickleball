@@ -312,7 +312,7 @@ All public API inputs are validated server-side before any database interaction:
 
 ### Supabase RLS
 
-Row-Level Security policies on `bookings`, `inquiries`, and `rate_limit_events` prevent anonymous Supabase clients from reading or writing those tables directly. All public mutations go through the Next.js API routes using a service-role key that is never exposed to the browser.
+Every table has Row-Level Security on. Since `docs/supabase-least-privilege-migration.sql`, the `anon` and `authenticated` roles hold no table privileges except `anon`'s read of `time_slots`, which the lesson-times endpoint makes with the anon key. Every other read and write goes through Next.js API routes and server pages using a service-role key that is never exposed to the browser. `docs/schema.sql` shows the full access setup.
 
 ---
 
@@ -364,11 +364,21 @@ The production Supabase project uses the following core tables. Schema changes a
 - `bookings_unique_active_slot` — unique partial index on `(lesson_date, lesson_time)` where `status != 'cancelled'`, catching an exact duplicate slot.
 - `bookings_no_overlap` — exclusion constraint (gist) rejecting bookings whose lesson durations overlap on the same date, where `status` is neither `cancelled` nor `no_show`. Lessons run 60/75/90 minutes against hourly slots, so the unique index above never caught an overlapping-but-different start time. See `docs/supabase-booking-overlap-migration.sql`.
 
-**Migrations to run in order:**
+**Rebuilding the database:** `docs/schema.sql` creates the whole schema in one run
+(structure and access, no rows), checked against production's catalog on 2026-10-24.
+The migration files below are the record of how production got there, in the order
+they were applied. Each new production change gets its own file and updates
+`docs/schema.sql` in the same PR.
+
 1. `docs/supabase-p0-migration.sql` — adds waiver columns, tightens public PII policy
 2. `docs/supabase-p1-hardening.sql` — adds the unique slot constraint and rate_limit_events table
 3. `docs/supabase-priority-migration.sql` — adds task priority support used by admin feedback and high-priority tasks
 4. `docs/supabase-students-reviews-migration.sql` — adds `students` and `reviews`, links bookings to students, allows `no_show`, and seeds the seven legacy testimonials
+5. `docs/supabase-booking-overlap-migration.sql` — the `bookings_no_overlap` exclusion constraint
+6. `docs/supabase-service-role-only-migration.sql` — drops the signed-in-session policies
+7. `docs/supabase-round-2-sessions-migration.sql` — group formats and their stored quotes
+8. `docs/supabase-lesson-reminder-migration.sql` — `bookings.reminder_sent_at`
+9. `docs/supabase-least-privilege-migration.sql` — browser roles keep only the anon read of `time_slots` (undo: `docs/supabase-least-privilege-undo.sql`)
 
 ---
 
@@ -471,5 +481,7 @@ Before going live with a new environment, see `docs/RELEASE_CHECKLIST.md` for th
 | `supabase-p1-hardening.sql` | Tonio | Run once in production Supabase SQL editor |
 | `supabase-priority-migration.sql` | Tonio | Run once in production Supabase SQL editor for task priority support |
 | `supabase-students-reviews-migration.sql` | Tonio | Run once in production Supabase SQL editor for students + reviews |
+| `schema.sql` | Tonio | The whole schema in one file, for a test or replacement database; never run on production |
+| `supabase-least-privilege-migration.sql` | Tonio | Run once in production; `supabase-least-privilege-undo.sql` reverses it |
 | `specs/2026-07-25-student-spine-and-review-loop.md` | Tonio | Design spec for the student spine and review loop |
 | `plans/2026-07-25-student-spine-and-review-loop.md` | Tonio | Task-by-task implementation plan for the same |
